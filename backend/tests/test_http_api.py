@@ -1,0 +1,260 @@
+from datetime import UTC, datetime
+
+from bson import ObjectId
+from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from httpx import ASGITransport, AsyncClient
+import pytest
+
+from app.api import deps
+from app.api.routes import assessments as assessments_route
+from app.api.routes import auth as auth_route
+from app.api.routes.assessments import router as assessments_router
+from app.api.routes.auth import router as auth_router
+from app.api.routes.health import router as health_router
+from app.api.routes import health as health_route
+from app.core.errors import AppError
+from app.services import assessment_service
+
+
+class _Cursor:
+    def __init__(self, docs):
+        self._docs = docs
+
+    async def to_list(self, length=None):
+        return self._docs
+
+
+class _Collection:
+    def __init__(self, *, one=None, many=None):
+        self.one = one or {}
+        self.many = many or []
+        self.last_update = None
+
+    async def find_one(self, query):
+        key = tuple(sorted(query.items()))
+        return self.one.get(key)
+
+    def find(self, query=None, projection=None):
+        return _Cursor(self.many)
+
+    async def update_one(self, query, update, upsert=False):
+        self.last_update = {"query": query, "update": update, "upsert": upsert}
+
+
+class _SubmitAssessments:
+    def __init__(self, assessment_id: ObjectId, student_id: ObjectId):
+        self.assessment_id = assessment_id
+        self.student_id = student_id
+        self.status = "DRAFT"
+        self.completed_at = None
+
+    async def find_one(self, query):
+        if query.get("_id") != self.assessment_id:
+            return None
+        return {
+            "_id": self.assessment_id,
+            "student_id": self.student_id,
+            "status": self.status,
+            "completed_at": self.completed_at,
+        }
+
+    async def find_one_and_update(self, query, update, return_document=None):
+        if query.get("_id") != self.assessment_id or query.get("status") != "DRAFT" or self.status != "DRAFT":
+            return None
+        self.status = "COMPLETED"
+        self.completed_at = update["$set"]["completed_at"]
+        return {
+            "_id": self.assessment_id,
+            "student_id": self.student_id,
+            "status": self.status,
+            "completed_at": self.completed_at,
+        }
+
+
+@pytest.fixture
+def http_app() -> FastAPI:
+    test_app = FastAPI()
+
+    @test_app.middleware("http")
+    async def request_id_middleware(request: Request, call_next):
+        request.state.request_id = request.headers.get("x-request-id", "test-request-id")
+        response = await call_next(request)
+        response.headers["x-request-id"] = request.state.request_id
+        return response
+
+    @test_app.exception_handler(AppError)
+    async def app_error_handler(request: Request, exc: AppError):
+        details = dict(exc.details)
+        retry_after = details.pop("retry_after", None)
+        response = JSONResponse(
+            status_code=exc.status_code,
+            content={
+                "code": exc.code,
+                "message": exc.message,
+                "request_id": request.state.request_id,
+                "details": details or {},
+            },
+        )
+        if retry_after is not None:
+            response.headers["Retry-After"] = str(retry_after)
+        return response
+
+    @test_app.exception_handler(RequestValidationError)
+    async def validation_error_handler(request: Request, exc: RequestValidationError):
+        return JSONResponse(
+            status_code=422,
+            content={
+                "code": "VALIDATION_ERROR",
+                "message": "Request validation failed",
+                "request_id": request.state.request_id,
+                "details": {"errors": jsonable_encoder(exc.errors())},
+            },
+        )
+
+    test_app.include_router(auth_router)
+    test_app.include_router(assessments_router)
+    test_app.include_router(health_router)
+
+    return test_app
+
+
+@pytest.fixture
+async def client(http_app: FastAPI):
+    transport = ASGITransport(app=http_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        yield c
+
+
+def _override_auth(student_id: str, assessment_id: str):
+    async def _inner():
+        return deps.AuthContext(student_id=student_id, assessment_id=assessment_id, jti="j1", exp=9999999999)
+
+    return _inner
+
+
+@pytest.mark.asyncio
+async def test_post_auth_validation_error_envelope(client):
+    response = await client.post("/auth", json={"cpf": "123", "birth_date": "2000-01-01"})
+
+    assert response.status_code == 422
+    body = response.json()
+    assert body["code"] == "VALIDATION_ERROR"
+    assert body["request_id"]
+
+
+@pytest.mark.asyncio
+async def test_post_auth_success(client, monkeypatch):
+    monkeypatch.setattr(auth_route, "get_db", lambda: object())
+
+    async def _auth_stub(**kwargs):
+        return {"token": "tkn", "assessment_id": "507f1f77bcf86cd799439011", "claims": {}}
+
+    monkeypatch.setattr(auth_route, "authenticate_and_issue_token", _auth_stub)
+
+    response = await client.post("/auth", json={"cpf": "52998224725", "birth_date": "2000-01-01"})
+
+    assert response.status_code == 200
+    assert response.json()["token"] == "tkn"
+
+
+@pytest.mark.asyncio
+async def test_get_questions_http_success(http_app, client, monkeypatch):
+    assessment_id = ObjectId()
+    question_id = ObjectId()
+    student_id = ObjectId()
+
+    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(str(student_id), str(assessment_id))
+    monkeypatch.setattr(assessments_route, "get_db", lambda: object())
+
+    assessments = _Collection(one={tuple(sorted({"_id": assessment_id}.items())): {"_id": assessment_id}})
+    questions = _Collection(many=[{"_id": question_id, "statement": "Q", "options": [{"key": "A", "text": "a"}]}])
+    answers = _Collection(many=[{"question_id": question_id, "selected_option": "A"}])
+
+    monkeypatch.setattr(assessment_service, "assessments_collection", lambda _: assessments)
+    monkeypatch.setattr(assessment_service, "questions_collection", lambda _: questions)
+    monkeypatch.setattr(assessment_service, "answers_collection", lambda _: answers)
+
+    response = await client.get(f"/assessments/{assessment_id}/questions", headers={"Authorization": "Bearer any"})
+
+    assert response.status_code == 200
+    assert response.json()[0]["selected_option"] == "A"
+
+
+@pytest.mark.asyncio
+async def test_submit_http_idempotent(http_app, client, monkeypatch):
+    assessment_id = ObjectId()
+    student_id = ObjectId()
+    q1 = ObjectId()
+
+    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(str(student_id), str(assessment_id))
+    monkeypatch.setattr(assessments_route, "get_db", lambda: object())
+
+    assessments = _SubmitAssessments(assessment_id=assessment_id, student_id=student_id)
+    questions = _Collection(many=[{"_id": q1}])
+    answers = _Collection(many=[{"question_id": q1}])
+
+    monkeypatch.setattr(assessment_service, "assessments_collection", lambda _: assessments)
+    monkeypatch.setattr(assessment_service, "questions_collection", lambda _: questions)
+    monkeypatch.setattr(assessment_service, "answers_collection", lambda _: answers)
+
+    first = await client.post(f"/assessments/{assessment_id}/submit", headers={"Authorization": "Bearer any"})
+    second = await client.post(f"/assessments/{assessment_id}/submit", headers={"Authorization": "Bearer any"})
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json()["completed_at"] == second.json()["completed_at"]
+
+
+@pytest.mark.asyncio
+async def test_assessment_route_requires_token(client):
+    response = await client.get(f"/assessments/{ObjectId()}/questions")
+
+    assert response.status_code == 401
+    body = response.json()
+    assert body["code"] == "MISSING_TOKEN"
+    assert body["request_id"]
+
+
+@pytest.mark.asyncio
+async def test_live_returns_ok(client):
+    response = await client.get("/live")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+@pytest.mark.asyncio
+async def test_ready_returns_dependency_status_and_timing(client, monkeypatch):
+    async def _ping_db() -> None:
+        return None
+
+    monkeypatch.setattr(health_route, "ping_db", _ping_db)
+
+    response = await client.get("/ready")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["checks"]["mongodb"]["status"] == "ok"
+    assert isinstance(body["checks"]["mongodb"]["time_ms"], float)
+    assert body["checks"]["mongodb"]["time_ms"] >= 0
+
+
+@pytest.mark.asyncio
+async def test_ready_returns_503_when_mongodb_is_unavailable(client, monkeypatch):
+    async def _ping_db() -> None:
+        raise RuntimeError("mongo unavailable")
+
+    monkeypatch.setattr(health_route, "ping_db", _ping_db)
+
+    response = await client.get("/ready")
+
+    assert response.status_code == 503
+    body = response.json()
+    assert body["status"] == "error"
+    assert body["checks"]["mongodb"]["status"] == "error"
+    assert isinstance(body["checks"]["mongodb"]["time_ms"], float)
+    assert body["checks"]["mongodb"]["time_ms"] >= 0
