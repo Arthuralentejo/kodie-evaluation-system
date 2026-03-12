@@ -103,6 +103,40 @@ A automação desse processo é candidata para versões subsequentes.
 
 ---
 
+## Monorepo (v1 em implementação)
+
+```
+backend/   FastAPI + Motor + JWT + testes
+frontend/  React + Vite (fluxo mobile-first)
+scripts/   ETL (pymongo + pandas)
+infra/     Configuração de deploy (Render) e envs
+```
+
+### Dependências e pinos
+
+- Backend async I/O: `motor>=3.7,<4`
+- ETL batch jobs: `pymongo>=4.12,<5`
+- API framework: `fastapi>=0.116,<1`
+- ETL dataframe: `pandas>=2.2,<3`
+
+### Execução local rápida
+
+Backend:
+```
+cd backend
+pip install -e .[dev]
+uvicorn app.main:app --reload
+```
+
+Frontend:
+```
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
 ## Infraestrutura
 
 | Serviço | Plataforma |
