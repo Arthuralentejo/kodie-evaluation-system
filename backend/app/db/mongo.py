@@ -3,26 +3,46 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from app.core.config import settings
 
 
-_client: AsyncIOMotorClient | None = None
+class MongoClientSingleton:
+    _instance: "MongoClientSingleton | None" = None
+
+    def __new__(cls) -> "MongoClientSingleton":
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._client = None
+        return cls._instance
+
+    def get_client(self) -> AsyncIOMotorClient:
+        if self._client is None:
+            self._client = AsyncIOMotorClient(settings.mongo_uri)
+        return self._client
+
+    def get_db(self) -> AsyncIOMotorDatabase:
+        return self.get_client()[settings.mongo_db_name]
+
+    async def ping_db(self) -> None:
+        await self.get_db().command("ping")
+
+    async def close_client(self) -> None:
+        if self._client is not None:
+            self._client.close()
+            self._client = None
+
+
+mongo_client_singleton = MongoClientSingleton()
 
 
 def get_client() -> AsyncIOMotorClient:
-    global _client
-    if _client is None:
-        _client = AsyncIOMotorClient(settings.mongo_uri)
-    return _client
+    return mongo_client_singleton.get_client()
 
 
 def get_db() -> AsyncIOMotorDatabase:
-    return get_client()[settings.mongo_db_name]
+    return mongo_client_singleton.get_db()
 
 
 async def ping_db() -> None:
-    await get_db().command("ping")
+    await mongo_client_singleton.ping_db()
 
 
 async def close_client() -> None:
-    global _client
-    if _client is not None:
-        _client.close()
-        _client = None
+    await mongo_client_singleton.close_client()

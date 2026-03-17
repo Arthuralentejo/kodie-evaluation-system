@@ -1,9 +1,11 @@
 import uuid
 from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.routes.assessments import router as assessments_router
@@ -12,19 +14,34 @@ from app.api.routes.health import router as health_router
 from app.core.config import settings
 from app.core.errors import AppError
 from app.db.indexes import ensure_indexes
-from app.db.mongo import close_client
+from app.db.mongo import close_client, get_db
+from app.services.assessment_service import AssessmentService
+from app.services.auth_service import AuthService
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
+async def lifespan(app: FastAPI):
+    db = get_db()
     await ensure_indexes()
     try:
-        yield
+        yield {
+            "assessment_service": AssessmentService(db=db),
+            "auth_service": AuthService(db=db),
+        }
     finally:
         await close_client()
 
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_allowed_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
+    allow_headers=["*"],
+    expose_headers=["x-request-id", "Retry-After"],
+)
 
 
 @app.middleware("http")

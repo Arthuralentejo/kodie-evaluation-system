@@ -32,6 +32,7 @@ class Student(BaseModel):
 
 
 class Question(BaseModel):
+    number: int = Field(ge=1)
     statement: str = Field(min_length=1)
     options: list[Option] = Field(min_length=1)
     correct_option: str

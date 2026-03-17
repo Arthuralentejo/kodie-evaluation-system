@@ -1,9 +1,7 @@
 from datetime import UTC, datetime, timedelta
-from unittest.mock import AsyncMock
 
 import pytest
 from fastapi.security import HTTPAuthorizationCredentials
-from pymongo.errors import PyMongoError
 from starlette.requests import Request
 
 from app.api import deps
@@ -27,60 +25,50 @@ def _request_with_assessment(assessment_id: str) -> Request:
     return Request(scope)
 
 
+class _AuthServiceStub:
+    def __init__(self, *, side_effect=None, payload=None):
+        self.side_effect = side_effect
+        self.payload = payload
+
+    async def validate_access(self, *, token: str, assessment_id: str | None = None):
+        if self.side_effect:
+            raise self.side_effect
+        return self.payload
+
+
 @pytest.mark.asyncio
-async def test_auth_context_denies_foreign_assessment(monkeypatch):
+async def test_auth_context_denies_foreign_assessment():
     assessment_id = "507f1f77bcf86cd799439011"
     request = _request_with_assessment(assessment_id)
 
-    payload = {
-        "sub": "507f1f77bcf86cd799439012",
-        "assessment_id": assessment_id,
-        "jti": "j1",
-        "exp": int((datetime.now(UTC) + timedelta(minutes=30)).timestamp()),
-    }
-    monkeypatch.setattr(deps, "decode_access_token", lambda _: payload)
-    monkeypatch.setattr(deps, "get_db", lambda: object())
-
-    denylist = type("Deny", (), {"find_one": AsyncMock(return_value=None)})()
-    assessments = type(
-        "Assessments",
-        (),
-        {"find_one": AsyncMock(return_value={"_id": object(), "student_id": "507f1f77bcf86cd799439013"})},
-    )()
-
-    monkeypatch.setattr(deps, "denylist_collection", lambda _: denylist)
-    monkeypatch.setattr(deps, "assessments_collection", lambda _: assessments)
+    auth_service = _AuthServiceStub(
+        side_effect=AppError(status_code=403, code="FORBIDDEN", message="Assessment access denied")
+    )
 
     with pytest.raises(AppError) as exc:
         await deps.get_auth_context(
             request=request,
             credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+            auth_service=auth_service,
         )
 
     assert exc.value.status_code == 403
 
 
 @pytest.mark.asyncio
-async def test_auth_context_revocation_store_outage_returns_503(monkeypatch):
+async def test_auth_context_revocation_store_outage_returns_503():
     assessment_id = "507f1f77bcf86cd799439011"
     request = _request_with_assessment(assessment_id)
 
-    payload = {
-        "sub": "507f1f77bcf86cd799439012",
-        "assessment_id": assessment_id,
-        "jti": "j1",
-        "exp": int((datetime.now(UTC) + timedelta(minutes=30)).timestamp()),
-    }
-    monkeypatch.setattr(deps, "decode_access_token", lambda _: payload)
-    monkeypatch.setattr(deps, "get_db", lambda: object())
-
-    denylist = type("Deny", (), {"find_one": AsyncMock(side_effect=PyMongoError("down"))})()
-    monkeypatch.setattr(deps, "denylist_collection", lambda _: denylist)
+    auth_service = _AuthServiceStub(
+        side_effect=AppError(status_code=503, code="REVOCATION_STORE_UNAVAILABLE", message="Revocation store unavailable")
+    )
 
     with pytest.raises(AppError) as exc:
         await deps.get_auth_context(
             request=request,
             credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+            auth_service=auth_service,
         )
 
     assert exc.value.status_code == 503
@@ -88,26 +76,19 @@ async def test_auth_context_revocation_store_outage_returns_503(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_auth_context_rejects_revoked_token(monkeypatch):
+async def test_auth_context_rejects_revoked_token():
     assessment_id = "507f1f77bcf86cd799439011"
     request = _request_with_assessment(assessment_id)
 
-    payload = {
-        "sub": "507f1f77bcf86cd799439012",
-        "assessment_id": assessment_id,
-        "jti": "revoked-jti",
-        "exp": int((datetime.now(UTC) + timedelta(minutes=30)).timestamp()),
-    }
-    monkeypatch.setattr(deps, "decode_access_token", lambda _: payload)
-    monkeypatch.setattr(deps, "get_db", lambda: object())
-
-    denylist = type("Deny", (), {"find_one": AsyncMock(return_value={"jti": "revoked-jti"})})()
-    monkeypatch.setattr(deps, "denylist_collection", lambda _: denylist)
+    auth_service = _AuthServiceStub(
+        side_effect=AppError(status_code=401, code="TOKEN_REVOKED", message="Token has been revoked")
+    )
 
     with pytest.raises(AppError) as exc:
         await deps.get_auth_context(
             request=request,
             credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+            auth_service=auth_service,
         )
 
     assert exc.value.status_code == 401

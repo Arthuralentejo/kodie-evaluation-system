@@ -1,9 +1,9 @@
-from datetime import UTC, date, datetime
+from datetime import date, datetime
 
 import pytest
 from bson import ObjectId
 
-from app.services import auth_service
+from app.services.auth_service import AuthService, _birth_date_query
 
 
 class _StudentsCollection:
@@ -31,6 +31,12 @@ class _AttemptsCollection:
     async def delete_one(self, query):
         return None
 
+    async def update_one(self, query, update):
+        return None
+
+    async def insert_one(self, doc):
+        return None
+
 
 class _Logger:
     def info(self, *args, **kwargs):
@@ -44,21 +50,19 @@ async def test_auth_looks_up_student_by_birth_date_day_range(monkeypatch):
     assessments = _AssessmentsCollection()
     attempts = _AttemptsCollection()
 
-    monkeypatch.setattr(auth_service, "students_collection", lambda _: students)
-    monkeypatch.setattr(auth_service, "assessments_collection", lambda _: assessments)
-    monkeypatch.setattr(auth_service, "auth_attempts_collection", lambda _: attempts)
+    service = AuthService(db=object(), logger=_Logger())
+    monkeypatch.setattr("app.services.auth_service.students_collection", lambda _: students)
+    monkeypatch.setattr("app.services.auth_service.assessments_collection", lambda _: assessments)
+    monkeypatch.setattr("app.services.auth_service.auth_attempts_collection", lambda _: attempts)
     monkeypatch.setattr(
-        auth_service,
-        "create_access_token",
+        "app.services.auth_service.create_access_token",
         lambda **kwargs: ("token", {"assessment_id": str(assessments.doc["_id"])}),
     )
 
-    result = await auth_service.authenticate_and_issue_token(
+    result = await service.authenticate_and_issue_token(
         cpf="52998224725",
         birth_date=date(2000, 1, 1),
         ip="127.0.0.1",
-        db=object(),
-        logger=_Logger(),
         request_id="req-1",
     )
 
@@ -69,7 +73,7 @@ async def test_auth_looks_up_student_by_birth_date_day_range(monkeypatch):
 
 
 def test_birth_date_query_covers_single_day():
-    query = auth_service._birth_date_query(date(2000, 1, 1))
+    query = _birth_date_query(date(2000, 1, 1))
 
     assert query["$gte"] == datetime(2000, 1, 1, 0, 0)
     assert query["$lt"] == datetime(2000, 1, 2, 0, 0)

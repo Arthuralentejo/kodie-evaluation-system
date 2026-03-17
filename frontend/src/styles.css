@@ -24,7 +24,7 @@
 html,
 body,
 #root {
-  min-height: 100%;
+  height: 100%;
   margin: 0;
 }
 
@@ -32,6 +32,7 @@ body {
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
   color: var(--color-text);
   background: linear-gradient(90deg, var(--color-bg-1) 0%, var(--color-bg-2) 100%);
+  overflow: hidden;
 }
 
 button,
@@ -44,7 +45,8 @@ button {
 }
 
 .app-shell {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100svh;
   position: relative;
   overflow: hidden;
 }
@@ -77,13 +79,17 @@ button {
 .stage-screen {
   position: relative;
   z-index: 1;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
 }
 
 .progress-header {
   background: rgba(255, 255, 255, 0.74);
   border-bottom: 1px solid var(--color-border);
-  padding: 30px 46px 22px;
+  flex: 0 0 auto;
+  padding: clamp(18px, 2.4vh, 30px) clamp(24px, 3vw, 46px) clamp(14px, 1.8vh, 22px);
 }
 
 .progress-header__row {
@@ -130,8 +136,8 @@ button {
 }
 
 .progress-header__track {
-  margin-top: 24px;
-  height: 11px;
+  margin-top: clamp(14px, 1.8vh, 24px);
+  height: clamp(8px, 1vh, 11px);
   border-radius: 999px;
   border: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.45);
@@ -146,11 +152,19 @@ button {
 
 .desktop-grid {
   max-width: 1680px;
-  margin: 68px auto 0;
-  padding: 0 56px 56px;
+  width: 100%;
+  margin: 0 auto;
+  padding: clamp(18px, 2.8vh, 32px) clamp(24px, 3vw, 56px) clamp(18px, 2.8vh, 32px);
   display: grid;
   grid-template-columns: minmax(620px, 1.08fr) minmax(520px, 0.92fr);
-  gap: 46px;
+  gap: clamp(20px, 2vw, 40px);
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.desktop-grid--topless {
+  padding-top: clamp(22px, 4vh, 56px);
 }
 
 .desktop-grid--questionnaire {
@@ -166,12 +180,12 @@ button {
 }
 
 .panel--content {
-  min-height: 760px;
+  min-height: 0;
 }
 
 .panel--form,
 .panel--side {
-  min-height: 760px;
+  min-height: 0;
 }
 
 .panel--sticky {
@@ -182,11 +196,15 @@ button {
 
 .panel--completion {
   width: min(1080px, 100%);
-  min-height: 720px;
+  min-height: 0;
+}
+
+.panel--question {
+  min-height: 0;
 }
 
 .panel__content {
-  padding: 54px 58px;
+  padding: clamp(26px, 3.4vh, 54px) clamp(24px, 3vw, 58px);
 }
 
 .panel__content--side {
@@ -196,12 +214,12 @@ button {
 }
 
 .panel__content--completion {
-  padding: 56px;
+  padding: clamp(28px, 3.6vh, 56px);
 }
 
 .eyebrow {
   margin: 0 0 24px;
-  font-size: 22px;
+  font-size: clamp(18px, 1.35vw, 22px);
   color: var(--color-primary);
 }
 
@@ -214,37 +232,37 @@ p {
 
 h1 {
   max-width: 720px;
-  font-size: 60px;
-  line-height: 1.08;
+  font-size: clamp(40px, 3.3vw, 60px);
+  line-height: 1.12;
   letter-spacing: -0.03em;
 }
 
 h2 {
-  font-size: 32px;
+  font-size: clamp(28px, 2vw, 32px);
   line-height: 1.15;
   letter-spacing: -0.02em;
 }
 
 .panel__content > p,
 .lead {
-  margin-top: 26px;
+  margin-top: clamp(16px, 1.8vh, 26px);
   max-width: 760px;
   color: var(--color-muted);
-  font-size: 24px;
-  line-height: 1.55;
+  font-size: clamp(18px, 1.45vw, 24px);
+  line-height: 1.45;
 }
 
 .info-stack {
-  margin-top: 44px;
+  margin-top: clamp(20px, 2.8vh, 36px);
   display: grid;
-  gap: 22px;
+  gap: clamp(14px, 1.6vh, 20px);
 }
 
 .info-card {
   display: grid;
   grid-template-columns: 52px 1fr;
   gap: 18px;
-  padding: 24px 28px;
+  padding: clamp(16px, 2vh, 22px) clamp(18px, 2vw, 26px);
   background: rgba(255, 255, 255, 0.22);
   border-radius: var(--radius-soft);
 }
@@ -266,20 +284,20 @@ h2 {
 
 .info-card h3,
 .highlight-box h3 {
-  font-size: 20px;
+  font-size: clamp(18px, 1.25vw, 20px);
   line-height: 1.2;
 }
 
 .info-card p,
 .highlight-box p {
-  margin-top: 10px;
+  margin-top: 8px;
   color: var(--color-muted);
-  font-size: 18px;
-  line-height: 1.45;
+  font-size: clamp(16px, 1.05vw, 18px);
+  line-height: 1.35;
 }
 
 .tag-row {
-  margin-top: 28px;
+  margin-top: clamp(16px, 1.8vh, 24px);
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
@@ -288,19 +306,19 @@ h2 {
 .pill-badge {
   display: inline-flex;
   align-items: center;
-  min-height: 52px;
-  padding: 0 24px;
+  min-height: clamp(40px, 4vh, 52px);
+  padding: 0 clamp(16px, 1.5vw, 24px);
   border-radius: 999px;
   border: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.28);
-  font-size: 18px;
+  font-size: clamp(15px, 1vw, 18px);
   font-weight: 500;
 }
 
 .form-stack {
-  margin-top: 36px;
+  margin-top: clamp(18px, 2vh, 28px);
   display: grid;
-  gap: 14px;
+  gap: clamp(8px, 1vh, 14px);
 }
 
 .form-stack label {
@@ -319,13 +337,13 @@ h2 {
 
 .field input {
   width: 100%;
-  min-height: 74px;
+  min-height: clamp(56px, 6.2vh, 70px);
   border-radius: 18px;
   border: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.2);
   padding: 0 70px 0 24px;
   color: var(--color-muted);
-  font-size: 24px;
+  font-size: clamp(18px, 1.45vw, 24px);
 }
 
 .field__icon {
@@ -339,12 +357,12 @@ h2 {
 }
 
 .button {
-  min-width: 200px;
-  min-height: 68px;
+  min-width: 180px;
+  min-height: clamp(52px, 5.6vh, 68px);
   border-radius: 18px;
   border: 0;
   padding: 0 30px;
-  font-size: 21px;
+  font-size: clamp(18px, 1.2vw, 21px);
   font-weight: 600;
   transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease;
 }
@@ -374,12 +392,12 @@ h2 {
 }
 
 .button--wide {
-  width: 258px;
-  margin-top: 22px;
+  width: min(258px, 100%);
+  margin-top: clamp(12px, 1.4vh, 20px);
 }
 
 .text-help {
-  margin-top: 26px;
+  margin-top: clamp(14px, 1.8vh, 22px);
   display: inline-flex;
   align-items: center;
   gap: 12px;
@@ -403,11 +421,11 @@ h2 {
 }
 
 .highlight-box {
-  margin-top: 102px;
+  margin-top: clamp(26px, 4vh, 72px);
   display: grid;
   grid-template-columns: 56px 1fr;
   gap: 18px;
-  padding: 28px 34px;
+  padding: clamp(20px, 2vh, 28px) clamp(20px, 2vw, 34px);
   border-radius: var(--radius-soft);
   border: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.18);
@@ -418,11 +436,43 @@ h2 {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+  padding-top: clamp(18px, 2vh, 28px);
 }
 
 .action-row--questionnaire {
   margin-top: 36px;
   justify-content: space-between;
+}
+
+.question-layout {
+  max-width: 1520px;
+  width: 100%;
+  margin: 0 auto;
+  padding: clamp(18px, 2.2vh, 28px) clamp(24px, 3vw, 56px) clamp(18px, 2.2vh, 28px);
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.question-main {
+  max-width: 1120px;
+  margin: 0 auto;
+  min-height: 0;
+}
+
+.question-heading-card {
+  padding: clamp(28px, 3vh, 44px) clamp(26px, 3vw, 64px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: var(--shadow-panel);
+}
+
+.question-heading-card h1 {
+  max-width: none;
+  margin: 0 auto;
+  text-align: center;
+  font-size: clamp(30px, 2.3vw, 38px);
+  line-height: 1.35;
 }
 
 .question-list {
@@ -478,6 +528,11 @@ h2 {
   gap: 16px;
 }
 
+.options-stack--spacious {
+  margin-top: clamp(18px, 2vh, 30px);
+  gap: clamp(14px, 1.6vh, 22px);
+}
+
 .option-card {
   width: 100%;
   display: grid;
@@ -514,6 +569,29 @@ h2 {
   background: rgba(34, 106, 143, 0.1);
 }
 
+.option-card.missing {
+  border-color: #d7a77e;
+}
+
+.option-card--large {
+  grid-template-columns: 64px 1fr;
+  min-height: clamp(84px, 9vh, 112px);
+  padding: clamp(18px, 2vh, 28px) clamp(22px, 2.2vw, 34px);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.option-card__key--large {
+  width: 50px;
+  height: 50px;
+  font-size: 18px;
+  color: var(--color-muted);
+}
+
+.option-card__text--large {
+  font-size: clamp(18px, 1.4vw, 22px);
+}
+
 .text-button {
   margin-top: 22px;
   border: 0;
@@ -526,6 +604,58 @@ h2 {
 
 .text-button.active {
   text-decoration: underline;
+}
+
+.text-button--muted {
+  margin-top: 0;
+  color: var(--color-muted);
+}
+
+.question-footer {
+  margin-top: clamp(18px, 2vh, 28px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.button--compact {
+  min-width: 152px;
+  min-height: clamp(48px, 5vh, 60px);
+  border-radius: 16px;
+}
+
+.question-jump-list {
+  margin: clamp(12px, 1.2vh, 18px) auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  max-width: 920px;
+}
+
+.question-jump {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.35);
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.question-jump.current {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(34, 106, 143, 0.12);
+}
+
+.question-jump.answered {
+  background: rgba(160, 211, 184, 0.22);
+}
+
+.question-jump.missing {
+  background: rgba(215, 167, 126, 0.18);
 }
 
 .feedback {
@@ -557,11 +687,12 @@ h2 {
 }
 
 .completion-layout {
-  min-height: calc(100vh - 132px);
+  min-height: 0;
+  flex: 1 1 auto;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding: 76px 56px 56px;
+  padding: clamp(18px, 2.4vh, 34px) clamp(24px, 3vw, 56px);
 }
 
 .success-mark {
@@ -574,8 +705,8 @@ h2 {
 }
 
 .session-card {
-  margin-top: 38px;
-  padding: 36px 34px;
+  margin-top: clamp(18px, 2vh, 30px);
+  padding: clamp(24px, 2.2vh, 34px) clamp(22px, 2vw, 34px);
   border-radius: 18px;
   border: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.2);
@@ -586,27 +717,145 @@ h2 {
 }
 
 .session-grid {
-  margin-top: 34px;
+  margin-top: clamp(18px, 1.8vh, 28px);
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 28px 42px;
+  gap: clamp(18px, 2vh, 24px) clamp(24px, 2vw, 36px);
 }
 
 .session-grid span {
   display: block;
   color: var(--color-muted);
-  font-size: 17px;
+  font-size: clamp(15px, 0.95vw, 17px);
 }
 
 .session-grid strong {
   display: block;
-  margin-top: 10px;
-  font-size: 20px;
+  margin-top: 8px;
+  font-size: clamp(17px, 1.1vw, 20px);
+}
+
+@media (max-height: 840px) and (min-width: 769px) {
+  .desktop-grid--topless {
+    padding-top: 18px;
+  }
+
+  .panel__content {
+    padding: 22px 26px;
+  }
+
+  .eyebrow {
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-size: 36px;
+  }
+
+  .panel__content > p,
+  .lead {
+    margin-top: 14px;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .info-stack {
+    margin-top: 18px;
+    gap: 12px;
+  }
+
+  .info-card {
+    padding: 14px 16px;
+  }
+
+  .tag-row {
+    margin-top: 14px;
+    gap: 10px;
+  }
+
+  .pill-badge {
+    min-height: 34px;
+    font-size: 14px;
+  }
+
+  .form-stack {
+    margin-top: 16px;
+    gap: 8px;
+  }
+
+  .field input {
+    min-height: 52px;
+    font-size: 18px;
+  }
+
+  .highlight-box {
+    margin-top: 20px;
+    padding: 16px 18px;
+  }
+
+  .button {
+    min-height: 48px;
+    font-size: 17px;
+  }
+
+  .text-help {
+    margin-top: 14px;
+  }
+
+  .question-layout {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .question-heading-card {
+    padding: 24px 26px;
+  }
+
+  .question-heading-card h1 {
+    font-size: 26px;
+  }
+
+  .options-stack--spacious {
+    margin-top: 14px;
+    gap: 12px;
+  }
+
+  .option-card--large {
+    min-height: 74px;
+    padding: 14px 18px;
+  }
+
+  .option-card__text--large {
+    font-size: 16px;
+  }
+
+  .question-footer {
+    margin-top: 14px;
+  }
+
+  .question-jump-list {
+    display: none;
+  }
+
+  .panel--completion {
+    width: min(980px, 100%);
+  }
+
+  .panel__content--completion {
+    padding: 26px 30px;
+  }
+
+  .success-mark {
+    width: 74px;
+    height: 74px;
+    font-size: 30px;
+  }
 }
 
 @media (max-width: 1280px) {
   .desktop-grid,
-  .desktop-grid--questionnaire {
+  .desktop-grid--questionnaire,
+  .question-layout {
     grid-template-columns: 1fr;
   }
 
@@ -631,6 +880,14 @@ h2 {
   .action-row {
     margin-top: 34px;
   }
+
+  .question-heading-card {
+    padding: 40px 32px;
+  }
+
+  .question-heading-card h1 {
+    font-size: 32px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -644,8 +901,8 @@ h2 {
   }
 
   .desktop-grid,
-  .completion-layout {
-    margin-top: 28px;
+  .completion-layout,
+  .question-layout {
     padding: 0 20px 28px;
   }
 
@@ -680,6 +937,11 @@ h2 {
   .action-row,
   .action-row--questionnaire {
     flex-direction: column;
+  }
+
+  .question-footer {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .session-grid {

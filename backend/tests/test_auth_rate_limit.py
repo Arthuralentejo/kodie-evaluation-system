@@ -3,14 +3,20 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from app.core.errors import AppError
-from app.services import auth_service
+from app.services.auth_service import AuthService
+
+
+class _Logger:
+    def info(self, *args, **kwargs):
+        return None
 
 
 @pytest.mark.asyncio
 async def test_check_rate_limit_uses_retry_after(monkeypatch):
     now = datetime.now(UTC)
+    service = AuthService(db=object(), logger=_Logger())
 
-    async def fake_get_attempt_doc(kind, key, *, now, db):
+    async def fake_get_attempt_doc(kind, key, *, now):
         if kind == "cpf":
             return {
                 "kind": "cpf",
@@ -21,10 +27,10 @@ async def test_check_rate_limit_uses_retry_after(monkeypatch):
             }
         return None
 
-    monkeypatch.setattr(auth_service, "_get_attempt_doc", fake_get_attempt_doc)
+    monkeypatch.setattr(service, "_get_attempt_doc", fake_get_attempt_doc)
 
     with pytest.raises(AppError) as exc:
-        await auth_service.check_rate_limit(cpf="52998224725", ip="127.0.0.1", db=object())
+        await service.check_rate_limit(cpf="52998224725", ip="127.0.0.1")
 
     assert exc.value.status_code == 429
     assert exc.value.details["retry_after"] > 0
@@ -33,8 +39,9 @@ async def test_check_rate_limit_uses_retry_after(monkeypatch):
 @pytest.mark.asyncio
 async def test_check_rate_limit_blocks_by_ip_threshold(monkeypatch):
     now = datetime.now(UTC)
+    service = AuthService(db=object(), logger=_Logger())
 
-    async def fake_get_attempt_doc(kind, key, *, now, db):
+    async def fake_get_attempt_doc(kind, key, *, now):
         if kind == "ip":
             return {
                 "kind": "ip",
@@ -45,10 +52,10 @@ async def test_check_rate_limit_blocks_by_ip_threshold(monkeypatch):
             }
         return None
 
-    monkeypatch.setattr(auth_service, "_get_attempt_doc", fake_get_attempt_doc)
+    monkeypatch.setattr(service, "_get_attempt_doc", fake_get_attempt_doc)
 
     with pytest.raises(AppError) as exc:
-        await auth_service.check_rate_limit(cpf="52998224725", ip="10.0.0.1", db=object())
+        await service.check_rate_limit(cpf="52998224725", ip="10.0.0.1")
 
     assert exc.value.status_code == 429
     assert exc.value.details["retry_after"] > 0

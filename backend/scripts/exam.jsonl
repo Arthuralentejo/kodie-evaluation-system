@@ -1,0 +1,600 @@
+[
+  {
+    "numero": 1,
+    "categoria": "iniciante",
+    "pergunta": "Em um computador, qual componente é responsável por executar instruções e processar cálculos do programa?",
+    "alternativas": {
+      "a": "Memória RAM",
+      "b": "CPU",
+      "c": "Armazenamento (SSD/HD)",
+      "d": "Placa de rede"
+    },
+    "resposta_correta": "b",
+    "explicacao": "A CPU interpreta e executa instruções. RAM armazena dados temporariamente, armazenamento guarda dados de forma persistente e a placa de rede cuida da comunicação."
+  },
+  {
+    "numero": 2,
+    "categoria": "iniciante",
+    "pergunta": "Qual cenário representa melhor o papel de um sistema operacional?",
+    "alternativas": {
+      "a": "Converter código-fonte em binário",
+      "b": "Gerenciar hardware, arquivos e processos para os programas",
+      "c": "Servir como banco de dados da aplicação",
+      "d": "Substituir a linguagem de programação"
+    },
+    "resposta_correta": "b",
+    "explicacao": "O sistema operacional faz a mediação entre hardware e software, administrando recursos como memória, processos, dispositivos e sistema de arquivos."
+  },
+  {
+    "numero": 3,
+    "categoria": "iniciante",
+    "pergunta": "O que diferencia a memória RAM do armazenamento em disco (HD/SSD)?",
+    "alternativas": {
+      "a": "A RAM é mais lenta, porém armazena dados permanentemente",
+      "b": "A RAM é volátil e rápida, perdendo seus dados ao desligar o computador",
+      "c": "O disco (HD/SSD) é mais rápido que a RAM para leitura de dados",
+      "d": "A RAM e o disco têm a mesma função, diferindo apenas no tamanho"
+    },
+    "resposta_correta": "b",
+    "explicacao": "A RAM (Random Access Memory) é uma memória volátil — seus dados são perdidos quando o computador é desligado. Ela é extremamente rápida e usada para armazenar dados em uso pelo processador. O HD/SSD é não-volátil (mantém dados sem energia), porém é significativamente mais lento que a RAM."
+  },
+  {
+    "numero": 4,
+    "categoria": "iniciante",
+    "pergunta": "No Linux, permissões `rwx` em arquivos e diretórios são usadas principalmente para:",
+    "alternativas": {
+      "a": "Definir versão do kernel instalada",
+      "b": "Controlar leitura, escrita e execução por usuário/grupo/outros",
+      "c": "Escolher o gerenciador de pacotes",
+      "d": "Definir IP de rede da máquina"
+    },
+    "resposta_correta": "b",
+    "explicacao": "As permissões `rwx` determinam o que cada classe de usuário pode fazer com arquivos e diretórios, sendo base para segurança e administração."
+  },
+  {
+    "numero": 5,
+    "categoria": "iniciante",
+    "pergunta": "Qual das seguintes distribuições Linux é baseada no Debian?",
+    "alternativas": {
+      "a": "Fedora",
+      "b": "CentOS",
+      "c": "Ubuntu",
+      "d": "Arch Linux"
+    },
+    "resposta_correta": "c",
+    "explicacao": "O Ubuntu é uma distribuição Linux derivada do Debian, herdando seu sistema de gerenciamento de pacotes (apt) e muitas de suas convenções. Fedora e CentOS são derivados do Red Hat, enquanto Arch Linux é uma distribuição independente com filosofia própria."
+  },
+  {
+    "numero": 6,
+    "categoria": "iniciante",
+    "pergunta": "No Linux, o que representa o símbolo `/` (barra) em um caminho de arquivo?",
+    "alternativas": {
+      "a": "O diretório pessoal do usuário atual",
+      "b": "O diretório raiz do sistema de arquivos",
+      "c": "Um separador de comandos no terminal",
+      "d": "O diretório de configuração do sistema"
+    },
+    "resposta_correta": "b",
+    "explicacao": "No Linux, `/` representa o diretório raiz (root directory) — o topo de toda a hierarquia do sistema de arquivos. Todos os outros diretórios e arquivos existem dentro dele. O diretório pessoal do usuário é `~` ou `/home/usuario`."
+  },
+  {
+    "numero": 7,
+    "categoria": "iniciante",
+    "pergunta": "Qual comando Linux é usado para listar os arquivos e diretórios do diretório atual?",
+    "alternativas": {
+      "a": "cd",
+      "b": "pwd",
+      "c": "ls",
+      "d": "mv"
+    },
+    "resposta_correta": "c",
+    "explicacao": "O comando `ls` (list) exibe o conteúdo de um diretório. O `cd` muda o diretório atual, `pwd` exibe o caminho do diretório atual, e `mv` move ou renomeia arquivos."
+  },
+  {
+    "numero": 8,
+    "categoria": "iniciante",
+    "pergunta": "Qual é a principal vantagem de usar controle de versão com Git em um projeto?",
+    "alternativas": {
+      "a": "Aumentar automaticamente a velocidade de execução do programa",
+      "b": "Eliminar a necessidade de testes",
+      "c": "Registrar histórico de mudanças e facilitar colaboração",
+      "d": "Substituir o sistema operacional"
+    },
+    "resposta_correta": "c",
+    "explicacao": "Git permite rastrear alterações, recuperar versões anteriores e trabalhar em equipe com branches, merges e revisão de mudanças."
+  },
+  {
+    "numero": 9,
+    "categoria": "iniciante",
+    "pergunta": "O que são variáveis em programação?",
+    "alternativas": {
+      "a": "Instruções fixas que o programa sempre executa na mesma ordem",
+      "b": "Espaços nomeados na memória usados para armazenar e manipular dados",
+      "c": "Tipos de laços que repetem um bloco de código indefinidamente",
+      "d": "Funções matemáticas pré-definidas pela linguagem de programação"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Variáveis são referências nomeadas para espaços de memória onde valores podem ser armazenados, lidos e modificados durante a execução de um programa. Elas possuem um nome, um tipo de dado e um valor."
+  },
+  {
+    "numero": 10,
+    "categoria": "iniciante",
+    "pergunta": "O que significa CRUD em desenvolvimento de software?",
+    "alternativas": {
+      "a": "Create, Run, Update, Deploy",
+      "b": "Create, Read, Update, Delete",
+      "c": "Copy, Redirect, Undo, Download",
+      "d": "Configure, Register, Upload, Delete"
+    },
+    "resposta_correta": "b",
+    "explicacao": "CRUD é o acrônimo das quatro operações básicas de persistência de dados: Create (criar), Read (ler), Update (atualizar) e Delete (excluir). É a base de qualquer sistema que interage com um banco de dados."
+  },
+  {
+    "numero": 11,
+    "categoria": "iniciante",
+    "pergunta": "O que é uma API REST?",
+    "alternativas": {
+      "a": "Um banco de dados relacional acessível pela internet",
+      "b": "Uma interface de comunicação entre sistemas que utiliza os métodos HTTP e opera sobre recursos",
+      "c": "Um sistema operacional voltado para servidores web",
+      "d": "Uma linguagem de programação para construção de sites"
+    },
+    "resposta_correta": "b",
+    "explicacao": "REST (Representational State Transfer) é um estilo arquitetural para construção de APIs web que utiliza os métodos HTTP (GET, POST, PUT, DELETE) para operar sobre recursos identificados por URLs. APIs REST são amplamente utilizadas para integração entre sistemas."
+  },
+  {
+    "numero": 12,
+    "categoria": "junior",
+    "pergunta": "Você precisa listar apenas linhas de erro de um log e salvar o resultado em arquivo. Qual combinação reflete corretamente o uso de pipe e redirecionamento?",
+    "alternativas": {
+      "a": "cat app.log > grep ERROR > erros.txt",
+      "b": "grep ERROR app.log | erros.txt",
+      "c": "cat app.log | grep ERROR > erros.txt",
+      "d": "grep | ERROR app.log > erros.txt"
+    },
+    "resposta_correta": "c",
+    "explicacao": "O pipe (`|`) envia a saída de `cat` para `grep`, e `>` redireciona o resultado filtrado para `erros.txt`."
+  },
+  {
+    "numero": 13,
+    "categoria": "junior",
+    "pergunta": "Em um algoritmo de busca em uma lista ordenada, quando a busca binária tende a ser mais adequada do que busca linear?",
+    "alternativas": {
+      "a": "Quando a lista não está ordenada e muda o tempo todo",
+      "b": "Quando se busca simplicidade máxima, independentemente de desempenho",
+      "c": "Quando a lista é ordenada e se deseja reduzir comparações em média",
+      "d": "Quando só existe um único elemento"
+    },
+    "resposta_correta": "c",
+    "explicacao": "A busca binária explora a ordenação para descartar metade do espaço a cada passo, reduzindo comparações em relação à busca linear em listas grandes."
+  },
+  {
+    "numero": 14,
+    "categoria": "junior",
+    "pergunta": "No contexto de modelagem de dados para um sistema CRUD, qual decisão melhora integridade e manutenção?",
+    "alternativas": {
+      "a": "Duplicar informações em várias tabelas sem relação",
+      "b": "Evitar qualquer chave primária para simplificar inserções",
+      "c": "Definir entidades com chaves e relacionamentos coerentes com o domínio",
+      "d": "Armazenar todos os dados em um único campo de texto"
+    },
+    "resposta_correta": "c",
+    "explicacao": "Chaves e relacionamentos bem definidos reduzem inconsistências, facilitam consultas e tornam o sistema mais evolutivo."
+  },
+  {
+    "numero": 15,
+    "categoria": "junior",
+    "pergunta": "Qual alternativa descreve melhor quando usar herança em orientação a objetos?",
+    "alternativas": {
+      "a": "Quando classes compartilham comportamento e relação \"é um\" de forma estável",
+      "b": "Sempre que duas classes precisarem se comunicar",
+      "c": "Para substituir completamente o uso de interfaces",
+      "d": "Para evitar qualquer composição de objetos"
+    },
+    "resposta_correta": "a",
+    "explicacao": "Herança funciona melhor quando existe relação conceitual clara \"é um\" e reaproveitamento legítimo de comportamento, sem forçar acoplamento indevido."
+  },
+  {
+    "numero": 16,
+    "categoria": "junior",
+    "pergunta": "Qual a diferença entre `git merge` e `git rebase`?",
+    "alternativas": {
+      "a": "`git merge` apaga a branch de origem após integrar as mudanças; `git rebase` mantém todas as branches",
+      "b": "`git merge` integra mudanças criando um commit de merge; `git rebase` reaplica commits sobre outra base, resultando em histórico linear",
+      "c": "`git rebase` é usado apenas em repositórios remotos; `git merge` funciona apenas localmente",
+      "d": "Ambos são equivalentes e produzem o mesmo histórico de commits"
+    },
+    "resposta_correta": "b",
+    "explicacao": "O `git merge` une duas branches criando um \"commit de merge\" que preserva o histórico de ambas. O `git rebase` move os commits de uma branch para o topo de outra, reescrevendo o histórico e resultando em uma linha de desenvolvimento mais linear e limpa. A escolha entre eles depende da estratégia de versionamento do time."
+  },
+  {
+    "numero": 17,
+    "categoria": "junior",
+    "pergunta": "No Linux, o que representa a permissão `chmod 755 arquivo.sh`?",
+    "alternativas": {
+      "a": "O dono pode ler, escrever e executar; grupo e outros podem apenas ler e executar",
+      "b": "Todos os usuários têm permissão total de leitura, escrita e execução",
+      "c": "O dono pode apenas ler; grupo pode ler e executar; outros não têm acesso",
+      "d": "O arquivo é protegido contra leitura por qualquer usuário"
+    },
+    "resposta_correta": "a",
+    "explicacao": "Em notação octal, `7` corresponde a `rwx` (leitura + escrita + execução) e `5` corresponde a `r-x` (leitura + execução). No `chmod 755`: o dono (7) tem permissão total; o grupo (5) pode ler e executar; outros (5) também podem ler e executar. Essa é uma configuração comum para scripts executáveis."
+  },
+  {
+    "numero": 18,
+    "categoria": "junior",
+    "pergunta": "Qual é a diferença entre SQL e NoSQL?",
+    "alternativas": {
+      "a": "SQL é mais rápido que NoSQL em qualquer cenário de uso",
+      "b": "SQL utiliza tabelas relacionais com esquema fixo; NoSQL oferece modelos de dados flexíveis (documentos, chave-valor, grafos)",
+      "c": "NoSQL não suporta consultas complexas, sendo útil apenas para armazenamento simples",
+      "d": "SQL e NoSQL são termos intercambiáveis que se referem ao mesmo tipo de banco de dados"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Bancos SQL (relacionais) organizam dados em tabelas com esquema definido e suportam transações ACID. Bancos NoSQL (não-relacionais) oferecem modelos variados — documentos (MongoDB), chave-valor (Redis), colunar (Cassandra), grafo (Neo4j) — com flexibilidade de esquema e escalabilidade horizontal, adequados para diferentes casos de uso."
+  },
+  {
+    "numero": 19,
+    "categoria": "junior",
+    "pergunta": "O que é um container Docker?",
+    "alternativas": {
+      "a": "Uma máquina virtual completa com kernel próprio e sistema operacional independente",
+      "b": "Uma unidade de software empacotada com código, dependências e configurações, que executa de forma isolada compartilhando o kernel do host",
+      "c": "Um serviço de armazenamento em nuvem para imagens de sistemas operacionais",
+      "d": "Um gerenciador de pacotes alternativo ao apt e yum"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Diferentemente de VMs, containers Docker compartilham o kernel do sistema operacional host e isolam processos usando namespaces e cgroups do Linux. Isso os torna mais leves e rápidos que VMs, garantindo consistência de ambiente entre desenvolvimento e produção."
+  },
+  {
+    "numero": 20,
+    "categoria": "junior",
+    "pergunta": "O que é uma estrutura de dados do tipo \"mapa\" (ou dicionário)?",
+    "alternativas": {
+      "a": "Uma coleção ordenada de elementos acessados por índice numérico",
+      "b": "Uma estrutura que associa chaves únicas a valores, permitindo busca eficiente pela chave",
+      "c": "Uma lista encadeada onde cada elemento aponta para o próximo",
+      "d": "Uma pilha de elementos com operações LIFO (Last In, First Out)"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Um mapa (ou dicionário/hash map) é uma estrutura de dados que armazena pares chave-valor. Cada chave é única e mapeia para um valor correspondente, permitindo acesso e busca em tempo médio O(1). Exemplos: `dict` em Python, `HashMap` em Java, `object`/`Map` em JavaScript."
+  },
+  {
+    "numero": 21,
+    "categoria": "junior",
+    "pergunta": "O que é um Pull Request (PR) no contexto do Git?",
+    "alternativas": {
+      "a": "Um comando para baixar mudanças de um repositório remoto para o local",
+      "b": "Uma solicitação formal para integrar mudanças de uma branch em outra, geralmente com revisão de código",
+      "c": "Um mecanismo automático que sincroniza branches locais e remotas",
+      "d": "Um arquivo de configuração que define as regras de mesclagem de código"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Um Pull Request (PR) — também chamado de Merge Request no GitLab — é uma solicitação para integrar as mudanças de uma branch em outra (geralmente na branch principal). Ele permite revisão de código por outros membros do time, discussão, aprovação e eventual mesclagem controlada."
+  },
+  {
+    "numero": 22,
+    "categoria": "junior",
+    "pergunta": "O que é a notação Big O em análise de algoritmos?",
+    "alternativas": {
+      "a": "Uma métrica que mede o consumo de energia de um algoritmo em diferentes hardwares",
+      "b": "Uma notação matemática que descreve o crescimento do tempo de execução (ou espaço) de um algoritmo em relação ao tamanho da entrada",
+      "c": "Um padrão de nomenclatura para funções e variáveis em programação",
+      "d": "Uma ferramenta de debugging usada para identificar erros em algoritmos"
+    },
+    "resposta_correta": "b",
+    "explicacao": "A notação Big O descreve o comportamento assintótico de um algoritmo — como seu tempo de execução ou uso de memória cresce conforme o tamanho da entrada (n) aumenta. Por exemplo: O(1) é constante, O(n) é linear, O(n²) é quadrático. É essencial para comparar e escolher algoritmos eficientes."
+  },
+  {
+    "numero": 23,
+    "categoria": "junior",
+    "pergunta": "Qual é a diferença entre IaaS, PaaS e SaaS na computação em nuvem?",
+    "alternativas": {
+      "a": "São três protocolos de comunicação usados em redes de computadores",
+      "b": "IaaS fornece infraestrutura virtual; PaaS fornece plataforma de desenvolvimento; SaaS entrega software pronto ao usuário final",
+      "c": "São diferentes versões de serviços de armazenamento em nuvem",
+      "d": "Referem-se a três níveis de segurança aplicados a sistemas em nuvem"
+    },
+    "resposta_correta": "b",
+    "explicacao": "IaaS (Infrastructure as a Service) fornece recursos de infraestrutura virtualizados (servidores, rede, armazenamento). PaaS (Platform as a Service) fornece plataforma de desenvolvimento/deploy sem gerenciar infraestrutura. SaaS (Software as a Service) entrega aplicações prontas via internet."
+  },
+  {
+    "numero": 24,
+    "categoria": "pleno",
+    "pergunta": "Uma aplicação foi dividida em serviço de API, banco de dados e mensageria. Qual benefício arquitetural essa separação traz?",
+    "alternativas": {
+      "a": "Elimina totalmente a necessidade de monitoramento",
+      "b": "Permite responsabilidades mais claras e evolução independente dos componentes",
+      "c": "Impede falhas em produção",
+      "d": "Dispensa versionamento de código"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Separar responsabilidades facilita manutenção, escalabilidade e evolução por componente, além de apoiar times e deploys mais controlados."
+  },
+  {
+    "numero": 25,
+    "categoria": "pleno",
+    "pergunta": "Qual situação caracteriza melhor integração assíncrona entre sistemas?",
+    "alternativas": {
+      "a": "Cliente espera resposta imediata da API antes de continuar fluxo",
+      "b": "Serviço publica evento em fila/tópico e consumidor processa depois",
+      "c": "Requisição HTTP bloqueante com timeout de 2 segundos",
+      "d": "Consulta SQL síncrona dentro da mesma transação"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Integração assíncrona desacopla produtor e consumidor no tempo, geralmente com mensageria/eventos, aumentando resiliência e elasticidade."
+  },
+  {
+    "numero": 26,
+    "categoria": "pleno",
+    "pergunta": "Em CI/CD, qual prática reduz risco durante deploy de nova versão em produção?",
+    "alternativas": {
+      "a": "Publicar diretamente sem testes para ganhar velocidade",
+      "b": "Fazer deploy manual em horário aleatório sem métricas",
+      "c": "Usar estratégia como canary ou blue/green com monitoramento",
+      "d": "Bloquear rollback para garantir estabilidade"
+    },
+    "resposta_correta": "c",
+    "explicacao": "Estratégias graduais de deploy permitem validar comportamento real e reverter rapidamente em caso de regressão."
+  },
+  {
+    "numero": 27,
+    "categoria": "pleno",
+    "pergunta": "No uso de Docker e infraestrutura como código, qual combinação representa uma prática consistente?",
+    "alternativas": {
+      "a": "Configurar tudo manualmente em produção para manter flexibilidade",
+      "b": "Versionar definições de infraestrutura e padronizar ambientes reproduzíveis",
+      "c": "Evitar automação para reduzir complexidade",
+      "d": "Criar containers diferentes em cada máquina sem padrão"
+    },
+    "resposta_correta": "b",
+    "explicacao": "IaC e conteinerização têm como objetivo criar ambientes previsíveis, auditáveis e repetíveis ao longo do ciclo de desenvolvimento."
+  },
+  {
+    "numero": 28,
+    "categoria": "pleno",
+    "pergunta": "Qual dos princípios SOLID é violado quando uma classe possui métodos tanto para persistência em banco de dados quanto para cálculos de negócio e formatação de relatórios?",
+    "alternativas": {
+      "a": "Open/Closed Principle (OCP)",
+      "b": "Liskov Substitution Principle (LSP)",
+      "c": "Single Responsibility Principle (SRP)",
+      "d": "Dependency Inversion Principle (DIP)"
+    },
+    "resposta_correta": "c",
+    "explicacao": "O Single Responsibility Principle (SRP) determina que uma classe deve ter apenas um motivo para mudar, ou seja, uma única responsabilidade. Uma classe que mistura persistência, lógica de negócio e formatação viola esse princípio, tornando o código difícil de manter e testar."
+  },
+  {
+    "numero": 29,
+    "categoria": "pleno",
+    "pergunta": "Qual a finalidade principal de um índice em um banco de dados relacional?",
+    "alternativas": {
+      "a": "Garantir a integridade referencial entre tabelas por meio de chaves estrangeiras",
+      "b": "Aumentar a velocidade de busca em colunas frequentemente consultadas, ao custo de maior espaço em disco e tempo de escrita",
+      "c": "Definir o esquema e os tipos de dados de cada coluna de uma tabela",
+      "d": "Controlar o nível de isolamento das transações simultâneas"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Índices são estruturas de dados auxiliares (geralmente B-trees) que aceleram consultas em colunas específicas, evitando full table scans. O trade-off é que ocupam espaço adicional em disco e tornam operações de escrita mais lentas, pois o índice também precisa ser atualizado."
+  },
+  {
+    "numero": 30,
+    "categoria": "pleno",
+    "pergunta": "O que é \"tracing distribuído\" (distributed tracing) em observabilidade?",
+    "alternativas": {
+      "a": "Um mecanismo de backup que rastreia alterações em arquivos de configuração de múltiplos servidores",
+      "b": "Uma técnica de monitoramento que acompanha o fluxo de uma requisição através de múltiplos serviços de um sistema distribuído, correlacionando logs e latências",
+      "c": "Um método de auditoria que registra acessos de usuários ao sistema para fins de segurança",
+      "d": "Uma ferramenta de depuração que localiza erros de compilação em projetos com múltiplos módulos"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Tracing distribuído permite acompanhar o caminho completo de uma requisição através de múltiplos microsserviços, identificando gargalos, falhas e latências em cada etapa. Cada requisição recebe um trace ID único propagado entre os serviços. Ferramentas como Jaeger, Zipkin e OpenTelemetry implementam esse conceito."
+  },
+  {
+    "numero": 31,
+    "categoria": "pleno",
+    "pergunta": "No contexto de segurança de aplicações, o que é o OWASP Top 10?",
+    "alternativas": {
+      "a": "Uma lista dos dez frameworks web mais utilizados globalmente, com suas melhores práticas",
+      "b": "Um ranking das dez vulnerabilidades de segurança mais críticas e comuns em aplicações web, publicado pela Open Web Application Security Project",
+      "c": "Um protocolo de autenticação que define os dez passos para implementação segura de OAuth",
+      "d": "Uma certificação de segurança que classifica desenvolvedores em dez níveis de proficiência"
+    },
+    "resposta_correta": "b",
+    "explicacao": "O OWASP Top 10 é uma referência amplamente reconhecida que documenta as dez vulnerabilidades mais críticas em aplicações web, como Injection (SQL Injection), Broken Authentication e XSS (Cross-Site Scripting). Serve como guia para equipes de desenvolvimento priorizarem controles de segurança."
+  },
+  {
+    "numero": 32,
+    "categoria": "pleno",
+    "pergunta": "Qual é o objetivo do princípio \"Dependency Inversion\" do SOLID?",
+    "alternativas": {
+      "a": "Garantir que dependências entre classes sejam sempre injetadas via construtor, nunca via setter",
+      "b": "Fazer com que módulos de alto nível não dependam de módulos de baixo nível, ambos devendo depender de abstrações (interfaces)",
+      "c": "Proibir que classes utilizem bibliotecas externas diretamente, exigindo wrappers intermediários",
+      "d": "Inverter a ordem de inicialização de objetos para otimizar o uso de memória"
+    },
+    "resposta_correta": "b",
+    "explicacao": "O Dependency Inversion Principle (DIP) estabelece que módulos de alto nível não devem depender de módulos de baixo nível — ambos devem depender de abstrações. Isso permite trocar implementações sem alterar o código que as utiliza, facilitando testes e manutenção."
+  },
+  {
+    "numero": 33,
+    "categoria": "pleno",
+    "pergunta": "Em Git, qual é a finalidade do `git rebase -i` (interativo)?",
+    "alternativas": {
+      "a": "São comandos completamente diferentes: rebase reorganiza branches inteiras; squash é um comando independente para comprimir arquivos",
+      "b": "Permite reorganizar, editar, combinar (squash) ou remover commits antes de integrá-los ao histórico principal",
+      "c": "Squash só funciona em repositórios públicos; rebase interativo é exclusivo para repositórios privados",
+      "d": "Rebase interativo é uma operação destrutiva que apaga commits permanentemente do servidor remoto"
+    },
+    "resposta_correta": "b",
+    "explicacao": "O `git rebase -i` abre um editor onde é possível reorganizar, editar, remover ou combinar (squash) commits. É muito utilizado para organizar commits de uma feature branch antes de abrir um Pull Request, resultando em um histórico mais limpo e compreensível para revisores."
+  },
+  {
+    "numero": 34,
+    "categoria": "pleno",
+    "pergunta": "O que é Domain-Driven Design (DDD)?",
+    "alternativas": {
+      "a": "Uma metodologia ágil de gestão de projetos focada em entregas por domínio de negócio",
+      "b": "Uma abordagem de design de software que centra o desenvolvimento no modelo do domínio do negócio, alinhando código e linguagem com especialistas do domínio",
+      "c": "Um padrão de banco de dados que organiza tabelas em domínios para facilitar consultas complexas",
+      "d": "Uma técnica de testes que simula domínios de usuários para validar requisitos de sistema"
+    },
+    "resposta_correta": "b",
+    "explicacao": "DDD (Domain-Driven Design), conceito de Eric Evans, propõe que o design do software deve refletir profundamente o domínio do negócio. Envolve conceitos como Linguagem Ubíqua, Bounded Contexts, Agregados, Entidades e Value Objects, com o objetivo de criar software que modele fielmente os processos de negócio."
+  },
+  {
+    "numero": 35,
+    "categoria": "sênior",
+    "pergunta": "Um time recebe alertas frequentes, mas demora para identificar causa raiz. Qual mudança traz maior ganho de observabilidade?",
+    "alternativas": {
+      "a": "Aumentar apenas capacidade de CPU dos servidores",
+      "b": "Implementar logs estruturados, métricas de negócio e distributed tracing correlacionados",
+      "c": "Reduzir retenção de logs para diminuir custos",
+      "d": "Remover alertas para evitar ruído"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Combinar logs, métricas e tracing com correlação por requisição acelera diagnóstico de incidentes e reduz MTTR (Mean Time to Recovery)."
+  },
+  {
+    "numero": 36,
+    "categoria": "sênior",
+    "pergunta": "No contexto de segurança em aplicações e infraestrutura, qual abordagem está mais alinhada às boas práticas do mercado?",
+    "alternativas": {
+      "a": "Tratar segurança apenas na etapa final do projeto",
+      "b": "Centralizar credenciais no código para facilitar deploy",
+      "c": "Adotar segurança desde o design, com gestão de segredos e práticas contínuas",
+      "d": "Considerar OWASP apenas para auditorias externas"
+    },
+    "resposta_correta": "c",
+    "explicacao": "A abordagem recomendada enfatiza segurança contínua (shift-left), incluindo gestão adequada de credenciais, prevenção de vulnerabilidades e revisão de segurança ao longo de todo o ciclo de desenvolvimento."
+  },
+  {
+    "numero": 37,
+    "categoria": "sênior",
+    "pergunta": "Um sistema precisa cumprir LGPD, manter governança e ainda evoluir rápido. Qual decisão técnica-processual é mais adequada?",
+    "alternativas": {
+      "a": "Ignorar rastreabilidade para ganhar agilidade",
+      "b": "Definir políticas de acesso, trilhas de auditoria e critérios de conformidade no fluxo de entrega",
+      "c": "Delegar conformidade apenas ao time jurídico sem participação técnica",
+      "d": "Concentrar decisões de risco apenas após incidentes"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Conformidade efetiva exige controles técnicos e processuais integrados ao desenvolvimento, não ações isoladas e reativas. A LGPD (Lei nº 13.709/2018) impõe responsabilidades diretas sobre como dados pessoais são coletados, armazenados e protegidos, o que requer participação ativa da equipe técnica."
+  },
+  {
+    "numero": 38,
+    "categoria": "sênior",
+    "pergunta": "Em um sistema de alta disponibilidade com microsserviços, qual padrão é mais adequado para evitar que a falha de um serviço dependente propague falhas em cascata para todo o sistema?",
+    "alternativas": {
+      "a": "Singleton Pattern — garantindo que apenas uma instância do serviço problemático exista",
+      "b": "Circuit Breaker Pattern — monitorando falhas e interrompendo temporariamente chamadas ao serviço com problemas, retornando respostas de fallback",
+      "c": "Observer Pattern — notificando todos os serviços dependentes quando um serviço entra em estado de erro",
+      "d": "Repository Pattern — isolando chamadas ao serviço problemático atrás de uma camada de abstração de dados"
+    },
+    "resposta_correta": "b",
+    "explicacao": "O Circuit Breaker monitora chamadas a serviços externos e, quando detecta uma taxa de falha acima de um limiar, \"abre o circuito\" — interrompendo as chamadas por um período e retornando respostas de fallback imediatamente. Isso evita o desperdício de recursos e previne falhas em cascata."
+  },
+  {
+    "numero": 39,
+    "categoria": "sênior",
+    "pergunta": "Qual é a principal diferença entre as estratégias de branching \"Git Flow\" e \"Trunk Based Development\"?",
+    "alternativas": {
+      "a": "Git Flow usa repositórios distribuídos; Trunk Based Development usa repositório centralizado",
+      "b": "Git Flow utiliza múltiplas branches de longa duração (feature, release, hotfix); Trunk Based Development incentiva commits frequentes diretamente na branch principal com feature flags para controle de funcionalidades",
+      "c": "Git Flow é adequado apenas para projetos open-source; Trunk Based Development é exclusivo para equipes corporativas",
+      "d": "Git Flow automatiza deploys; Trunk Based Development requer aprovação manual em todas as etapas de release"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Git Flow estrutura o desenvolvimento com branches de longa duração (main, develop, feature/*, release/*, hotfix/*), adequado para releases periódicas. Trunk Based Development preconiza integração contínua na branch principal com commits frequentes e uso de feature flags, facilitando CI/CD verdadeiro e reduzindo conflitos de merge."
+  },
+  {
+    "numero": 40,
+    "categoria": "sênior",
+    "pergunta": "Em Kubernetes, qual é a função de um \"Deployment\" em relação a \"Pods\"?",
+    "alternativas": {
+      "a": "Um Deployment é um Pod com mais recursos de CPU e memória reservados para workloads críticos",
+      "b": "Um Deployment declara o estado desejado de um conjunto de Pods, gerenciando réplicas, atualizações rolling e rollbacks automaticamente",
+      "c": "Um Deployment é responsável apenas pelo roteamento de rede entre Pods de diferentes namespaces",
+      "d": "Um Deployment armazena as variáveis de ambiente e secrets que são injetados nos Pods durante a inicialização"
+    },
+    "resposta_correta": "b",
+    "explicacao": "No Kubernetes, Pods são as unidades mínimas de execução de containers. Um Deployment é um objeto de nível superior que declara o estado desejado (número de réplicas, imagem do container, estratégia de atualização) e faz o cluster convergir para esse estado, gerenciando rolling updates e rollbacks automaticamente."
+  },
+  {
+    "numero": 41,
+    "categoria": "sênior",
+    "pergunta": "O que são \"quatro sinais de ouro\" (Four Golden Signals) no contexto de SRE (Site Reliability Engineering)?",
+    "alternativas": {
+      "a": "Os quatro protocolos de rede mais importantes para monitorar em sistemas distribuídos: TCP, UDP, HTTP e HTTPS",
+      "b": "Latência, tráfego, erros e saturação — as quatro métricas fundamentais que, juntas, oferecem uma visão completa da saúde de um serviço em produção",
+      "c": "Os quatro tipos de alertas configuráveis no Prometheus: warning, critical, info e debug",
+      "d": "As quatro etapas de resposta a incidentes: detecção, triagem, mitigação e post-mortem"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Os Four Golden Signals (do Google SRE Book) são: (1) Latência — tempo para atender uma requisição; (2) Tráfego — demanda sobre o sistema (req/s); (3) Erros — taxa de requisições com falha; (4) Saturação — quão \"cheio\" está o sistema (CPU, memória, disco). Monitorar essas quatro métricas fornece visão abrangente da saúde de qualquer serviço."
+  },
+  {
+    "numero": 42,
+    "categoria": "sênior",
+    "pergunta": "Em segurança de aplicações, qual é a diferença entre SAST e DAST?",
+    "alternativas": {
+      "a": "SAST analisa o código-fonte estaticamente sem execução; DAST testa a aplicação em execução simulando ataques externos",
+      "b": "SAST é uma ferramenta de monitoramento em produção; DAST é um processo de revisão manual de código por especialistas em segurança",
+      "c": "SAST verifica conformidade com licenças de software; DAST verifica vulnerabilidades em dependências de terceiros",
+      "d": "SAST e DAST são sinônimos para pentesting automatizado realizados em diferentes ambientes"
+    },
+    "resposta_correta": "a",
+    "explicacao": "SAST (Static Application Security Testing) analisa o código-fonte sem executar a aplicação, identificando vulnerabilidades como SQL injection e XSS no próprio código. DAST (Dynamic Application Security Testing) testa a aplicação em execução, simulando ataques de um usuário externo. O uso combinado de ambos oferece cobertura de segurança mais abrangente no pipeline de CI/CD."
+  },
+  {
+    "numero": 43,
+    "categoria": "sênior",
+    "pergunta": "Em Design de APIs RESTful, qual abordagem é mais adequada para versionar uma API que precisa de mudanças incompatíveis com versões anteriores?",
+    "alternativas": {
+      "a": "Modificar diretamente os endpoints existentes sem aviso, pois clientes devem se adaptar automaticamente",
+      "b": "Versionar via URL (ex: `/v1/recursos`, `/v2/recursos`), via header (`API-Version: 2`), ou via media type, mantendo as versões anteriores disponíveis por um período de deprecação explícito",
+      "c": "Criar um novo domínio completamente diferente para cada nova versão da API",
+      "d": "Usar apenas query parameters para versionar (ex: `?version=2`), pois é o único método padronizado pelo REST"
+    },
+    "resposta_correta": "b",
+    "explicacao": "O versionamento de APIs é essencial para evitar quebrar clientes existentes. As estratégias mais comuns são: URL versioning (`/v1/`, `/v2/`), Header versioning (`API-Version: 2`) e Media type versioning. O importante é manter versões antigas funcionando por um período de deprecação com comunicação clara aos consumidores."
+  },
+  {
+    "numero": 44,
+    "categoria": "sênior",
+    "pergunta": "Ao revisar o código de um desenvolvedor júnior que implementou uma solução funcional mas com alto acoplamento e sem testes, qual é a abordagem mais eficaz de um líder técnico?",
+    "alternativas": {
+      "a": "Rejeitar o PR sem explicações e reimplementar a solução corretamente, demonstrando o padrão esperado",
+      "b": "Aprovar o PR para não desmotivar o júnior, registrando uma dívida técnica para resolver futuramente",
+      "c": "Fornecer feedback construtivo e específico na revisão, explicando o problema de acoplamento, sugerindo recursos sobre boas práticas e definindo expectativas claras sobre cobertura de testes",
+      "d": "Escalar imediatamente para o gerente de engenharia, pois código sem testes é bloqueador crítico de release"
+    },
+    "resposta_correta": "c",
+    "explicacao": "A abordagem eficaz equilibra qualidade técnica com desenvolvimento humano. Rejeitar sem explicação desmotiva e não ensina; aprovar negligencia a qualidade e o crescimento. O feedback construtivo e específico — explicando o \"porquê\" dos problemas e definindo expectativas claras — transforma a revisão em oportunidade de mentoria."
+  },
+  {
+    "numero": 45,
+    "categoria": "sênior",
+    "pergunta": "Qual é a diferença entre autenticação e autorização em sistemas de segurança, e quais tecnologias são tipicamente usadas para cada uma em APIs modernas?",
+    "alternativas": {
+      "a": "Autenticação e autorização são sinônimos; ambas são implementadas exclusivamente com certificados SSL/TLS",
+      "b": "Autenticação verifica a identidade do usuário (quem é); autorização verifica o que o usuário autenticado tem permissão de fazer. OAuth 2.0 e JWT são frequentemente usados juntos para implementar ambos",
+      "c": "Autenticação verifica permissões de acesso; autorização verifica a senha do usuário. Ambas são implementadas com Basic Auth",
+      "d": "Autenticação é responsabilidade do frontend; autorização é responsabilidade exclusiva do banco de dados"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Autenticação (AuthN) responde \"quem é você?\" — verifica identidade via credenciais. Autorização (AuthZ) responde \"o que você pode fazer?\" — define permissões e scopes. OAuth 2.0 é um framework de autorização delegada; JWT (JSON Web Token) carrega claims de identidade e permissões verificáveis sem consulta ao servidor; OpenID Connect adiciona autenticação sobre o OAuth 2.0."
+  },
+  {
+    "numero": 46,
+    "categoria": "sênior",
+    "pergunta": "No Projeto Final (TCC), qual evidência demonstra melhor consolidação das competências do curso?",
+    "alternativas": {
+      "a": "Apenas apresentação visual da ideia, sem código",
+      "b": "Código funcional sem documentação e sem justificativas arquiteturais",
+      "c": "Solução funcional com versionamento, documentação técnica e integração de múltiplos módulos",
+      "d": "Protótipo incompleto focado em uma única funcionalidade isolada"
+    },
+    "resposta_correta": "c",
+    "explicacao": "O TCC é integrador: deve combinar implementação, arquitetura, persistência/integração, documentação e apresentação estruturada, demonstrando autonomia e domínio do conjunto de competências desenvolvidas ao longo do curso."
+  }
+]

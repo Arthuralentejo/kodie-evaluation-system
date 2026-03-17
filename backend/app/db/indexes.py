@@ -1,6 +1,12 @@
 from pymongo import ASCENDING
 
-from app.db.collections import answers_collection, assessments_collection, denylist_collection, students_collection
+from app.db.collections import (
+    answers_collection,
+    assessments_collection,
+    denylist_collection,
+    questions_collection,
+    students_collection,
+)
 from app.db.mongo import get_db
 
 
@@ -20,6 +26,12 @@ async def ensure_indexes() -> None:
         [("assessment_id", ASCENDING), ("question_id", ASCENDING)],
         unique=True,
         name="uq_answer_assessment_question",
+    )
+
+    await questions_collection(db).create_index(
+        [("number", ASCENDING)],
+        unique=True,
+        name="uq_question_number",
     )
 
     await denylist_collection(db).create_index(

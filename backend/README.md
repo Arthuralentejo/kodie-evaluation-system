@@ -31,3 +31,17 @@ Dry-run validation:
 ```bash
 poetry run python scripts/seed_students.py scripts/students.sample.csv --dry-run
 ```
+
+## Seed Questions
+
+Seed the `questions` collection from the bundled exam file:
+
+```bash
+poetry run python scripts/seed_questions.py
+```
+
+Dry-run validation:
+
+```bash
+poetry run python scripts/seed_questions.py --dry-run
+```

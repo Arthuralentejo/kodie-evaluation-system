@@ -4,7 +4,7 @@ import pytest
 from bson import ObjectId
 
 from app.core.errors import AppError
-from app.services import assessment_service
+from app.services.assessment_service import AssessmentService
 
 
 class _Cursor:
@@ -83,11 +83,12 @@ async def test_get_questions_restores_saved_answers(monkeypatch):
     )
     answers = _SimpleCollection(find_docs=[{"question_id": question_id, "selected_option": "B"}])
 
-    monkeypatch.setattr(assessment_service, "assessments_collection", lambda _: assessments)
-    monkeypatch.setattr(assessment_service, "questions_collection", lambda _: questions)
-    monkeypatch.setattr(assessment_service, "answers_collection", lambda _: answers)
+    service = AssessmentService(db=object())
+    monkeypatch.setattr("app.services.assessment_service.assessments_collection", lambda _: assessments)
+    monkeypatch.setattr("app.services.assessment_service.questions_collection", lambda _: questions)
+    monkeypatch.setattr("app.services.assessment_service.answers_collection", lambda _: answers)
 
-    result = await assessment_service.get_questions_for_assessment(assessment_id=str(assessment_id), db=object())
+    result = await service.get_questions_for_assessment(assessment_id=str(assessment_id))
     assert result[0]["selected_option"] == "B"
 
 
@@ -106,12 +107,13 @@ async def test_submit_incomplete_returns_missing_question_ids(monkeypatch):
     questions = _SimpleCollection(find_docs=[{"_id": q1}, {"_id": q2}])
     answers = _SimpleCollection(find_docs=[{"question_id": q1}])
 
-    monkeypatch.setattr(assessment_service, "assessments_collection", lambda _: assessments)
-    monkeypatch.setattr(assessment_service, "questions_collection", lambda _: questions)
-    monkeypatch.setattr(assessment_service, "answers_collection", lambda _: answers)
+    service = AssessmentService(db=object())
+    monkeypatch.setattr("app.services.assessment_service.assessments_collection", lambda _: assessments)
+    monkeypatch.setattr("app.services.assessment_service.questions_collection", lambda _: questions)
+    monkeypatch.setattr("app.services.assessment_service.answers_collection", lambda _: answers)
 
     with pytest.raises(AppError) as exc:
-        await assessment_service.submit_assessment(assessment_id=str(assessment_id), db=object())
+        await service.submit_assessment(assessment_id=str(assessment_id))
 
     assert exc.value.status_code == 422
     assert exc.value.details["missing_question_ids"] == [str(q2)]
@@ -127,14 +129,42 @@ async def test_submit_is_idempotent_and_atomic(monkeypatch):
     questions = _SimpleCollection(find_docs=[{"_id": q1}])
     answers = _SimpleCollection(find_docs=[{"question_id": q1}])
 
-    monkeypatch.setattr(assessment_service, "assessments_collection", lambda _: assessments)
-    monkeypatch.setattr(assessment_service, "questions_collection", lambda _: questions)
-    monkeypatch.setattr(assessment_service, "answers_collection", lambda _: answers)
+    service = AssessmentService(db=object())
+    monkeypatch.setattr("app.services.assessment_service.assessments_collection", lambda _: assessments)
+    monkeypatch.setattr("app.services.assessment_service.questions_collection", lambda _: questions)
+    monkeypatch.setattr("app.services.assessment_service.answers_collection", lambda _: answers)
 
-    first = await assessment_service.submit_assessment(assessment_id=str(assessment_id), db=object())
-    second = await assessment_service.submit_assessment(assessment_id=str(assessment_id), db=object())
+    first = await service.submit_assessment(assessment_id=str(assessment_id))
+    second = await service.submit_assessment(assessment_id=str(assessment_id))
 
     assert first["status"] == "COMPLETED"
     assert second["status"] == "COMPLETED"
     assert first["completed_at"] == second["completed_at"]
     assert assessments.transitions == 1
+
+
+@pytest.mark.asyncio
+async def test_get_questions_honors_quantity(monkeypatch):
+    assessment_id = ObjectId()
+    student_id = ObjectId()
+    q1 = ObjectId()
+    q2 = ObjectId()
+
+    assessments = _SimpleCollection(find_one_map={("_id", assessment_id): {"_id": assessment_id, "student_id": student_id}})
+    questions = _SimpleCollection(
+        find_docs=[
+            {"_id": q1, "number": 1, "statement": "Q1", "options": [{"key": "A", "text": "x"}]},
+            {"_id": q2, "number": 2, "statement": "Q2", "options": [{"key": "A", "text": "y"}]},
+        ]
+    )
+    answers = _SimpleCollection(find_docs=[])
+
+    service = AssessmentService(db=object())
+    monkeypatch.setattr("app.services.assessment_service.assessments_collection", lambda _: assessments)
+    monkeypatch.setattr("app.services.assessment_service.questions_collection", lambda _: questions)
+    monkeypatch.setattr("app.services.assessment_service.answers_collection", lambda _: answers)
+
+    result = await service.get_questions_for_assessment(assessment_id=str(assessment_id), quantity=1)
+
+    assert len(result) == 1
+    assert result[0]["statement"] == "Q1"
