@@ -14,7 +14,7 @@ router = APIRouter(
 @router.get("/{assessment_id}/questions", response_model=list[QuestionResponse])
 async def get_questions(
     assessment_id: str,
-    quantity: int | None = Query(default=None, ge=1),
+    quantity: int = Query(default=20, ge=1),
     assessment_service: AssessmentService = Depends(get_assessment_service),
 ):
     return await assessment_service.get_questions_for_assessment(assessment_id=assessment_id, quantity=quantity)

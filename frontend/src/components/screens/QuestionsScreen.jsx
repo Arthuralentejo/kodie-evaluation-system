@@ -5,21 +5,19 @@ export function QuestionsScreen({
   currentIndex,
   currentQuestion,
   isBusy,
-  isSubmitting,
   missingQuestionIds,
   questions,
   screenError,
-  answerStates,
-  onSelectQuestion,
   onSaveAnswer,
   onPrev,
   onNext,
-  onSubmit,
+  onFinish,
 }) {
   const totalQuestions = questions.length;
   const questionNumber = currentIndex + 1;
   const remainingQuestions = Math.max(totalQuestions - answeredCount, 0);
   const progress = totalQuestions > 0 ? Math.round((questionNumber / totalQuestions) * 100) : 0;
+  const canFinish = totalQuestions === 20 && answeredCount === totalQuestions;
 
   return (
     <section className="stage-screen">
@@ -65,13 +63,6 @@ export function QuestionsScreen({
                       );
                     })}
                   </div>
-
-                  <p className={`feedback feedback--status ${answerStates[currentQuestion.id] || ""}`}>
-                    {answerStates[currentQuestion.id] === "saving" && "Salvando resposta..."}
-                    {answerStates[currentQuestion.id] === "saved" && "Resposta salva com sucesso."}
-                    {answerStates[currentQuestion.id] === "error" && "Falha ao salvar. Tente novamente."}
-                  </p>
-
                   <div className="question-footer">
                     <button
                       className="button button--secondary button--compact"
@@ -102,11 +93,11 @@ export function QuestionsScreen({
                     ) : (
                       <button
                         className="button button--primary button--compact"
-                        disabled={isSubmitting || questions.length === 0}
-                        onClick={onSubmit}
+                        disabled={!canFinish}
+                        onClick={onFinish}
                         type="button"
                       >
-                        {isSubmitting ? "Enviando..." : "Proxima"}
+                        Finalizar
                       </button>
                     )}
                   </div>
@@ -114,31 +105,6 @@ export function QuestionsScreen({
               )}
             </div>
           </div>
-          {totalQuestions > 0 ? (
-            <div className="question-jump-list" aria-label="Selecionar questao">
-              {questions.map((question, index) => {
-                const state =
-                  currentIndex === index
-                    ? "current"
-                    : question.selected_option
-                      ? "answered"
-                      : missingQuestionIds.includes(question.id)
-                        ? "missing"
-                        : "";
-
-                return (
-                  <button
-                    className={`question-jump ${state}`}
-                    key={question.id}
-                    onClick={() => onSelectQuestion(index)}
-                    type="button"
-                  >
-                    {index + 1}
-                  </button>
-                );
-              })}
-            </div>
-          ) : null}
         </div>
       </div>
     </section>

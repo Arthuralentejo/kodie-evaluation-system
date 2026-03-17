@@ -168,3 +168,40 @@ async def test_get_questions_honors_quantity(monkeypatch):
 
     assert len(result) == 1
     assert result[0]["statement"] == "Q1"
+
+
+@pytest.mark.asyncio
+async def test_get_questions_distributes_difficulties_with_fewer_senior(monkeypatch):
+    assessment_id = ObjectId()
+    student_id = ObjectId()
+
+    assessments = _SimpleCollection(find_one_map={("_id", assessment_id): {"_id": assessment_id, "student_id": student_id}})
+    questions = _SimpleCollection(
+        find_docs=[
+            {"_id": ObjectId(), "number": 1, "category": "iniciante", "statement": "I1", "options": [{"key": "A", "text": "a"}]},
+            {"_id": ObjectId(), "number": 2, "category": "iniciante", "statement": "I2", "options": [{"key": "A", "text": "a"}]},
+            {"_id": ObjectId(), "number": 3, "category": "iniciante", "statement": "I3", "options": [{"key": "A", "text": "a"}]},
+            {"_id": ObjectId(), "number": 4, "category": "iniciante", "statement": "I4", "options": [{"key": "A", "text": "a"}]},
+            {"_id": ObjectId(), "number": 5, "category": "junior", "statement": "J1", "options": [{"key": "A", "text": "a"}]},
+            {"_id": ObjectId(), "number": 6, "category": "junior", "statement": "J2", "options": [{"key": "A", "text": "a"}]},
+            {"_id": ObjectId(), "number": 7, "category": "junior", "statement": "J3", "options": [{"key": "A", "text": "a"}]},
+            {"_id": ObjectId(), "number": 8, "category": "pleno", "statement": "P1", "options": [{"key": "A", "text": "a"}]},
+            {"_id": ObjectId(), "number": 9, "category": "pleno", "statement": "P2", "options": [{"key": "A", "text": "a"}]},
+            {"_id": ObjectId(), "number": 10, "category": "senior", "statement": "S1", "options": [{"key": "A", "text": "a"}]},
+        ]
+    )
+    answers = _SimpleCollection(find_docs=[])
+
+    service = AssessmentService(db=object())
+    monkeypatch.setattr("app.services.assessment_service.assessments_collection", lambda _: assessments)
+    monkeypatch.setattr("app.services.assessment_service.questions_collection", lambda _: questions)
+    monkeypatch.setattr("app.services.assessment_service.answers_collection", lambda _: answers)
+
+    result = await service.get_questions_for_assessment(assessment_id=str(assessment_id), quantity=10)
+
+    statements = [item["statement"] for item in result]
+    assert len(result) == 10
+    assert sum(statement.startswith("I") for statement in statements) == 4
+    assert sum(statement.startswith("J") for statement in statements) == 3
+    assert sum(statement.startswith("P") for statement in statements) == 2
+    assert sum(statement.startswith("S") for statement in statements) == 1

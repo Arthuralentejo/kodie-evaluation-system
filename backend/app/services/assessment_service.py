@@ -8,6 +8,14 @@ from pymongo import ReturnDocument
 from app.core.config import settings
 from app.core.errors import AppError
 from app.db.collections import answers_collection, assessments_collection, questions_collection
+from app.models.domain import Category
+
+CATEGORY_ORDER = (
+    Category.INICIANTE,
+    Category.JUNIOR,
+    Category.PLENO,
+    Category.SENIOR,
+)
 
 
 def _ensure_object_id(value: str, code: str = "INVALID_ID") -> ObjectId:
@@ -25,6 +33,65 @@ def deterministic_shuffle_options(*, assessment_id: str, question_id: str, optio
     return shuffled
 
 
+def _normalize_category(category: str | Category) -> Category | None:
+    if isinstance(category, Category):
+        return category
+
+    normalized = category.strip().lower()
+    try:
+        return Category(normalized)
+    except ValueError:
+        return None
+
+
+def _select_questions_by_difficulty(question_docs: list[dict], quantity: int | None) -> list[dict]:
+    ordered_questions = sorted(question_docs, key=lambda item: item.get("number", 0))
+    if quantity is None or quantity >= len(ordered_questions):
+        return ordered_questions
+
+    buckets: dict[Category, list[dict]] = {category: [] for category in CATEGORY_ORDER}
+    extra_questions: list[dict] = []
+    for question in ordered_questions:
+        normalized_category = _normalize_category(question.get("category", ""))
+        if normalized_category in buckets:
+            buckets[normalized_category].append(question)
+        else:
+            extra_questions.append(question)
+
+    if extra_questions:
+        buckets[CATEGORY_ORDER[0]].extend(extra_questions)
+
+    weights = {
+        Category.INICIANTE: 4,
+        Category.JUNIOR: 3,
+        Category.PLENO: 2,
+        Category.SENIOR: 1,
+    }
+    total_weight = sum(weights.values())
+    counts = {
+        category: min(len(buckets[category]), (quantity * weights[category]) // total_weight)
+        for category in CATEGORY_ORDER
+    }
+
+    remaining = quantity - sum(counts.values())
+    while remaining > 0:
+        allocated = False
+        for category in CATEGORY_ORDER:
+            if counts[category] < len(buckets[category]):
+                counts[category] += 1
+                remaining -= 1
+                allocated = True
+                if remaining == 0:
+                    break
+        if not allocated:
+            break
+
+    selected: list[dict] = []
+    for category in CATEGORY_ORDER:
+        selected.extend(buckets[category][: counts[category]])
+    return selected
+
+
 class AssessmentService:
     def __init__(self, db):
         self.db = db
@@ -36,9 +103,7 @@ class AssessmentService:
             raise AppError(status_code=404, code="ASSESSMENT_NOT_FOUND", message="Assessment not found")
 
         question_docs = await questions_collection(self.db).find({}).to_list(length=None)
-        question_docs = sorted(question_docs, key=lambda item: item.get("number", 0))
-        if quantity is not None:
-            question_docs = question_docs[:quantity]
+        question_docs = _select_questions_by_difficulty(question_docs, quantity)
 
         answer_docs = await answers_collection(self.db).find({"assessment_id": assess_oid}).to_list(length=None)
         answer_by_question = {str(item["question_id"]): item["selected_option"] for item in answer_docs}

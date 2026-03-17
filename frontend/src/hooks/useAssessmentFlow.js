@@ -4,6 +4,8 @@ import { API_BASE, SESSION_KEY, STAGES } from "../config";
 import { toApiBirthDate } from "../utils/formatters";
 import { readApiError, wait } from "../utils/http";
 
+const QUESTIONS_LIMIT = 20;
+
 export function useAssessmentFlow() {
   const [stage, setStage] = useState(STAGES.AUTH);
   const [cpf, setCpf] = useState("");
@@ -113,7 +115,10 @@ export function useAssessmentFlow() {
     setIsBusy(true);
 
     try {
-      const response = await fetch(`${API_BASE}/assessments/${assessmentId}/questions`, { headers: authHeader });
+      const response = await fetch(
+        `${API_BASE}/assessments/${assessmentId}/questions?quantity=${QUESTIONS_LIMIT}`,
+        { headers: authHeader },
+      );
 
       if (!response.ok) {
         setScreenError(await readApiError(response));
@@ -196,6 +201,8 @@ export function useAssessmentFlow() {
           if (index >= 0) setCurrentIndex(index);
         }
 
+        setStage(STAGES.QUESTIONS);
+
         return;
       }
 
@@ -219,6 +226,11 @@ export function useAssessmentFlow() {
     setStage(STAGES.AUTH);
   }
 
+  function goToReview() {
+    setScreenError("");
+    setStage(STAGES.REVIEW);
+  }
+
   return {
     answeredCount,
     answerStates,
@@ -237,6 +249,7 @@ export function useAssessmentFlow() {
     questions,
     screenError,
     stage,
+    goToReview,
     setBirthDate,
     setCpf,
     setCurrentIndex,

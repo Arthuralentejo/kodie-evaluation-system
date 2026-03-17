@@ -41,17 +41,14 @@ export function App() {
       <main className="app-shell">
         <QuestionsScreen
           answeredCount={flow.answeredCount}
-          answerStates={flow.answerStates}
           currentIndex={flow.currentIndex}
           currentQuestion={flow.currentQuestion}
           isBusy={flow.isBusy}
-          isSubmitting={flow.isSubmitting}
           missingQuestionIds={flow.missingQuestionIds}
           onNext={() => flow.setCurrentIndex((value) => Math.min(flow.questions.length - 1, value + 1))}
+          onFinish={flow.goToReview}
           onPrev={() => flow.setCurrentIndex((value) => Math.max(0, value - 1))}
           onSaveAnswer={flow.saveAnswer}
-          onSelectQuestion={flow.setCurrentIndex}
-          onSubmit={flow.submitAssessment}
           questions={flow.questions}
           screenError={flow.screenError}
         />
@@ -64,9 +61,13 @@ export function App() {
       <CompletionScreen
         answeredCount={flow.answeredCount}
         completionDate={flow.completionDate}
+        isSubmitted={flow.stage === STAGES.COMPLETED}
+        isSubmitting={flow.isSubmitting}
         protocolNumber={flow.protocolNumber}
+        screenError={flow.screenError}
         totalQuestions={flow.questions.length || 20}
         onReset={flow.resetToStart}
+        onSubmit={flow.submitAssessment}
       />
     </main>
   );

@@ -19,11 +19,11 @@ class AuthContext:
 
 
 def get_auth_service(request: Request) -> AuthService:
-    return request.app.state.auth_service
+    return request.state.auth_service
 
 
 def get_assessment_service(request: Request) -> AssessmentService:
-    return request.app.state.assessment_service
+    return request.state.assessment_service
 
 
 async def get_auth_context(

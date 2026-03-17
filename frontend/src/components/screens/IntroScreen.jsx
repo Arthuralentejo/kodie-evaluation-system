@@ -19,7 +19,6 @@ function IntroPanel({ onStart, onBack, isBusy }) {
         </div>
 
         <div className="tag-row">
-          <Badge>Layout preparado para leitura em desktop</Badge>
           <Badge>Etapa curta e objetiva</Badge>
         </div>
 

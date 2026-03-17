@@ -130,7 +130,7 @@ def seed_questions(*, rows: list[Question], mongo_uri: str, db_name: str, collec
                 "statement": row.statement,
                 "options": [option.model_dump() for option in row.options],
                 "correct_option": row.correct_option,
-                "category": row.category,
+                "category": row.category.value,
                 "updated_at": now,
             }
             result = collection.update_one(

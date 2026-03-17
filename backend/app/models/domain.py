@@ -15,6 +15,11 @@ class Option(BaseModel):
     key: str = Field(min_length=1, max_length=20)
     text: str = Field(min_length=1)
 
+class Category(str, Enum):
+    INICIANTE = "iniciante"
+    JUNIOR = "junior"
+    PLENO = "pleno"
+    SENIOR = "senior"
 
 class Student(BaseModel):
     cpf: str
@@ -36,8 +41,7 @@ class Question(BaseModel):
     statement: str = Field(min_length=1)
     options: list[Option] = Field(min_length=1)
     correct_option: str
-    category: str = Field(min_length=1)
-
+    category: Category
     @field_validator("options")
     @classmethod
     def validate_option_keys_unique(cls, value: list[Option]) -> list[Option]:

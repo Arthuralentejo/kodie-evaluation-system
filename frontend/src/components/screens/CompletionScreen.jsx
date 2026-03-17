@@ -1,6 +1,16 @@
 import { ProgressHeader } from "../ui";
 
-export function CompletionScreen({ answeredCount, completionDate, protocolNumber, totalQuestions, onReset }) {
+export function CompletionScreen({
+  answeredCount,
+  completionDate,
+  isSubmitted,
+  isSubmitting,
+  protocolNumber,
+  screenError,
+  totalQuestions,
+  onReset,
+  onSubmit,
+}) {
   return (
     <section className="stage-screen">
       <ProgressHeader
@@ -14,11 +24,13 @@ export function CompletionScreen({ answeredCount, completionDate, protocolNumber
             <div className="success-mark" aria-hidden="true">
               V
             </div>
-            <h1>Avaliacao concluida com sucesso</h1>
+            <h1>{isSubmitted ? "Avaliacao concluida com sucesso" : "Revise e envie suas respostas"}</h1>
             <p className="lead">
-              Recebemos suas respostas. Voce pode encerrar esta sessao com tranquilidade. Se necessario,
-              guarde os dados de referencia abaixo.
+              {isSubmitted
+                ? "Recebemos suas respostas. Voce pode encerrar esta sessao com tranquilidade. Se necessario, guarde os dados de referencia abaixo."
+                : "Voce chegou ao fim do questionario. Confira os dados da sessao abaixo e envie suas respostas para concluir a avaliacao."}
             </p>
+            {screenError && <p className="feedback feedback--error">{screenError}</p>}
 
             <div className="session-card">
               <h2>Dados da sessao</h2>
@@ -37,14 +49,19 @@ export function CompletionScreen({ answeredCount, completionDate, protocolNumber
                 </div>
                 <div>
                   <span>Status</span>
-                  <strong>Envio confirmado</strong>
+                  <strong>{isSubmitted ? "Envio confirmado" : "Aguardando envio"}</strong>
                 </div>
               </div>
             </div>
 
             <div className="action-row">
-              <button className="button button--primary" onClick={onReset} type="button">
-                Enviar respostas
+              <button
+                className="button button--primary"
+                disabled={isSubmitting}
+                onClick={isSubmitted ? onReset : onSubmit}
+                type="button"
+              >
+                {isSubmitted ? "Encerrar" : isSubmitting ? "Enviando..." : "Enviar respostas"}
               </button>
             </div>
           </div>

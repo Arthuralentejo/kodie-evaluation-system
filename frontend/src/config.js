@@ -5,6 +5,7 @@ export const STAGES = {
   AUTH: "AUTH",
   INTRO: "INTRO",
   QUESTIONS: "QUESTIONS",
+  REVIEW: "REVIEW",
   COMPLETED: "COMPLETED",
 };
 

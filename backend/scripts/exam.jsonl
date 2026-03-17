@@ -443,7 +443,7 @@
   },
   {
     "numero": 35,
-    "categoria": "sênior",
+    "categoria": "senior",
     "pergunta": "Um time recebe alertas frequentes, mas demora para identificar causa raiz. Qual mudança traz maior ganho de observabilidade?",
     "alternativas": {
       "a": "Aumentar apenas capacidade de CPU dos servidores",
@@ -456,7 +456,7 @@
   },
   {
     "numero": 36,
-    "categoria": "sênior",
+    "categoria": "senior",
     "pergunta": "No contexto de segurança em aplicações e infraestrutura, qual abordagem está mais alinhada às boas práticas do mercado?",
     "alternativas": {
       "a": "Tratar segurança apenas na etapa final do projeto",
@@ -469,7 +469,7 @@
   },
   {
     "numero": 37,
-    "categoria": "sênior",
+    "categoria": "senior",
     "pergunta": "Um sistema precisa cumprir LGPD, manter governança e ainda evoluir rápido. Qual decisão técnica-processual é mais adequada?",
     "alternativas": {
       "a": "Ignorar rastreabilidade para ganhar agilidade",
@@ -482,7 +482,7 @@
   },
   {
     "numero": 38,
-    "categoria": "sênior",
+    "categoria": "senior",
     "pergunta": "Em um sistema de alta disponibilidade com microsserviços, qual padrão é mais adequado para evitar que a falha de um serviço dependente propague falhas em cascata para todo o sistema?",
     "alternativas": {
       "a": "Singleton Pattern — garantindo que apenas uma instância do serviço problemático exista",
@@ -495,7 +495,7 @@
   },
   {
     "numero": 39,
-    "categoria": "sênior",
+    "categoria": "senior",
     "pergunta": "Qual é a principal diferença entre as estratégias de branching \"Git Flow\" e \"Trunk Based Development\"?",
     "alternativas": {
       "a": "Git Flow usa repositórios distribuídos; Trunk Based Development usa repositório centralizado",
@@ -508,7 +508,7 @@
   },
   {
     "numero": 40,
-    "categoria": "sênior",
+    "categoria": "senior",
     "pergunta": "Em Kubernetes, qual é a função de um \"Deployment\" em relação a \"Pods\"?",
     "alternativas": {
       "a": "Um Deployment é um Pod com mais recursos de CPU e memória reservados para workloads críticos",
@@ -521,7 +521,7 @@
   },
   {
     "numero": 41,
-    "categoria": "sênior",
+    "categoria": "senior",
     "pergunta": "O que são \"quatro sinais de ouro\" (Four Golden Signals) no contexto de SRE (Site Reliability Engineering)?",
     "alternativas": {
       "a": "Os quatro protocolos de rede mais importantes para monitorar em sistemas distribuídos: TCP, UDP, HTTP e HTTPS",
@@ -534,7 +534,7 @@
   },
   {
     "numero": 42,
-    "categoria": "sênior",
+    "categoria": "senior",
     "pergunta": "Em segurança de aplicações, qual é a diferença entre SAST e DAST?",
     "alternativas": {
       "a": "SAST analisa o código-fonte estaticamente sem execução; DAST testa a aplicação em execução simulando ataques externos",
@@ -547,7 +547,7 @@
   },
   {
     "numero": 43,
-    "categoria": "sênior",
+    "categoria": "senior",
     "pergunta": "Em Design de APIs RESTful, qual abordagem é mais adequada para versionar uma API que precisa de mudanças incompatíveis com versões anteriores?",
     "alternativas": {
       "a": "Modificar diretamente os endpoints existentes sem aviso, pois clientes devem se adaptar automaticamente",
@@ -560,7 +560,7 @@
   },
   {
     "numero": 44,
-    "categoria": "sênior",
+    "categoria": "senior",
     "pergunta": "Ao revisar o código de um desenvolvedor júnior que implementou uma solução funcional mas com alto acoplamento e sem testes, qual é a abordagem mais eficaz de um líder técnico?",
     "alternativas": {
       "a": "Rejeitar o PR sem explicações e reimplementar a solução corretamente, demonstrando o padrão esperado",
@@ -573,7 +573,7 @@
   },
   {
     "numero": 45,
-    "categoria": "sênior",
+    "categoria": "senior",
     "pergunta": "Qual é a diferença entre autenticação e autorização em sistemas de segurança, e quais tecnologias são tipicamente usadas para cada uma em APIs modernas?",
     "alternativas": {
       "a": "Autenticação e autorização são sinônimos; ambas são implementadas exclusivamente com certificados SSL/TLS",
@@ -586,7 +586,7 @@
   },
   {
     "numero": 46,
-    "categoria": "sênior",
+    "categoria": "senior",
     "pergunta": "No Projeto Final (TCC), qual evidência demonstra melhor consolidação das competências do curso?",
     "alternativas": {
       "a": "Apenas apresentação visual da ideia, sem código",
