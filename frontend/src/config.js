@@ -1,4 +1,4 @@
-export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+export const API_BASE = import.meta.env.API_BASE_URL || "http://localhost:8000";
 export const STEP_COUNT = 5;
 
 export const STAGES = {
