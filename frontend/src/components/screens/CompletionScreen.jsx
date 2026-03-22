@@ -5,6 +5,7 @@ export function CompletionScreen({
   completionDate,
   isSubmitted,
   isSubmitting,
+  onLogout,
   protocolNumber,
   screenError,
   totalQuestions,
@@ -17,6 +18,8 @@ export function CompletionScreen({
         leftText={`${answeredCount} de ${totalQuestions} questoes respondidas`}
         rightText={`${Math.max(totalQuestions - answeredCount, 0)} questoes restantes`}
         progress={100}
+        actionLabel="Sair"
+        onAction={onLogout}
       />
       <div className="completion-layout">
         <div className="panel panel--completion">

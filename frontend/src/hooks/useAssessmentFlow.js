@@ -6,6 +6,11 @@ import { readApiError, wait } from "../utils/http";
 
 const QUESTIONS_LIMIT = 20;
 
+function logFlow(event, details = {}, level = "info") {
+  const logger = console[level] || console.info;
+  logger(`[assessment-flow] ${event}`, details);
+}
+
 export function useAssessmentFlow() {
   const [stage, setStage] = useState(STAGES.AUTH);
   const [cpf, setCpf] = useState("");
@@ -38,11 +43,13 @@ export function useAssessmentFlow() {
 
       const parsed = JSON.parse(saved);
       if (parsed?.token && parsed?.assessmentId) {
+        logFlow("session_restored", { assessmentId: parsed.assessmentId });
         setToken(parsed.token);
         setAssessmentId(parsed.assessmentId);
         setStage(STAGES.QUESTIONS);
       }
-    } catch {
+    } catch (error) {
+      logFlow("session_restore_failed", { error: String(error) }, "warn");
       localStorage.removeItem(SESSION_KEY);
     }
   }, []);
@@ -86,6 +93,7 @@ export function useAssessmentFlow() {
     }
 
     setIsBusy(true);
+    logFlow("auth_started", { cpfSuffix: cpf.replace(/\D/g, "").slice(-2) });
 
     try {
       const response = await fetch(`${API_BASE}/auth`, {
@@ -95,15 +103,19 @@ export function useAssessmentFlow() {
       });
 
       if (!response.ok) {
-        setAuthError(await readApiError(response));
+        const message = await readApiError(response);
+        logFlow("auth_failed", { status: response.status, message }, "warn");
+        setAuthError(message);
         return;
       }
 
       const data = await response.json();
+      logFlow("auth_succeeded", { assessmentId: data.assessment_id });
       setToken(data.token);
       setAssessmentId(data.assessment_id);
       setStage(STAGES.INTRO);
-    } catch {
+    } catch (error) {
+      logFlow("auth_request_failed", { error: String(error) }, "error");
       setAuthError("Nao foi possivel conectar ao servidor.");
     } finally {
       setIsBusy(false);
@@ -113,6 +125,7 @@ export function useAssessmentFlow() {
   async function loadQuestions() {
     setScreenError("");
     setIsBusy(true);
+    logFlow("questions_load_started", { assessmentId, quantity: QUESTIONS_LIMIT });
 
     try {
       const response = await fetch(
@@ -121,7 +134,9 @@ export function useAssessmentFlow() {
       );
 
       if (!response.ok) {
-        setScreenError(await readApiError(response));
+        const message = await readApiError(response);
+        logFlow("questions_load_failed", { assessmentId, status: response.status, message }, "warn");
+        setScreenError(message);
         if (response.status === 401 || response.status === 403) {
           resetSession();
           setStage(STAGES.AUTH);
@@ -130,9 +145,11 @@ export function useAssessmentFlow() {
       }
 
       const data = await response.json();
+      logFlow("questions_load_succeeded", { assessmentId, count: data.length });
       setQuestions(data);
       setCurrentIndex((previous) => Math.min(previous, Math.max(0, data.length - 1)));
-    } catch {
+    } catch (error) {
+      logFlow("questions_load_request_failed", { assessmentId, error: String(error) }, "error");
       setScreenError("Nao foi possivel carregar as perguntas.");
     } finally {
       setIsBusy(false);
@@ -150,6 +167,7 @@ export function useAssessmentFlow() {
     const nextVersion = (saveVersionsRef.current[questionId] || 0) + 1;
     saveVersionsRef.current[questionId] = nextVersion;
     setAnswerStates((previous) => ({ ...previous, [questionId]: "saving" }));
+    logFlow("answer_save_started", { assessmentId, questionId, selectedOption, version: nextVersion });
 
     const retryWait = [300, 800, 1500];
 
@@ -164,17 +182,28 @@ export function useAssessmentFlow() {
         if (saveVersionsRef.current[questionId] !== nextVersion) return;
 
         if (response.ok) {
+          logFlow("answer_save_succeeded", { assessmentId, questionId, selectedOption, attempt: attempt + 1 });
           setAnswerStates((previous) => ({ ...previous, [questionId]: "saved" }));
           return;
         }
-      } catch {
-        // Retry handled below.
+        logFlow(
+          "answer_save_retrying",
+          { assessmentId, questionId, selectedOption, attempt: attempt + 1, status: response.status },
+          "warn",
+        );
+      } catch (error) {
+        logFlow(
+          "answer_save_request_failed",
+          { assessmentId, questionId, selectedOption, attempt: attempt + 1, error: String(error) },
+          "warn",
+        );
       }
 
       await wait(retryWait[attempt]);
     }
 
     if (saveVersionsRef.current[questionId] === nextVersion) {
+      logFlow("answer_save_failed", { assessmentId, questionId, selectedOption, version: nextVersion }, "error");
       setAnswerStates((previous) => ({ ...previous, [questionId]: "error" }));
     }
   }
@@ -183,6 +212,11 @@ export function useAssessmentFlow() {
     setScreenError("");
     setIsSubmitting(true);
     setMissingQuestionIds([]);
+    logFlow("submit_started", {
+      assessmentId,
+      answeredCount,
+      loadedQuestionCount: questions.length,
+    });
 
     try {
       const response = await fetch(`${API_BASE}/assessments/${assessmentId}/submit`, {
@@ -192,7 +226,19 @@ export function useAssessmentFlow() {
 
       if (response.status === 422) {
         const payload = await response.json();
-        const missing = payload?.details?.question_ids || [];
+        const missing = payload?.details?.missing_question_ids || payload?.details?.question_ids || [];
+        const hiddenMissing = missing.filter((missingId) => !questions.some((question) => question.id === missingId));
+        logFlow(
+          "submit_incomplete",
+          {
+            assessmentId,
+            requestId: payload?.request_id,
+            missingCount: missing.length,
+            hiddenMissingCount: hiddenMissing.length,
+            hiddenMissing,
+          },
+          "warn",
+        );
         setMissingQuestionIds(missing);
         setScreenError(payload?.message || "Existem perguntas pendentes.");
 
@@ -207,14 +253,18 @@ export function useAssessmentFlow() {
       }
 
       if (!response.ok) {
-        setScreenError(await readApiError(response));
+        const message = await readApiError(response);
+        logFlow("submit_failed", { assessmentId, status: response.status, message }, "error");
+        setScreenError(message);
         return;
       }
 
       const payload = await response.json();
+      logFlow("submit_succeeded", { assessmentId, completedAt: payload.completed_at });
       setCompletedAt(payload.completed_at || new Date().toISOString());
       setStage(STAGES.COMPLETED);
-    } catch {
+    } catch (error) {
+      logFlow("submit_request_failed", { assessmentId, error: String(error) }, "error");
       setScreenError("Falha ao enviar a avaliacao.");
     } finally {
       setIsSubmitting(false);
@@ -224,6 +274,10 @@ export function useAssessmentFlow() {
   function resetToStart() {
     resetSession();
     setStage(STAGES.AUTH);
+  }
+
+  function logout() {
+    resetToStart();
   }
 
   function goToReview() {
@@ -256,6 +310,7 @@ export function useAssessmentFlow() {
     setStage,
     login,
     loadQuestions,
+    logout,
     resetToStart,
     saveAnswer,
     submitAssessment,

@@ -1,5 +1,6 @@
 from bson import ObjectId
 
+from app.core.config import settings
 from app.models.domain import Category
 
 
@@ -71,4 +72,5 @@ def select_questions_by_difficulty(question_docs: list[dict], quantity: int | No
 
 
 def build_assigned_question_ids(question_docs: list[dict]) -> list[ObjectId]:
-    return [question["_id"] for question in select_questions_by_difficulty(question_docs, len(question_docs))]
+    selected_questions = select_questions_by_difficulty(question_docs, settings.assessment_question_count)
+    return [question["_id"] for question in selected_questions]

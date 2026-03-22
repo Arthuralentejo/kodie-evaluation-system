@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 import hashlib
+import logging
 import random
 
 from bson import ObjectId
@@ -7,7 +8,8 @@ from bson import ObjectId
 from app.core.config import settings
 from app.core.errors import AppError
 from app.repositories.assessment_repository import AssessmentRepository
-from app.services.question_selection import build_assigned_question_ids
+
+logger = logging.getLogger("kodie.assessment")
 
 
 def _ensure_object_id(value: str, code: str = "INVALID_ID") -> ObjectId:
@@ -29,7 +31,13 @@ class AssessmentService:
     def __init__(self, repository: AssessmentRepository):
         self.repository = repository
 
-    async def get_questions_for_assessment(self, *, assessment_id: str, quantity: int | None = None):
+    async def get_questions_for_assessment(
+        self,
+        *,
+        assessment_id: str,
+        quantity: int | None = None,
+        request_id: str | None = None,
+    ):
         assess_oid = _ensure_object_id(assessment_id)
         assessment = await self.repository.find_assessment_by_id(assessment_id=assess_oid)
         if not assessment:
@@ -63,9 +71,25 @@ class AssessmentService:
                 }
             )
 
+        logger.info(
+            "assessment_questions_loaded request_id=%s assessment_id=%s stored_assigned_count=%s returned_count=%s quantity=%s answered_count=%s",
+            request_id,
+            assessment_id,
+            len(assigned_question_ids),
+            len(response),
+            quantity,
+            len(answer_by_question),
+        )
         return response
 
-    async def upsert_answer(self, *, assessment_id: str, question_id: str, selected_option: str):
+    async def upsert_answer(
+        self,
+        *,
+        assessment_id: str,
+        question_id: str,
+        selected_option: str,
+        request_id: str | None = None,
+    ):
         assess_oid = _ensure_object_id(assessment_id)
         question_oid = _ensure_object_id(question_id, code="INVALID_QUESTION_ID")
 
@@ -114,21 +138,54 @@ class AssessmentService:
             )
 
         await self.repository.update_assessment_answers(assessment_id=assess_oid, answers=updated_answers)
+        logger.info(
+            "assessment_answer_saved request_id=%s assessment_id=%s question_id=%s selected_option=%s answer_count=%s",
+            request_id,
+            assessment_id,
+            question_id,
+            selected_option,
+            len(updated_answers),
+        )
 
-    async def submit_assessment(self, *, assessment_id: str):
+    async def submit_assessment(self, *, assessment_id: str, request_id: str | None = None):
         assess_oid = _ensure_object_id(assessment_id)
         assessment = await self.repository.find_assessment_by_id(assessment_id=assess_oid)
         if not assessment:
             raise AppError(status_code=404, code="ASSESSMENT_NOT_FOUND", message="Assessment not found")
 
         if assessment["status"] == "COMPLETED":
+            logger.info(
+                "assessment_submit_idempotent request_id=%s assessment_id=%s completed_at=%s",
+                request_id,
+                assessment_id,
+                assessment["completed_at"].isoformat(),
+            )
             return {"status": "COMPLETED", "completed_at": assessment["completed_at"].isoformat()}
 
-        question_ids = {str(item) for item in assessment.get("assigned_question_ids", [])}
+        required_question_ids = [
+            str(item) for item in assessment.get("assigned_question_ids", [])[: settings.assessment_question_count]
+        ]
+        question_ids = set(required_question_ids)
         answered_ids = {str(item["question_id"]) for item in assessment.get("answers", [])}
+
+        logger.info(
+            "assessment_submit_attempt request_id=%s assessment_id=%s required_question_count=%s stored_assigned_count=%s answered_count=%s",
+            request_id,
+            assessment_id,
+            len(required_question_ids),
+            len(assessment.get("assigned_question_ids", [])),
+            len(answered_ids),
+        )
 
         missing = sorted(question_ids - answered_ids)
         if missing:
+            logger.warning(
+                "assessment_submit_incomplete request_id=%s assessment_id=%s missing_count=%s missing_question_ids=%s",
+                request_id,
+                assessment_id,
+                len(missing),
+                ",".join(missing),
+            )
             raise AppError(
                 status_code=422,
                 code="INCOMPLETE_ASSESSMENT",
@@ -142,7 +199,19 @@ class AssessmentService:
         if result is None:
             latest = await self.repository.find_assessment_by_id(assessment_id=assess_oid)
             if latest and latest["status"] == "COMPLETED":
+                logger.info(
+                    "assessment_submit_raced_to_completed request_id=%s assessment_id=%s completed_at=%s",
+                    request_id,
+                    assessment_id,
+                    latest["completed_at"].isoformat(),
+                )
                 return {"status": "COMPLETED", "completed_at": latest["completed_at"].isoformat()}
             raise AppError(status_code=409, code="INVALID_STATE", message="Unable to complete assessment")
 
+        logger.info(
+            "assessment_submit_completed request_id=%s assessment_id=%s completed_at=%s",
+            request_id,
+            assessment_id,
+            result["completed_at"].isoformat(),
+        )
         return {"status": "COMPLETED", "completed_at": result["completed_at"].isoformat()}

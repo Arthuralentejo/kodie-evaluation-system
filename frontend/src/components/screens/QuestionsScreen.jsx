@@ -8,6 +8,7 @@ export function QuestionsScreen({
   missingQuestionIds,
   questions,
   screenError,
+  onLogout,
   onSaveAnswer,
   onPrev,
   onNext,
@@ -25,6 +26,8 @@ export function QuestionsScreen({
         leftText={`Questao ${questionNumber} de ${totalQuestions || 0}`}
         rightText={`${remainingQuestions} questoes restantes`}
         progress={progress}
+        actionLabel="Sair"
+        onAction={onLogout}
       />
       <div className="question-layout">
         <div className="question-main">
@@ -43,6 +46,9 @@ export function QuestionsScreen({
                   <div className="question-heading-card">
                     <h1>{currentQuestion.statement}</h1>
                   </div>
+                  <p className="question-caption">
+                    Selecione a alternativa que melhor representa sua percepcao neste momento.
+                  </p>
 
                   <div className="options-stack options-stack--spacious">
                     {currentQuestion.options.map((option) => {

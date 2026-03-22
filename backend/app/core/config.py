@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     jwt_ttl_minutes: int = 30
 
     shuffle_seed_version: str = "v1"
+    assessment_question_count: int = 20
 
     cpf_attempt_limit: int = 5
     ip_attempt_limit: int = 20

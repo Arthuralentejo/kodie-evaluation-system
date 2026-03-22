@@ -43,19 +43,24 @@ class _AssessmentServiceStub:
         self.last_upsert_answer_call = None
         self.last_submit_call = None
 
-    async def get_questions_for_assessment(self, *, assessment_id, quantity=None):
-        self.last_get_questions_call = {"assessment_id": assessment_id, "quantity": quantity}
+    async def get_questions_for_assessment(self, *, assessment_id, quantity=None, request_id=None):
+        self.last_get_questions_call = {
+            "assessment_id": assessment_id,
+            "quantity": quantity,
+            "request_id": request_id,
+        }
         return self.questions_response
 
-    async def upsert_answer(self, *, assessment_id, question_id, selected_option):
+    async def upsert_answer(self, *, assessment_id, question_id, selected_option, request_id=None):
         self.last_upsert_answer_call = {
             "assessment_id": assessment_id,
             "question_id": question_id,
             "selected_option": selected_option,
+            "request_id": request_id,
         }
 
-    async def submit_assessment(self, *, assessment_id):
-        self.last_submit_call = {"assessment_id": assessment_id}
+    async def submit_assessment(self, *, assessment_id, request_id=None):
+        self.last_submit_call = {"assessment_id": assessment_id, "request_id": request_id}
         return self.submit_response
 
 
@@ -164,7 +169,8 @@ async def test_get_questions_http_success(http_app, client):
     assert response.json()[0]["selected_option"] == "A"
     assert http_app.state.assessment_service.last_get_questions_call == {
         "assessment_id": str(assessment_id),
-        "quantity": None,
+        "quantity": 20,
+        "request_id": "test-request-id",
     }
 
 
@@ -185,6 +191,7 @@ async def test_get_questions_http_passes_quantity(http_app, client):
     assert http_app.state.assessment_service.last_get_questions_call == {
         "assessment_id": str(assessment_id),
         "quantity": 2,
+        "request_id": "test-request-id",
     }
 
 
@@ -201,7 +208,10 @@ async def test_submit_http_uses_assessment_service(http_app, client):
     assert first.status_code == 200
     assert second.status_code == 200
     assert first.json()["completed_at"] == second.json()["completed_at"]
-    assert http_app.state.assessment_service.last_submit_call == {"assessment_id": str(assessment_id)}
+    assert http_app.state.assessment_service.last_submit_call == {
+        "assessment_id": str(assessment_id),
+        "request_id": "test-request-id",
+    }
 
 
 @pytest.mark.asyncio

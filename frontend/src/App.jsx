@@ -30,6 +30,7 @@ export function App() {
         <IntroScreen
           isBusy={flow.isBusy}
           onBack={flow.resetToStart}
+          onLogout={flow.logout}
           onStart={() => flow.setStage(STAGES.QUESTIONS)}
         />
       </main>
@@ -45,6 +46,7 @@ export function App() {
           currentQuestion={flow.currentQuestion}
           isBusy={flow.isBusy}
           missingQuestionIds={flow.missingQuestionIds}
+          onLogout={flow.logout}
           onNext={() => flow.setCurrentIndex((value) => Math.min(flow.questions.length - 1, value + 1))}
           onFinish={flow.goToReview}
           onPrev={() => flow.setCurrentIndex((value) => Math.max(0, value - 1))}
@@ -63,6 +65,7 @@ export function App() {
         completionDate={flow.completionDate}
         isSubmitted={flow.stage === STAGES.COMPLETED}
         isSubmitting={flow.isSubmitting}
+        onLogout={flow.logout}
         protocolNumber={flow.protocolNumber}
         screenError={flow.screenError}
         totalQuestions={flow.questions.length || 20}

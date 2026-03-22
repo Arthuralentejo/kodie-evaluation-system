@@ -113,6 +113,29 @@ async def test_submit_is_idempotent_and_atomic(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_submit_uses_required_question_window_for_legacy_oversized_drafts(monkeypatch):
+    assessment_id = ObjectId()
+    student_id = ObjectId()
+    assigned_ids = [ObjectId() for _ in range(25)]
+    repository = _AssessmentRepositoryStub()
+    repository.assessments[assessment_id] = {
+        "_id": assessment_id,
+        "student_id": student_id,
+        "assigned_question_ids": assigned_ids,
+        "answers": [{"question_id": question_id, "selected_option": "A"} for question_id in assigned_ids[:20]],
+        "status": "DRAFT",
+        "completed_at": None,
+    }
+
+    service = AssessmentService(repository=repository)
+
+    result = await service.submit_assessment(assessment_id=str(assessment_id))
+
+    assert result["status"] == "COMPLETED"
+    assert repository.complete_calls == 1
+
+
+@pytest.mark.asyncio
 async def test_get_questions_honors_quantity(monkeypatch):
     assessment_id = ObjectId()
     student_id = ObjectId()

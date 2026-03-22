@@ -1,6 +1,7 @@
 import uuid
 from contextlib import asynccontextmanager
 import logging
+from time import perf_counter
 
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
@@ -19,6 +20,9 @@ from app.repositories.assessment_repository import AssessmentRepository
 from app.repositories.auth_repository import AuthRepository
 from app.services.assessment_service import AssessmentService
 from app.services.auth_service import AuthService
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+http_logger = logging.getLogger("kodie.http")
 
 
 @asynccontextmanager
@@ -52,8 +56,17 @@ app.add_middleware(
 async def request_id_middleware(request: Request, call_next):
     request_id = request.headers.get("x-request-id", str(uuid.uuid4()))
     request.state.request_id = request_id
+    started_at = perf_counter()
     response = await call_next(request)
     response.headers["x-request-id"] = request_id
+    http_logger.info(
+        "request_completed request_id=%s method=%s path=%s status_code=%s duration_ms=%.2f",
+        request_id,
+        request.method,
+        request.url.path,
+        response.status_code,
+        (perf_counter() - started_at) * 1000,
+    )
     return response
 
 
@@ -61,6 +74,15 @@ async def request_id_middleware(request: Request, call_next):
 async def app_error_handler(request: Request, exc: AppError):
     details = dict(exc.details)
     retry_after = details.pop("retry_after", None)
+    http_logger.warning(
+        "app_error request_id=%s method=%s path=%s status_code=%s code=%s details=%s",
+        request.state.request_id,
+        request.method,
+        request.url.path,
+        exc.status_code,
+        exc.code,
+        details,
+    )
 
     response = JSONResponse(
         status_code=exc.status_code,
@@ -77,7 +99,14 @@ async def app_error_handler(request: Request, exc: AppError):
 
 
 @app.exception_handler(Exception)
-async def unexpected_error_handler(request: Request, _: Exception):
+async def unexpected_error_handler(request: Request, exc: Exception):
+    http_logger.exception(
+        "unexpected_error request_id=%s method=%s path=%s",
+        request.state.request_id,
+        request.method,
+        request.url.path,
+        exc_info=exc,
+    )
     return JSONResponse(
         status_code=500,
         content={
@@ -91,6 +120,13 @@ async def unexpected_error_handler(request: Request, _: Exception):
 
 @app.exception_handler(RequestValidationError)
 async def validation_error_handler(request: Request, exc: RequestValidationError):
+    http_logger.warning(
+        "validation_error request_id=%s method=%s path=%s errors=%s",
+        request.state.request_id,
+        request.method,
+        request.url.path,
+        jsonable_encoder(exc.errors()),
+    )
     return JSONResponse(
         status_code=422,
         content={

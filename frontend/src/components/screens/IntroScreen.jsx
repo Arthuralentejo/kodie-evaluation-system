@@ -1,5 +1,5 @@
 import { INTRO_FEATURES } from "../../content/stageContent";
-import { Badge, InfoCard } from "../ui";
+import { Badge, InfoCard, ProgressHeader } from "../ui";
 
 function IntroPanel({ onStart, onBack, isBusy }) {
   return (
@@ -35,9 +35,16 @@ function IntroPanel({ onStart, onBack, isBusy }) {
   );
 }
 
-export function IntroScreen({ isBusy, onStart, onBack }) {
+export function IntroScreen({ isBusy, onLogout, onStart, onBack }) {
   return (
     <section className="stage-screen">
+      <ProgressHeader
+        leftText="Preparacao da avaliacao"
+        rightText="Etapa 2 de 5"
+        progress={40}
+        actionLabel="Sair"
+        onAction={onLogout}
+      />
       <div className="desktop-grid desktop-grid--topless">
         <div className="panel panel--content">
           <div className="panel__content">
