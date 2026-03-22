@@ -42,6 +42,7 @@ class Question(BaseModel):
     options: list[Option] = Field(min_length=1)
     correct_option: str
     category: Category
+
     @field_validator("options")
     @classmethod
     def validate_option_keys_unique(cls, value: list[Option]) -> list[Option]:
@@ -58,8 +59,16 @@ class Question(BaseModel):
         return value
 
 
+class AssessmentAnswer(BaseModel):
+    question_id: str
+    selected_option: str
+    answered_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
 class Assessment(BaseModel):
     student_id: str
+    assigned_question_ids: list[str] = Field(default_factory=list)
+    answers: list[AssessmentAnswer] = Field(default_factory=list)
     status: AssessmentStatus
     started_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     completed_at: datetime | None = None

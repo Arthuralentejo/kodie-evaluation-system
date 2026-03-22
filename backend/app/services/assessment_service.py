@@ -3,19 +3,11 @@ import hashlib
 import random
 
 from bson import ObjectId
-from pymongo import ReturnDocument
 
 from app.core.config import settings
 from app.core.errors import AppError
-from app.db.collections import answers_collection, assessments_collection, questions_collection
-from app.models.domain import Category
-
-CATEGORY_ORDER = (
-    Category.INICIANTE,
-    Category.JUNIOR,
-    Category.PLENO,
-    Category.SENIOR,
-)
+from app.repositories.assessment_repository import AssessmentRepository
+from app.services.question_selection import build_assigned_question_ids
 
 
 def _ensure_object_id(value: str, code: str = "INVALID_ID") -> ObjectId:
@@ -33,83 +25,30 @@ def deterministic_shuffle_options(*, assessment_id: str, question_id: str, optio
     return shuffled
 
 
-def _normalize_category(category: str | Category) -> Category | None:
-    if isinstance(category, Category):
-        return category
-
-    normalized = category.strip().lower()
-    try:
-        return Category(normalized)
-    except ValueError:
-        return None
-
-
-def _select_questions_by_difficulty(question_docs: list[dict], quantity: int | None) -> list[dict]:
-    ordered_questions = sorted(question_docs, key=lambda item: item.get("number", 0))
-    if quantity is None or quantity >= len(ordered_questions):
-        return ordered_questions
-
-    buckets: dict[Category, list[dict]] = {category: [] for category in CATEGORY_ORDER}
-    extra_questions: list[dict] = []
-    for question in ordered_questions:
-        normalized_category = _normalize_category(question.get("category", ""))
-        if normalized_category in buckets:
-            buckets[normalized_category].append(question)
-        else:
-            extra_questions.append(question)
-
-    if extra_questions:
-        buckets[CATEGORY_ORDER[0]].extend(extra_questions)
-
-    weights = {
-        Category.INICIANTE: 4,
-        Category.JUNIOR: 3,
-        Category.PLENO: 2,
-        Category.SENIOR: 1,
-    }
-    total_weight = sum(weights.values())
-    counts = {
-        category: min(len(buckets[category]), (quantity * weights[category]) // total_weight)
-        for category in CATEGORY_ORDER
-    }
-
-    remaining = quantity - sum(counts.values())
-    while remaining > 0:
-        allocated = False
-        for category in CATEGORY_ORDER:
-            if counts[category] < len(buckets[category]):
-                counts[category] += 1
-                remaining -= 1
-                allocated = True
-                if remaining == 0:
-                    break
-        if not allocated:
-            break
-
-    selected: list[dict] = []
-    for category in CATEGORY_ORDER:
-        selected.extend(buckets[category][: counts[category]])
-    return selected
-
-
 class AssessmentService:
-    def __init__(self, db):
-        self.db = db
+    def __init__(self, repository: AssessmentRepository):
+        self.repository = repository
 
     async def get_questions_for_assessment(self, *, assessment_id: str, quantity: int | None = None):
         assess_oid = _ensure_object_id(assessment_id)
-        assessment = await assessments_collection(self.db).find_one({"_id": assess_oid})
+        assessment = await self.repository.find_assessment_by_id(assessment_id=assess_oid)
         if not assessment:
             raise AppError(status_code=404, code="ASSESSMENT_NOT_FOUND", message="Assessment not found")
 
-        question_docs = await questions_collection(self.db).find({}).to_list(length=None)
-        question_docs = _select_questions_by_difficulty(question_docs, quantity)
+        assigned_question_ids = assessment.get("assigned_question_ids", [])
+        question_docs = await self.repository.find_questions_by_ids(question_ids=assigned_question_ids)
+        question_by_id = {question["_id"]: question for question in question_docs}
+        ordered_questions = [question_by_id[question_id] for question_id in assigned_question_ids if question_id in question_by_id]
+        if quantity is not None:
+            ordered_questions = ordered_questions[:quantity]
 
-        answer_docs = await answers_collection(self.db).find({"assessment_id": assess_oid}).to_list(length=None)
-        answer_by_question = {str(item["question_id"]): item["selected_option"] for item in answer_docs}
+        answer_by_question = {
+            str(item["question_id"]): item["selected_option"]
+            for item in assessment.get("answers", [])
+        }
 
         response = []
-        for q in question_docs:
+        for q in ordered_questions:
             qid = str(q["_id"])
             response.append(
                 {
@@ -130,7 +69,13 @@ class AssessmentService:
         assess_oid = _ensure_object_id(assessment_id)
         question_oid = _ensure_object_id(question_id, code="INVALID_QUESTION_ID")
 
-        question = await questions_collection(self.db).find_one({"_id": question_oid})
+        assessment = await self.repository.find_assessment_by_id(assessment_id=assess_oid)
+        if not assessment:
+            raise AppError(status_code=404, code="ASSESSMENT_NOT_FOUND", message="Assessment not found")
+        if question_oid not in assessment.get("assigned_question_ids", []):
+            raise AppError(status_code=404, code="QUESTION_NOT_FOUND", message="Question not assigned to assessment")
+
+        question = await self.repository.find_question_by_id(question_id=question_oid)
         if not question:
             raise AppError(status_code=404, code="QUESTION_NOT_FOUND", message="Question not found")
 
@@ -143,35 +88,44 @@ class AssessmentService:
                 details={"allowed": sorted(valid_keys | {"DONT_KNOW"})},
             )
 
-        await answers_collection(self.db).update_one(
-            {"assessment_id": assess_oid, "question_id": question_oid},
-            {
-                "$set": {
-                    "selected_option": selected_option,
-                    "answered_at": datetime.now(UTC),
-                },
-                "$setOnInsert": {
-                    "assessment_id": assess_oid,
+        updated_answers: list[dict] = []
+        updated = False
+        answered_at = datetime.now(UTC)
+        for answer in assessment.get("answers", []):
+            if answer["question_id"] == question_oid:
+                updated_answers.append(
+                    {
+                        "question_id": question_oid,
+                        "selected_option": selected_option,
+                        "answered_at": answered_at,
+                    }
+                )
+                updated = True
+            else:
+                updated_answers.append(answer)
+
+        if not updated:
+            updated_answers.append(
+                {
                     "question_id": question_oid,
-                },
-            },
-            upsert=True,
-        )
+                    "selected_option": selected_option,
+                    "answered_at": answered_at,
+                }
+            )
+
+        await self.repository.update_assessment_answers(assessment_id=assess_oid, answers=updated_answers)
 
     async def submit_assessment(self, *, assessment_id: str):
         assess_oid = _ensure_object_id(assessment_id)
-        assessment = await assessments_collection(self.db).find_one({"_id": assess_oid})
+        assessment = await self.repository.find_assessment_by_id(assessment_id=assess_oid)
         if not assessment:
             raise AppError(status_code=404, code="ASSESSMENT_NOT_FOUND", message="Assessment not found")
 
         if assessment["status"] == "COMPLETED":
             return {"status": "COMPLETED", "completed_at": assessment["completed_at"].isoformat()}
 
-        questions = await questions_collection(self.db).find({}, {"_id": 1}).to_list(length=None)
-        question_ids = {str(item["_id"]) for item in questions}
-
-        answers = await answers_collection(self.db).find({"assessment_id": assess_oid}, {"question_id": 1}).to_list(length=None)
-        answered_ids = {str(item["question_id"]) for item in answers}
+        question_ids = {str(item) for item in assessment.get("assigned_question_ids", [])}
+        answered_ids = {str(item["question_id"]) for item in assessment.get("answers", [])}
 
         missing = sorted(question_ids - answered_ids)
         if missing:
@@ -183,14 +137,10 @@ class AssessmentService:
             )
 
         now = datetime.now(UTC)
-        result = await assessments_collection(self.db).find_one_and_update(
-            {"_id": assess_oid, "status": "DRAFT"},
-            {"$set": {"status": "COMPLETED", "completed_at": now}},
-            return_document=ReturnDocument.AFTER,
-        )
+        result = await self.repository.complete_assessment(assessment_id=assess_oid, completed_at=now)
 
         if result is None:
-            latest = await assessments_collection(self.db).find_one({"_id": assess_oid})
+            latest = await self.repository.find_assessment_by_id(assessment_id=assess_oid)
             if latest and latest["status"] == "COMPLETED":
                 return {"status": "COMPLETED", "completed_at": latest["completed_at"].isoformat()}
             raise AppError(status_code=409, code="INVALID_STATE", message="Unable to complete assessment")

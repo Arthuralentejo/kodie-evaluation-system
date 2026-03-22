@@ -15,6 +15,8 @@ from app.core.config import settings
 from app.core.errors import AppError
 from app.db.indexes import ensure_indexes
 from app.db.mongo import close_client, get_db
+from app.repositories.assessment_repository import AssessmentRepository
+from app.repositories.auth_repository import AuthRepository
 from app.services.assessment_service import AssessmentService
 from app.services.auth_service import AuthService
 
@@ -22,11 +24,13 @@ from app.services.auth_service import AuthService
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db = get_db()
+    auth_repository = AuthRepository(db=db)
+    assessment_repository = AssessmentRepository(db=db)
     await ensure_indexes()
     try:
         yield {
-            "assessment_service": AssessmentService(db=db),
-            "auth_service": AuthService(db=db),
+            "assessment_service": AssessmentService(repository=assessment_repository),
+            "auth_service": AuthService(repository=auth_repository),
         }
     finally:
         await close_client()

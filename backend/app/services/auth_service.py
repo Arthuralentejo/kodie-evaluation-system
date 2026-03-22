@@ -2,19 +2,14 @@ from datetime import UTC, date, datetime, time, timedelta
 from typing import Any
 import logging
 from bson import ObjectId
-from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError, PyMongoError
 
 from app.core.config import settings
 from app.core.errors import AppError
 from app.core.security import create_access_token, decode_access_token
 from app.core.utils import mask_cpf
-from app.db.collections import (
-    assessments_collection,
-    auth_attempts_collection,
-    denylist_collection,
-    students_collection,
-)
+from app.repositories.auth_repository import AuthRepository
+from app.services.question_selection import build_assigned_question_ids
 logger = logging.getLogger("kodie.auth")
 
 def _attempt_window_start(now: datetime) -> datetime:
@@ -32,19 +27,16 @@ def _birth_date_query(birth_date: date) -> dict[str, dict[str, datetime]]:
 
 
 class AuthService:
-    def __init__(self, db):
-        self.db = db
+    def __init__(self, repository: AuthRepository):
+        self.repository = repository
 
     async def _get_attempt_doc(self, kind: str, key: str, *, now: datetime) -> dict[str, Any] | None:
-        doc = await auth_attempts_collection(self.db).find_one({"kind": kind, "key": key})
+        doc = await self.repository.find_attempt(kind=kind, key=key)
         if not doc:
             return None
 
         if doc.get("window_start") and doc["window_start"] < _attempt_window_start(now):
-            await auth_attempts_collection(self.db).update_one(
-                {"_id": doc["_id"]},
-                {"$set": {"count": 0, "window_start": now}},
-            )
+            await self.repository.reset_attempt_window(attempt_id=doc["_id"], now=now)
             doc["count"] = 0
             doc["window_start"] = now
         return doc
@@ -52,7 +44,8 @@ class AuthService:
     async def _increment_attempt(self, kind: str, key: str, *, now: datetime) -> dict[str, Any]:
         doc = await self._get_attempt_doc(kind, key, now=now)
         if not doc:
-            doc = {
+            await self.repository.create_attempt(kind=kind, key=key, now=now)
+            doc = await self.repository.find_attempt(kind=kind, key=key) or {
                 "kind": kind,
                 "key": key,
                 "count": 0,
@@ -60,7 +53,6 @@ class AuthService:
                 "lock_until": None,
                 "updated_at": now,
             }
-            await auth_attempts_collection(self.db).insert_one(doc)
 
         update = {
             "$inc": {"count": 1},
@@ -70,11 +62,11 @@ class AuthService:
             lock_until = now + timedelta(minutes=settings.cpf_lock_minutes)
             update["$set"]["lock_until"] = lock_until
 
-        await auth_attempts_collection(self.db).update_one({"kind": kind, "key": key}, update)
-        return await auth_attempts_collection(self.db).find_one({"kind": kind, "key": key})
+        await self.repository.update_attempt(kind=kind, key=key, update=update)
+        return await self.repository.find_attempt(kind=kind, key=key)
 
     async def _reset_attempts(self, kind: str, key: str) -> None:
-        await auth_attempts_collection(self.db).delete_one({"kind": kind, "key": key})
+        await self.repository.delete_attempt(kind=kind, key=key)
 
     async def check_rate_limit(self, *, cpf: str, ip: str) -> None:
         now = datetime.now(UTC)
@@ -105,26 +97,20 @@ class AuthService:
 
     async def _get_or_create_draft_assessment(self, *, student_id: ObjectId) -> dict:
         now = datetime.now(UTC)
+        question_docs = await self.repository.list_questions_for_assignment()
+        assigned_question_ids = build_assigned_question_ids(question_docs)
         try:
-            doc = await assessments_collection(self.db).find_one_and_update(
-                {"student_id": student_id, "status": "DRAFT"},
-                {
-                    "$setOnInsert": {
-                        "student_id": student_id,
-                        "status": "DRAFT",
-                        "started_at": now,
-                        "completed_at": None,
-                    }
-                },
-                upsert=True,
-                return_document=ReturnDocument.AFTER,
+            doc = await self.repository.get_or_create_draft_assessment(
+                student_id=student_id,
+                assigned_question_ids=assigned_question_ids,
+                now=now,
             )
             if doc:
                 return doc
         except DuplicateKeyError:
             pass
 
-        existing = await assessments_collection(self.db).find_one({"student_id": student_id, "status": "DRAFT"})
+        existing = await self.repository.find_draft_assessment_by_student(student_id=student_id)
         if not existing:
             raise AppError(status_code=503, code="DRAFT_BOOTSTRAP_FAILED", message="Failed to bootstrap assessment")
         return existing
@@ -132,7 +118,10 @@ class AuthService:
     async def authenticate_and_issue_token(self, *, cpf: str, birth_date: date, ip: str, request_id: str):
         await self.check_rate_limit(cpf=cpf, ip=ip)
 
-        student = await students_collection(self.db).find_one({"cpf": cpf, "birth_date": _birth_date_query(birth_date)})
+        student = await self.repository.find_student_by_cpf_and_birth_date(
+            cpf=cpf,
+            birth_date_query=_birth_date_query(birth_date),
+        )
         if not student:
             await self._increment_attempt("cpf", cpf, now=datetime.now(UTC))
             await self._increment_attempt("ip", ip, now=datetime.now(UTC))
@@ -152,17 +141,17 @@ class AuthService:
 
     async def revoke_token(self, *, jti: str, exp: int) -> None:
         expires_at = datetime.fromtimestamp(exp, tz=UTC)
-        await denylist_collection(self.db).update_one(
-            {"jti": jti},
-            {"$set": {"jti": jti, "expires_at": expires_at, "revoked_at": datetime.now(UTC)}},
-            upsert=True,
+        await self.repository.revoke_token(
+            jti=jti,
+            expires_at=expires_at,
+            revoked_at=datetime.now(UTC),
         )
 
     async def validate_access(self, *, token: str, assessment_id: str | None = None) -> dict[str, Any]:
         payload = decode_access_token(token)
 
         try:
-            revoked = await denylist_collection(self.db).find_one({"jti": payload["jti"]})
+            revoked = await self.repository.find_revoked_token(jti=payload["jti"])
         except PyMongoError as exc:
             raise AppError(status_code=503, code="REVOCATION_STORE_UNAVAILABLE", message="Revocation store unavailable") from exc
 
@@ -175,7 +164,7 @@ class AuthService:
         if assessment_id:
             if not ObjectId.is_valid(assessment_id):
                 raise AppError(status_code=422, code="INVALID_ID", message="Invalid object ID")
-            record = await assessments_collection(self.db).find_one({"_id": ObjectId(assessment_id)})
+            record = await self.repository.find_assessment_by_id(assessment_id=ObjectId(assessment_id))
             if not record:
                 raise AppError(status_code=404, code="ASSESSMENT_NOT_FOUND", message="Assessment not found")
             if str(record["student_id"]) != payload["sub"]:

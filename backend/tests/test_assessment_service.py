@@ -7,62 +7,35 @@ from app.core.errors import AppError
 from app.services.assessment_service import AssessmentService
 
 
-class _Cursor:
-    def __init__(self, docs):
-        self._docs = docs
+class _AssessmentRepositoryStub:
+    def __init__(self):
+        self.assessments = {}
+        self.questions = {}
+        self.last_update_answers = None
+        self.complete_calls = 0
 
-    async def to_list(self, length=None):
-        return self._docs
+    async def find_assessment_by_id(self, *, assessment_id):
+        return self.assessments.get(assessment_id)
 
+    async def find_questions_by_ids(self, *, question_ids):
+        return [self.questions[question_id] for question_id in question_ids if question_id in self.questions]
 
-class _SimpleCollection:
-    def __init__(self, *, find_one_map=None, find_docs=None):
-        self.find_one_map = find_one_map or {}
-        self.find_docs = find_docs or []
+    async def find_question_by_id(self, *, question_id):
+        return self.questions.get(question_id)
 
-    async def find_one(self, query):
-        for key, value in self.find_one_map.items():
-            field, expected = key
-            if query.get(field) == expected:
-                return value
-        return None
+    async def update_assessment_answers(self, *, assessment_id, answers):
+        self.last_update_answers = {"assessment_id": assessment_id, "answers": answers}
+        assessment = self.assessments[assessment_id]
+        assessment["answers"] = answers
 
-    def find(self, *args, **kwargs):
-        return _Cursor(self.find_docs)
-
-
-class _SubmitAssessments:
-    def __init__(self, assessment_id: ObjectId, student_id: ObjectId):
-        self.assessment_id = assessment_id
-        self.student_id = student_id
-        self.status = "DRAFT"
-        self.completed_at = None
-        self.transitions = 0
-
-    async def find_one(self, query):
-        if query.get("_id") != self.assessment_id:
+    async def complete_assessment(self, *, assessment_id, completed_at):
+        assessment = self.assessments.get(assessment_id)
+        if not assessment or assessment["status"] != "DRAFT":
             return None
-        return {
-            "_id": self.assessment_id,
-            "student_id": self.student_id,
-            "status": self.status,
-            "completed_at": self.completed_at,
-        }
-
-    async def find_one_and_update(self, query, update, return_document=None):
-        if query.get("_id") != self.assessment_id or query.get("status") != "DRAFT":
-            return None
-        if self.status != "DRAFT":
-            return None
-        self.status = "COMPLETED"
-        self.completed_at = update["$set"]["completed_at"]
-        self.transitions += 1
-        return {
-            "_id": self.assessment_id,
-            "student_id": self.student_id,
-            "status": self.status,
-            "completed_at": self.completed_at,
-        }
+        assessment["status"] = "COMPLETED"
+        assessment["completed_at"] = completed_at
+        self.complete_calls += 1
+        return assessment
 
 
 @pytest.mark.asyncio
@@ -70,23 +43,20 @@ async def test_get_questions_restores_saved_answers(monkeypatch):
     assessment_id = ObjectId()
     question_id = ObjectId()
     student_id = ObjectId()
+    repository = _AssessmentRepositoryStub()
+    repository.assessments[assessment_id] = {
+        "_id": assessment_id,
+        "student_id": student_id,
+        "assigned_question_ids": [question_id],
+        "answers": [{"question_id": question_id, "selected_option": "B"}],
+    }
+    repository.questions[question_id] = {
+        "_id": question_id,
+        "statement": "Q1",
+        "options": [{"key": "A", "text": "x"}, {"key": "B", "text": "y"}],
+    }
 
-    assessments = _SimpleCollection(find_one_map={("_id", assessment_id): {"_id": assessment_id, "student_id": student_id}})
-    questions = _SimpleCollection(
-        find_docs=[
-            {
-                "_id": question_id,
-                "statement": "Q1",
-                "options": [{"key": "A", "text": "x"}, {"key": "B", "text": "y"}],
-            }
-        ]
-    )
-    answers = _SimpleCollection(find_docs=[{"question_id": question_id, "selected_option": "B"}])
-
-    service = AssessmentService(db=object())
-    monkeypatch.setattr("app.services.assessment_service.assessments_collection", lambda _: assessments)
-    monkeypatch.setattr("app.services.assessment_service.questions_collection", lambda _: questions)
-    monkeypatch.setattr("app.services.assessment_service.answers_collection", lambda _: answers)
+    service = AssessmentService(repository=repository)
 
     result = await service.get_questions_for_assessment(assessment_id=str(assessment_id))
     assert result[0]["selected_option"] == "B"
@@ -98,19 +68,16 @@ async def test_submit_incomplete_returns_missing_question_ids(monkeypatch):
     student_id = ObjectId()
     q1 = ObjectId()
     q2 = ObjectId()
+    repository = _AssessmentRepositoryStub()
+    repository.assessments[assessment_id] = {
+        "_id": assessment_id,
+        "student_id": student_id,
+        "status": "DRAFT",
+        "assigned_question_ids": [q1, q2],
+        "answers": [{"question_id": q1, "selected_option": "A"}],
+    }
 
-    assessments = _SimpleCollection(
-        find_one_map={
-            ("_id", assessment_id): {"_id": assessment_id, "student_id": student_id, "status": "DRAFT"}
-        }
-    )
-    questions = _SimpleCollection(find_docs=[{"_id": q1}, {"_id": q2}])
-    answers = _SimpleCollection(find_docs=[{"question_id": q1}])
-
-    service = AssessmentService(db=object())
-    monkeypatch.setattr("app.services.assessment_service.assessments_collection", lambda _: assessments)
-    monkeypatch.setattr("app.services.assessment_service.questions_collection", lambda _: questions)
-    monkeypatch.setattr("app.services.assessment_service.answers_collection", lambda _: answers)
+    service = AssessmentService(repository=repository)
 
     with pytest.raises(AppError) as exc:
         await service.submit_assessment(assessment_id=str(assessment_id))
@@ -124,15 +91,17 @@ async def test_submit_is_idempotent_and_atomic(monkeypatch):
     assessment_id = ObjectId()
     student_id = ObjectId()
     q1 = ObjectId()
+    repository = _AssessmentRepositoryStub()
+    repository.assessments[assessment_id] = {
+        "_id": assessment_id,
+        "student_id": student_id,
+        "assigned_question_ids": [q1],
+        "answers": [{"question_id": q1, "selected_option": "A"}],
+        "status": "DRAFT",
+        "completed_at": None,
+    }
 
-    assessments = _SubmitAssessments(assessment_id, student_id)
-    questions = _SimpleCollection(find_docs=[{"_id": q1}])
-    answers = _SimpleCollection(find_docs=[{"question_id": q1}])
-
-    service = AssessmentService(db=object())
-    monkeypatch.setattr("app.services.assessment_service.assessments_collection", lambda _: assessments)
-    monkeypatch.setattr("app.services.assessment_service.questions_collection", lambda _: questions)
-    monkeypatch.setattr("app.services.assessment_service.answers_collection", lambda _: answers)
+    service = AssessmentService(repository=repository)
 
     first = await service.submit_assessment(assessment_id=str(assessment_id))
     second = await service.submit_assessment(assessment_id=str(assessment_id))
@@ -140,7 +109,7 @@ async def test_submit_is_idempotent_and_atomic(monkeypatch):
     assert first["status"] == "COMPLETED"
     assert second["status"] == "COMPLETED"
     assert first["completed_at"] == second["completed_at"]
-    assert assessments.transitions == 1
+    assert repository.complete_calls == 1
 
 
 @pytest.mark.asyncio
@@ -149,20 +118,17 @@ async def test_get_questions_honors_quantity(monkeypatch):
     student_id = ObjectId()
     q1 = ObjectId()
     q2 = ObjectId()
+    repository = _AssessmentRepositoryStub()
+    repository.assessments[assessment_id] = {
+        "_id": assessment_id,
+        "student_id": student_id,
+        "assigned_question_ids": [q1, q2],
+        "answers": [],
+    }
+    repository.questions[q1] = {"_id": q1, "number": 1, "statement": "Q1", "options": [{"key": "A", "text": "x"}]}
+    repository.questions[q2] = {"_id": q2, "number": 2, "statement": "Q2", "options": [{"key": "A", "text": "y"}]}
 
-    assessments = _SimpleCollection(find_one_map={("_id", assessment_id): {"_id": assessment_id, "student_id": student_id}})
-    questions = _SimpleCollection(
-        find_docs=[
-            {"_id": q1, "number": 1, "statement": "Q1", "options": [{"key": "A", "text": "x"}]},
-            {"_id": q2, "number": 2, "statement": "Q2", "options": [{"key": "A", "text": "y"}]},
-        ]
-    )
-    answers = _SimpleCollection(find_docs=[])
-
-    service = AssessmentService(db=object())
-    monkeypatch.setattr("app.services.assessment_service.assessments_collection", lambda _: assessments)
-    monkeypatch.setattr("app.services.assessment_service.questions_collection", lambda _: questions)
-    monkeypatch.setattr("app.services.assessment_service.answers_collection", lambda _: answers)
+    service = AssessmentService(repository=repository)
 
     result = await service.get_questions_for_assessment(assessment_id=str(assessment_id), quantity=1)
 
@@ -175,27 +141,30 @@ async def test_get_questions_distributes_difficulties_with_fewer_senior(monkeypa
     assessment_id = ObjectId()
     student_id = ObjectId()
 
-    assessments = _SimpleCollection(find_one_map={("_id", assessment_id): {"_id": assessment_id, "student_id": student_id}})
-    questions = _SimpleCollection(
-        find_docs=[
-            {"_id": ObjectId(), "number": 1, "category": "iniciante", "statement": "I1", "options": [{"key": "A", "text": "a"}]},
-            {"_id": ObjectId(), "number": 2, "category": "iniciante", "statement": "I2", "options": [{"key": "A", "text": "a"}]},
-            {"_id": ObjectId(), "number": 3, "category": "iniciante", "statement": "I3", "options": [{"key": "A", "text": "a"}]},
-            {"_id": ObjectId(), "number": 4, "category": "iniciante", "statement": "I4", "options": [{"key": "A", "text": "a"}]},
-            {"_id": ObjectId(), "number": 5, "category": "junior", "statement": "J1", "options": [{"key": "A", "text": "a"}]},
-            {"_id": ObjectId(), "number": 6, "category": "junior", "statement": "J2", "options": [{"key": "A", "text": "a"}]},
-            {"_id": ObjectId(), "number": 7, "category": "junior", "statement": "J3", "options": [{"key": "A", "text": "a"}]},
-            {"_id": ObjectId(), "number": 8, "category": "pleno", "statement": "P1", "options": [{"key": "A", "text": "a"}]},
-            {"_id": ObjectId(), "number": 9, "category": "pleno", "statement": "P2", "options": [{"key": "A", "text": "a"}]},
-            {"_id": ObjectId(), "number": 10, "category": "senior", "statement": "S1", "options": [{"key": "A", "text": "a"}]},
-        ]
-    )
-    answers = _SimpleCollection(find_docs=[])
+    ordered_ids = [ObjectId() for _ in range(10)]
+    repository = _AssessmentRepositoryStub()
+    repository.assessments[assessment_id] = {
+        "_id": assessment_id,
+        "student_id": student_id,
+        "assigned_question_ids": ordered_ids,
+        "answers": [],
+    }
+    docs = [
+        {"_id": ordered_ids[0], "number": 1, "category": "iniciante", "statement": "I1", "options": [{"key": "A", "text": "a"}]},
+        {"_id": ordered_ids[1], "number": 2, "category": "iniciante", "statement": "I2", "options": [{"key": "A", "text": "a"}]},
+        {"_id": ordered_ids[2], "number": 3, "category": "iniciante", "statement": "I3", "options": [{"key": "A", "text": "a"}]},
+        {"_id": ordered_ids[3], "number": 4, "category": "iniciante", "statement": "I4", "options": [{"key": "A", "text": "a"}]},
+        {"_id": ordered_ids[4], "number": 5, "category": "junior", "statement": "J1", "options": [{"key": "A", "text": "a"}]},
+        {"_id": ordered_ids[5], "number": 6, "category": "junior", "statement": "J2", "options": [{"key": "A", "text": "a"}]},
+        {"_id": ordered_ids[6], "number": 7, "category": "junior", "statement": "J3", "options": [{"key": "A", "text": "a"}]},
+        {"_id": ordered_ids[7], "number": 8, "category": "pleno", "statement": "P1", "options": [{"key": "A", "text": "a"}]},
+        {"_id": ordered_ids[8], "number": 9, "category": "pleno", "statement": "P2", "options": [{"key": "A", "text": "a"}]},
+        {"_id": ordered_ids[9], "number": 10, "category": "senior", "statement": "S1", "options": [{"key": "A", "text": "a"}]},
+    ]
+    for doc in docs:
+        repository.questions[doc["_id"]] = doc
 
-    service = AssessmentService(db=object())
-    monkeypatch.setattr("app.services.assessment_service.assessments_collection", lambda _: assessments)
-    monkeypatch.setattr("app.services.assessment_service.questions_collection", lambda _: questions)
-    monkeypatch.setattr("app.services.assessment_service.answers_collection", lambda _: answers)
+    service = AssessmentService(repository=repository)
 
     result = await service.get_questions_for_assessment(assessment_id=str(assessment_id), quantity=10)
 
@@ -205,3 +174,28 @@ async def test_get_questions_distributes_difficulties_with_fewer_senior(monkeypa
     assert sum(statement.startswith("J") for statement in statements) == 3
     assert sum(statement.startswith("P") for statement in statements) == 2
     assert sum(statement.startswith("S") for statement in statements) == 1
+
+
+@pytest.mark.asyncio
+async def test_upsert_answer_updates_embedded_answers(monkeypatch):
+    assessment_id = ObjectId()
+    question_id = ObjectId()
+    student_id = ObjectId()
+    repository = _AssessmentRepositoryStub()
+    repository.assessments[assessment_id] = {
+        "_id": assessment_id,
+        "student_id": student_id,
+        "assigned_question_ids": [question_id],
+        "answers": [],
+        "status": "DRAFT",
+    }
+    repository.questions[question_id] = {"_id": question_id, "options": [{"key": "A", "text": "a"}]}
+
+    service = AssessmentService(repository=repository)
+
+    await service.upsert_answer(assessment_id=str(assessment_id), question_id=str(question_id), selected_option="A")
+
+    payload = repository.last_update_answers["answers"]
+    assert len(payload) == 1
+    assert payload[0]["question_id"] == question_id
+    assert payload[0]["selected_option"] == "A"

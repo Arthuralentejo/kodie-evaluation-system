@@ -11,10 +11,18 @@ class _Logger:
         return None
 
 
+class _AuthRepositoryStub:
+    def __init__(self):
+        self.attempts = {}
+
+    async def find_attempt(self, *, kind, key):
+        return self.attempts.get((kind, key))
+
+
 @pytest.mark.asyncio
 async def test_check_rate_limit_uses_retry_after(monkeypatch):
     now = datetime.now(UTC)
-    service = AuthService(db=object(), logger=_Logger())
+    service = AuthService(repository=_AuthRepositoryStub())
 
     async def fake_get_attempt_doc(kind, key, *, now):
         if kind == "cpf":
@@ -39,7 +47,7 @@ async def test_check_rate_limit_uses_retry_after(monkeypatch):
 @pytest.mark.asyncio
 async def test_check_rate_limit_blocks_by_ip_threshold(monkeypatch):
     now = datetime.now(UTC)
-    service = AuthService(db=object(), logger=_Logger())
+    service = AuthService(repository=_AuthRepositoryStub())
 
     async def fake_get_attempt_doc(kind, key, *, now):
         if kind == "ip":
