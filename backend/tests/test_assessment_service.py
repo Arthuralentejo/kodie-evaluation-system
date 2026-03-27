@@ -13,6 +13,7 @@ class _AssessmentRepositoryStub:
         self.questions = {}
         self.last_update_answers = None
         self.complete_calls = 0
+        self.created_assessment = None
 
     async def find_assessment_by_id(self, *, assessment_id):
         return self.assessments.get(assessment_id)
@@ -22,6 +23,40 @@ class _AssessmentRepositoryStub:
 
     async def find_question_by_id(self, *, question_id):
         return self.questions.get(question_id)
+
+    async def list_questions_for_assignment(self):
+        return list(self.questions.values())
+
+    async def find_draft_assessment_by_student(self, *, student_id):
+        for assessment in self.assessments.values():
+            if assessment["student_id"] == student_id and assessment["status"] == "DRAFT":
+                return assessment
+        return None
+
+    async def find_latest_completed_assessment_by_student(self, *, student_id):
+        completed = [
+            assessment
+            for assessment in self.assessments.values()
+            if assessment["student_id"] == student_id and assessment["status"] == "COMPLETED"
+        ]
+        if not completed:
+            return None
+        return sorted(completed, key=lambda item: item.get("completed_at") or datetime.min.replace(tzinfo=UTC))[-1]
+
+    async def create_assessment(self, *, student_id, assigned_question_ids, now):
+        assessment_id = ObjectId()
+        assessment = {
+            "_id": assessment_id,
+            "student_id": student_id,
+            "assigned_question_ids": assigned_question_ids,
+            "answers": [],
+            "status": "DRAFT",
+            "started_at": now,
+            "completed_at": None,
+        }
+        self.assessments[assessment_id] = assessment
+        self.created_assessment = assessment
+        return assessment
 
     async def update_assessment_answers(self, *, assessment_id, answers):
         self.last_update_answers = {"assessment_id": assessment_id, "answers": answers}
@@ -60,6 +95,81 @@ async def test_get_questions_restores_saved_answers(monkeypatch):
 
     result = await service.get_questions_for_assessment(assessment_id=str(assessment_id))
     assert result[0]["selected_option"] == "B"
+
+
+@pytest.mark.asyncio
+async def test_get_current_assessment_prefers_completed_over_draft():
+    student_id = ObjectId()
+    draft_id = ObjectId()
+    completed_id = ObjectId()
+    repository = _AssessmentRepositoryStub()
+    repository.assessments[draft_id] = {
+        "_id": draft_id,
+        "student_id": student_id,
+        "status": "DRAFT",
+        "assigned_question_ids": [],
+        "answers": [],
+        "completed_at": None,
+    }
+    repository.assessments[completed_id] = {
+        "_id": completed_id,
+        "student_id": student_id,
+        "status": "COMPLETED",
+        "assigned_question_ids": [],
+        "answers": [],
+        "completed_at": datetime.now(UTC),
+    }
+
+    service = AssessmentService(repository=repository)
+
+    result = await service.get_current_assessment(student_id=str(student_id))
+
+    assert result["status"] == "COMPLETED"
+    assert result["assessment_id"] == str(completed_id)
+
+
+@pytest.mark.asyncio
+async def test_create_assessment_creates_new_draft_when_none_exists():
+    student_id = ObjectId()
+    repository = _AssessmentRepositoryStub()
+    docs = [
+        {"_id": ObjectId(), "number": 1, "category": "iniciante"},
+        {"_id": ObjectId(), "number": 2, "category": "junior"},
+        {"_id": ObjectId(), "number": 3, "category": "pleno"},
+        {"_id": ObjectId(), "number": 4, "category": "senior"},
+    ]
+    repository.questions = {doc["_id"]: doc for doc in docs}
+
+    service = AssessmentService(repository=repository)
+
+    result = await service.create_assessment(student_id=str(student_id))
+
+    assert result["status"] == "DRAFT"
+    assert repository.created_assessment is not None
+    assert repository.created_assessment["student_id"] == student_id
+
+
+@pytest.mark.asyncio
+async def test_create_assessment_blocks_when_completed_exists():
+    student_id = ObjectId()
+    completed_id = ObjectId()
+    repository = _AssessmentRepositoryStub()
+    repository.assessments[completed_id] = {
+        "_id": completed_id,
+        "student_id": student_id,
+        "status": "COMPLETED",
+        "assigned_question_ids": [],
+        "answers": [],
+        "completed_at": datetime.now(UTC),
+    }
+
+    service = AssessmentService(repository=repository)
+
+    with pytest.raises(AppError) as exc:
+        await service.create_assessment(student_id=str(student_id))
+
+    assert exc.value.status_code == 409
+    assert exc.value.code == "ASSESSMENT_ALREADY_COMPLETED"
 
 
 @pytest.mark.asyncio

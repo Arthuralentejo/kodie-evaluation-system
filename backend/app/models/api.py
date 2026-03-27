@@ -20,10 +20,20 @@ class AuthRequest(BaseModel):
 
 class AuthResponse(BaseModel):
     token: str
-    assessment_id: str
 
 
 class RevokeResponse(BaseModel):
+    status: str
+
+
+class AssessmentSummaryResponse(BaseModel):
+    status: str
+    assessment_id: str | None = None
+    completed_at: str | None = None
+
+
+class CreateAssessmentResponse(BaseModel):
+    assessment_id: str
     status: str
 
 

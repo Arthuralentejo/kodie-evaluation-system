@@ -18,7 +18,7 @@ from app.core.errors import AppError
 
 class _AuthServiceStub:
     def __init__(self):
-        self.auth_response = {"token": "stub-token", "assessment_id": str(ObjectId()), "claims": {}}
+        self.auth_response = {"token": "stub-token", "claims": {}}
         self.last_auth_call = None
         self.last_revoke_call = None
 
@@ -39,9 +39,21 @@ class _AssessmentServiceStub:
     def __init__(self):
         self.questions_response = []
         self.submit_response = {"status": "COMPLETED", "completed_at": datetime.now(UTC).isoformat()}
+        self.current_response = {"status": "NONE", "assessment_id": None, "completed_at": None}
+        self.create_response = {"status": "DRAFT", "assessment_id": str(ObjectId())}
+        self.last_get_current_call = None
+        self.last_create_call = None
         self.last_get_questions_call = None
         self.last_upsert_answer_call = None
         self.last_submit_call = None
+
+    async def get_current_assessment(self, *, student_id):
+        self.last_get_current_call = {"student_id": student_id}
+        return self.current_response
+
+    async def create_assessment(self, *, student_id):
+        self.last_create_call = {"student_id": student_id}
+        return self.create_response
 
     async def get_questions_for_assessment(self, *, assessment_id, quantity=None, request_id=None):
         self.last_get_questions_call = {
@@ -73,6 +85,8 @@ def http_app() -> FastAPI:
     @test_app.middleware("http")
     async def request_id_middleware(request: Request, call_next):
         request.state.request_id = request.headers.get("x-request-id", "test-request-id")
+        request.state.auth_service = test_app.state.auth_service
+        request.state.assessment_service = test_app.state.assessment_service
         response = await call_next(request)
         response.headers["x-request-id"] = request.state.request_id
         return response
@@ -122,7 +136,7 @@ async def client(http_app: FastAPI):
 
 def _override_auth(student_id: str, assessment_id: str):
     async def _inner():
-        return deps.AuthContext(student_id=student_id, assessment_id=assessment_id, jti="j1", exp=9999999999)
+        return deps.AuthContext(student_id=student_id, jti="j1", exp=9999999999)
 
     return _inner
 
@@ -141,7 +155,6 @@ async def test_post_auth_validation_error_envelope(client):
 async def test_post_auth_success(client, monkeypatch):
     client._transport.app.state.auth_service.auth_response = {
         "token": "tkn",
-        "assessment_id": "507f1f77bcf86cd799439011",
         "claims": {},
     }
 
@@ -150,6 +163,39 @@ async def test_post_auth_success(client, monkeypatch):
     assert response.status_code == 200
     assert response.json()["token"] == "tkn"
     assert client._transport.app.state.auth_service.last_auth_call["cpf"] == "52998224725"
+
+
+@pytest.mark.asyncio
+async def test_get_current_assessment_http_success(http_app, client):
+    assessment_id = ObjectId()
+    student_id = ObjectId()
+
+    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(str(student_id), str(assessment_id))
+    http_app.state.assessment_service.current_response = {
+        "status": "DRAFT",
+        "assessment_id": str(assessment_id),
+        "completed_at": None,
+    }
+
+    response = await client.get("/assessments/current", headers={"Authorization": "Bearer any"})
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "DRAFT"
+    assert http_app.state.assessment_service.last_get_current_call == {"student_id": str(student_id)}
+
+
+@pytest.mark.asyncio
+async def test_create_assessment_http_success(http_app, client):
+    assessment_id = ObjectId()
+    student_id = ObjectId()
+
+    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(str(student_id), str(assessment_id))
+
+    response = await client.post("/assessments", headers={"Authorization": "Bearer any"})
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "DRAFT"
+    assert http_app.state.assessment_service.last_create_call == {"student_id": str(student_id)}
 
 
 @pytest.mark.asyncio

@@ -1,4 +1,4 @@
-import { ProgressHeader } from "../ui";
+import { ScreenTopBar } from "../ui";
 
 export function CompletionScreen({
   answeredCount,
@@ -14,13 +14,7 @@ export function CompletionScreen({
 }) {
   return (
     <section className="stage-screen">
-      <ProgressHeader
-        leftText={`${answeredCount} de ${totalQuestions} questoes respondidas`}
-        rightText={`${Math.max(totalQuestions - answeredCount, 0)} questoes restantes`}
-        progress={100}
-        actionLabel="Sair"
-        onAction={onLogout}
-      />
+      <ScreenTopBar actionLabel="Sair" onAction={onLogout} />
       <div className="completion-layout">
         <div className="panel panel--completion">
           <div className="panel__content panel__content--completion">

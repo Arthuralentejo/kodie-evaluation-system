@@ -7,25 +7,18 @@ export function BrandMark() {
   );
 }
 
-export function ProgressHeader({ leftText, rightText, progress, actionLabel, onAction }) {
+export function ScreenTopBar({ actionLabel, onAction }) {
   return (
-    <header className="progress-header">
-      <div className="progress-header__row">
-        <div className="progress-header__left">
-          <BrandMark />
-          {leftText ? <span className="progress-header__step">{leftText}</span> : null}
-        </div>
-        <div className="progress-header__meta">
-          {rightText ? <strong className="progress-header__percent">{rightText}</strong> : null}
+    <header className="screen-topbar">
+      <div className="screen-topbar__row">
+        <BrandMark />
+        <div className="screen-topbar__actions">
           {actionLabel && onAction ? (
             <button className="header-action" onClick={onAction} type="button">
               {actionLabel}
             </button>
           ) : null}
         </div>
-      </div>
-      <div className="progress-header__track" aria-hidden="true">
-        <div className="progress-header__fill" style={{ width: `${progress}%` }} />
       </div>
     </header>
   );

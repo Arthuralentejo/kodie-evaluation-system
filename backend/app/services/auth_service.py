@@ -2,15 +2,23 @@ from datetime import UTC, date, datetime, time, timedelta
 from typing import Any
 import logging
 from bson import ObjectId
-from pymongo.errors import DuplicateKeyError, PyMongoError
+from pymongo.errors import PyMongoError
 
 from app.core.config import settings
 from app.core.errors import AppError
 from app.core.security import create_access_token, decode_access_token
 from app.core.utils import mask_cpf
 from app.repositories.auth_repository import AuthRepository
-from app.services.question_selection import build_assigned_question_ids
 logger = logging.getLogger("kodie.auth")
+
+
+def _coerce_utc(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
+
 
 def _attempt_window_start(now: datetime) -> datetime:
     return now - timedelta(minutes=settings.rate_limit_window_minutes)
@@ -35,7 +43,14 @@ class AuthService:
         if not doc:
             return None
 
-        if doc.get("window_start") and doc["window_start"] < _attempt_window_start(now):
+        window_start = _coerce_utc(doc.get("window_start"))
+        lock_until = _coerce_utc(doc.get("lock_until"))
+        if window_start is not None:
+            doc["window_start"] = window_start
+        if lock_until is not None:
+            doc["lock_until"] = lock_until
+
+        if window_start and window_start < _attempt_window_start(now):
             await self.repository.reset_attempt_window(attempt_id=doc["_id"], now=now)
             doc["count"] = 0
             doc["window_start"] = now
@@ -95,26 +110,6 @@ class AuthService:
                 details={"retry_after": max(retry_candidates)},
             )
 
-    async def _get_or_create_draft_assessment(self, *, student_id: ObjectId) -> dict:
-        now = datetime.now(UTC)
-        question_docs = await self.repository.list_questions_for_assignment()
-        assigned_question_ids = build_assigned_question_ids(question_docs)
-        try:
-            doc = await self.repository.get_or_create_draft_assessment(
-                student_id=student_id,
-                assigned_question_ids=assigned_question_ids,
-                now=now,
-            )
-            if doc:
-                return doc
-        except DuplicateKeyError:
-            pass
-
-        existing = await self.repository.find_draft_assessment_by_student(student_id=student_id)
-        if not existing:
-            raise AppError(status_code=503, code="DRAFT_BOOTSTRAP_FAILED", message="Failed to bootstrap assessment")
-        return existing
-
     async def authenticate_and_issue_token(self, *, cpf: str, birth_date: date, ip: str, request_id: str):
         await self.check_rate_limit(cpf=cpf, ip=ip)
 
@@ -134,10 +129,9 @@ class AuthService:
         await self._reset_attempts("cpf", cpf)
         await self._reset_attempts("ip", ip)
 
-        draft = await self._get_or_create_draft_assessment(student_id=student["_id"])
-        token, claims = create_access_token(student_id=str(student["_id"]), assessment_id=str(draft["_id"]))
+        token, claims = create_access_token(student_id=str(student["_id"]))
 
-        return {"token": token, "assessment_id": str(draft["_id"]), "claims": claims}
+        return {"token": token, "claims": claims}
 
     async def revoke_token(self, *, jti: str, exp: int) -> None:
         expires_at = datetime.fromtimestamp(exp, tz=UTC)
@@ -157,9 +151,6 @@ class AuthService:
 
         if revoked:
             raise AppError(status_code=401, code="TOKEN_REVOKED", message="Token has been revoked")
-
-        if assessment_id and assessment_id != payload["assessment_id"]:
-            raise AppError(status_code=403, code="FORBIDDEN", message="Assessment access denied")
 
         if assessment_id:
             if not ObjectId.is_valid(assessment_id):

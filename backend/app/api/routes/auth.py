@@ -25,7 +25,7 @@ async def auth(
         request_id=request.state.request_id,
     )
 
-    return AuthResponse(token=result["token"], assessment_id=result["assessment_id"])
+    return AuthResponse(token=result["token"])
 
 
 @router.post("/revoke", response_model=RevokeResponse)

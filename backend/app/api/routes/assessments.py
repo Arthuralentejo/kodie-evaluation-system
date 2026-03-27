@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends, Query, Request
 
-from app.api.deps import get_assessment_service, get_auth_context
-from app.models.api import QuestionResponse, SubmitResponse, UpsertAnswerRequest
+from app.api.deps import AuthContext, get_assessment_service, get_auth_context
+from app.models.api import (
+    AssessmentSummaryResponse,
+    CreateAssessmentResponse,
+    QuestionResponse,
+    SubmitResponse,
+    UpsertAnswerRequest,
+)
 from app.services.assessment_service import AssessmentService
 
 router = APIRouter(
@@ -9,6 +15,24 @@ router = APIRouter(
     tags=["assessments"],
     dependencies=[Depends(get_auth_context)],
 )
+
+
+@router.get("/current", response_model=AssessmentSummaryResponse)
+async def get_current_assessment(
+    context: AuthContext = Depends(get_auth_context),
+    assessment_service: AssessmentService = Depends(get_assessment_service),
+):
+    result = await assessment_service.get_current_assessment(student_id=context.student_id)
+    return AssessmentSummaryResponse(**result)
+
+
+@router.post("", response_model=CreateAssessmentResponse)
+async def create_assessment(
+    context: AuthContext = Depends(get_auth_context),
+    assessment_service: AssessmentService = Depends(get_assessment_service),
+):
+    result = await assessment_service.create_assessment(student_id=context.student_id)
+    return CreateAssessmentResponse(**result)
 
 
 @router.get("/{assessment_id}/questions", response_model=list[QuestionResponse])

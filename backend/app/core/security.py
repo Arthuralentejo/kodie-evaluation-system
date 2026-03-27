@@ -8,15 +8,14 @@ from app.core.config import settings
 from app.core.errors import AppError
 
 
-REQUIRED_CLAIMS = {"sub", "assessment_id", "iat", "exp", "jti"}
+REQUIRED_CLAIMS = {"sub", "iat", "exp", "jti"}
 
 
-def create_access_token(*, student_id: str, assessment_id: str) -> tuple[str, dict[str, str | int]]:
+def create_access_token(*, student_id: str) -> tuple[str, dict[str, str | int]]:
     now = datetime.now(UTC)
     exp = now + timedelta(minutes=settings.jwt_ttl_minutes)
     claims = {
         "sub": student_id,
-        "assessment_id": assessment_id,
         "iat": int(now.timestamp()),
         "exp": int(exp.timestamp()),
         "jti": str(uuid.uuid4()),

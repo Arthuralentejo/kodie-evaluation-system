@@ -29,9 +29,11 @@ export function App() {
       <main className="app-shell">
         <IntroScreen
           isBusy={flow.isBusy}
+          assessmentStatus={flow.assessmentStatus}
+          screenError={flow.screenError}
           onBack={flow.resetToStart}
           onLogout={flow.logout}
-          onStart={() => flow.setStage(STAGES.QUESTIONS)}
+          onStart={flow.startAssessment}
         />
       </main>
     );
@@ -46,6 +48,7 @@ export function App() {
           currentQuestion={flow.currentQuestion}
           isBusy={flow.isBusy}
           missingQuestionIds={flow.missingQuestionIds}
+          onJumpToQuestion={(index) => flow.setCurrentIndex(Math.max(0, Math.min(flow.questions.length - 1, index)))}
           onLogout={flow.logout}
           onNext={() => flow.setCurrentIndex((value) => Math.min(flow.questions.length - 1, value + 1))}
           onFinish={flow.goToReview}

@@ -10,8 +10,6 @@ class _AuthRepositoryStub:
     def __init__(self):
         self.student = None
         self.last_student_lookup = None
-        self.questions = []
-        self.doc = {"_id": ObjectId()}
         self.attempts = {}
         self.revoked = None
 
@@ -44,20 +42,6 @@ class _AuthRepositoryStub:
         self.last_student_lookup = {"cpf": cpf, "birth_date": birth_date_query}
         return self.student
 
-    async def list_questions_for_assignment(self):
-        return self.questions
-
-    async def get_or_create_draft_assessment(self, *, student_id, assigned_question_ids, now):
-        self.doc.setdefault("student_id", student_id)
-        self.doc.setdefault("assigned_question_ids", assigned_question_ids)
-        self.doc.setdefault("answers", [])
-        self.doc.setdefault("status", "DRAFT")
-        self.doc.setdefault("started_at", now)
-        return self.doc
-
-    async def find_draft_assessment_by_student(self, *, student_id):
-        return self.doc
-
     async def find_revoked_token(self, *, jti):
         return self.revoked
 
@@ -65,7 +49,7 @@ class _AuthRepositoryStub:
         self.revoked = {"jti": jti, "expires_at": expires_at, "revoked_at": revoked_at}
 
     async def find_assessment_by_id(self, *, assessment_id):
-        return self.doc
+        return {"_id": assessment_id, "student_id": self.student["_id"]}
 
 
 class _Logger:
@@ -77,15 +61,11 @@ class _Logger:
 async def test_auth_looks_up_student_by_birth_date_day_range(monkeypatch):
     repository = _AuthRepositoryStub()
     repository.student = {"_id": ObjectId()}
-    repository.questions = [
-        {"_id": ObjectId(), "number": 1, "category": "iniciante"},
-        {"_id": ObjectId(), "number": 2, "category": "junior"},
-    ]
 
     service = AuthService(repository=repository)
     monkeypatch.setattr(
         "app.services.auth_service.create_access_token",
-        lambda **kwargs: ("token", {"assessment_id": str(repository.doc["_id"])}),
+        lambda **kwargs: ("token", {"sub": kwargs["student_id"]}),
     )
 
     result = await service.authenticate_and_issue_token(

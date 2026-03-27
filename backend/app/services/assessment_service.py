@@ -4,10 +4,12 @@ import logging
 import random
 
 from bson import ObjectId
+from pymongo.errors import DuplicateKeyError
 
 from app.core.config import settings
 from app.core.errors import AppError
 from app.repositories.assessment_repository import AssessmentRepository
+from app.services.question_selection import build_assigned_question_ids
 
 logger = logging.getLogger("kodie.assessment")
 
@@ -30,6 +32,60 @@ def deterministic_shuffle_options(*, assessment_id: str, question_id: str, optio
 class AssessmentService:
     def __init__(self, repository: AssessmentRepository):
         self.repository = repository
+
+    async def get_current_assessment(self, *, student_id: str):
+        student_oid = _ensure_object_id(student_id, code="INVALID_STUDENT_ID")
+
+        completed = await self.repository.find_latest_completed_assessment_by_student(student_id=student_oid)
+        if completed:
+            return {
+                "status": "COMPLETED",
+                "assessment_id": str(completed["_id"]),
+                "completed_at": completed["completed_at"].isoformat() if completed.get("completed_at") else None,
+            }
+
+        draft = await self.repository.find_draft_assessment_by_student(student_id=student_oid)
+        if draft:
+            return {
+                "status": "DRAFT",
+                "assessment_id": str(draft["_id"]),
+                "completed_at": None,
+            }
+
+        return {"status": "NONE", "assessment_id": None, "completed_at": None}
+
+    async def create_assessment(self, *, student_id: str):
+        student_oid = _ensure_object_id(student_id, code="INVALID_STUDENT_ID")
+
+        completed = await self.repository.find_latest_completed_assessment_by_student(student_id=student_oid)
+        if completed:
+            raise AppError(
+                status_code=409,
+                code="ASSESSMENT_ALREADY_COMPLETED",
+                message="Student already has a completed assessment",
+            )
+
+        existing_draft = await self.repository.find_draft_assessment_by_student(student_id=student_oid)
+        if existing_draft:
+            return {"assessment_id": str(existing_draft["_id"]), "status": "DRAFT"}
+
+        question_docs = await self.repository.list_questions_for_assignment()
+        assigned_question_ids = build_assigned_question_ids(question_docs)
+        now = datetime.now(UTC)
+
+        try:
+            created = await self.repository.create_assessment(
+                student_id=student_oid,
+                assigned_question_ids=assigned_question_ids,
+                now=now,
+            )
+        except DuplicateKeyError:
+            existing_draft = await self.repository.find_draft_assessment_by_student(student_id=student_oid)
+            if existing_draft:
+                return {"assessment_id": str(existing_draft["_id"]), "status": "DRAFT"}
+            raise AppError(status_code=503, code="DRAFT_BOOTSTRAP_FAILED", message="Failed to create assessment")
+
+        return {"assessment_id": str(created["_id"]), "status": "DRAFT"}
 
     async def get_questions_for_assessment(
         self,

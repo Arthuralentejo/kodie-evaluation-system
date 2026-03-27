@@ -13,7 +13,6 @@ bearer_scheme = HTTPBearer(auto_error=False)
 @dataclass
 class AuthContext:
     student_id: str
-    assessment_id: str
     jti: str
     exp: int
 
@@ -45,7 +44,6 @@ async def get_auth_context(
 
     return AuthContext(
         student_id=payload["sub"],
-        assessment_id=payload["assessment_id"],
         jti=payload["jti"],
         exp=payload["exp"],
     )

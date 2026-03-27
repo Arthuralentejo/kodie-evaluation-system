@@ -5,6 +5,12 @@ import { toApiBirthDate } from "../utils/formatters";
 import { readApiError, wait } from "../utils/http";
 
 const QUESTIONS_LIMIT = 20;
+const ASSESSMENT_STATUS = {
+  IDLE: "IDLE",
+  NONE: "NONE",
+  DRAFT: "DRAFT",
+  COMPLETED: "COMPLETED",
+};
 
 function logFlow(event, details = {}, level = "info") {
   const logger = console[level] || console.info;
@@ -26,6 +32,7 @@ export function useAssessmentFlow() {
   const [isBusy, setIsBusy] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedAt, setCompletedAt] = useState("");
+  const [assessmentStatus, setAssessmentStatus] = useState(ASSESSMENT_STATUS.IDLE);
   const saveVersionsRef = useRef({});
 
   const authHeader = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token]);
@@ -42,11 +49,15 @@ export function useAssessmentFlow() {
       if (!saved) return;
 
       const parsed = JSON.parse(saved);
-      if (parsed?.token && parsed?.assessmentId) {
-        logFlow("session_restored", { assessmentId: parsed.assessmentId });
+      if (parsed?.token) {
+        logFlow("session_restored", { assessmentId: parsed.assessmentId || null });
         setToken(parsed.token);
-        setAssessmentId(parsed.assessmentId);
-        setStage(STAGES.QUESTIONS);
+        if (parsed.assessmentId) {
+          setAssessmentId(parsed.assessmentId);
+          setStage(STAGES.QUESTIONS);
+        } else {
+          setStage(STAGES.INTRO);
+        }
       }
     } catch (error) {
       logFlow("session_restore_failed", { error: String(error) }, "warn");
@@ -55,19 +66,26 @@ export function useAssessmentFlow() {
   }, []);
 
   useEffect(() => {
-    if (token && assessmentId) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify({ token, assessmentId }));
+    if (token) {
+      const persistedAssessmentId = stage === STAGES.QUESTIONS ? assessmentId : "";
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ token, assessmentId: persistedAssessmentId }));
       return;
     }
 
     localStorage.removeItem(SESSION_KEY);
-  }, [token, assessmentId]);
+  }, [token, assessmentId, stage]);
 
   useEffect(() => {
     if (stage === STAGES.QUESTIONS && token && assessmentId && questions.length === 0) {
       void loadQuestions();
     }
   }, [stage, token, assessmentId, questions.length]);
+
+  useEffect(() => {
+    if (stage === STAGES.INTRO && token && !assessmentId) {
+      void loadCurrentAssessment();
+    }
+  }, [stage, token, assessmentId]);
 
   function resetSession() {
     setToken("");
@@ -77,6 +95,7 @@ export function useAssessmentFlow() {
     setAnswerStates({});
     setMissingQuestionIds([]);
     setCompletedAt("");
+    setAssessmentStatus(ASSESSMENT_STATUS.IDLE);
     setScreenError("");
     localStorage.removeItem(SESSION_KEY);
   }
@@ -110,9 +129,10 @@ export function useAssessmentFlow() {
       }
 
       const data = await response.json();
-      logFlow("auth_succeeded", { assessmentId: data.assessment_id });
+      logFlow("auth_succeeded", {});
       setToken(data.token);
-      setAssessmentId(data.assessment_id);
+      setAssessmentId("");
+      setAssessmentStatus(ASSESSMENT_STATUS.IDLE);
       setStage(STAGES.INTRO);
     } catch (error) {
       logFlow("auth_request_failed", { error: String(error) }, "error");
@@ -151,6 +171,78 @@ export function useAssessmentFlow() {
     } catch (error) {
       logFlow("questions_load_request_failed", { assessmentId, error: String(error) }, "error");
       setScreenError("Nao foi possivel carregar as perguntas.");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  async function loadCurrentAssessment() {
+    setScreenError("");
+    setIsBusy(true);
+    logFlow("assessment_current_load_started", {});
+
+    try {
+      const response = await fetch(`${API_BASE}/assessments/current`, { headers: authHeader });
+
+      if (!response.ok) {
+        const message = await readApiError(response);
+        logFlow("assessment_current_load_failed", { status: response.status, message }, "warn");
+        setScreenError(message);
+        if (response.status === 401 || response.status === 403) {
+          resetSession();
+          setStage(STAGES.AUTH);
+        }
+        return;
+      }
+
+      const data = await response.json();
+      logFlow("assessment_current_load_succeeded", { status: data.status, assessmentId: data.assessment_id || null });
+      setAssessmentStatus(data.status);
+      setCompletedAt(data.completed_at || "");
+
+      if (data.status === ASSESSMENT_STATUS.DRAFT && data.assessment_id) {
+        setAssessmentId(data.assessment_id);
+        setStage(STAGES.QUESTIONS);
+      }
+    } catch (error) {
+      logFlow("assessment_current_load_request_failed", { error: String(error) }, "error");
+      setScreenError("Nao foi possivel verificar sua avaliacao.");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  async function startAssessment() {
+    if (assessmentStatus === ASSESSMENT_STATUS.COMPLETED) return;
+
+    setScreenError("");
+    setIsBusy(true);
+    logFlow("assessment_create_started", {});
+
+    try {
+      const response = await fetch(`${API_BASE}/assessments`, {
+        method: "POST",
+        headers: authHeader,
+      });
+
+      if (!response.ok) {
+        const message = await readApiError(response);
+        logFlow("assessment_create_failed", { status: response.status, message }, "warn");
+        setScreenError(message);
+        if (response.status === 409) {
+          await loadCurrentAssessment();
+        }
+        return;
+      }
+
+      const data = await response.json();
+      logFlow("assessment_create_succeeded", { assessmentId: data.assessment_id });
+      setAssessmentStatus(data.status);
+      setAssessmentId(data.assessment_id);
+      setStage(STAGES.QUESTIONS);
+    } catch (error) {
+      logFlow("assessment_create_request_failed", { error: String(error) }, "error");
+      setScreenError("Nao foi possivel iniciar a avaliacao.");
     } finally {
       setIsBusy(false);
     }
@@ -262,6 +354,7 @@ export function useAssessmentFlow() {
       const payload = await response.json();
       logFlow("submit_succeeded", { assessmentId, completedAt: payload.completed_at });
       setCompletedAt(payload.completed_at || new Date().toISOString());
+      setAssessmentStatus(ASSESSMENT_STATUS.COMPLETED);
       setStage(STAGES.COMPLETED);
     } catch (error) {
       logFlow("submit_request_failed", { assessmentId, error: String(error) }, "error");
@@ -289,6 +382,7 @@ export function useAssessmentFlow() {
     answeredCount,
     answerStates,
     assessmentId,
+    assessmentStatus,
     authError,
     birthDate,
     completedAt,
@@ -313,6 +407,7 @@ export function useAssessmentFlow() {
     logout,
     resetToStart,
     saveAnswer,
+    startAssessment,
     submitAssessment,
   };
 }

@@ -1,6 +1,6 @@
 import { AUTH_FEATURES } from "../../content/stageContent";
 import { maskCpf, normalizeDateInput } from "../../utils/formatters";
-import { HelpLink, InfoCard, Badge } from "../ui";
+import { HelpLink, InfoCard, Badge, ScreenTopBar } from "../ui";
 
 function AuthPanel({
   cpf,
@@ -76,6 +76,7 @@ export function AuthScreen({
 }) {
   return (
     <section className="stage-screen">
+      <ScreenTopBar />
       <div className="desktop-grid desktop-grid--topless">
         <div className="panel panel--content">
           <div className="panel__content">
