@@ -11,6 +11,13 @@ class AssessmentStatus(str, Enum):
     COMPLETED = "COMPLETED"
 
 
+class AssessmentLevel(str, Enum):
+    INICIANTE = "iniciante"
+    JUNIOR = "junior"
+    PLENO = "pleno"
+    SENIOR = "senior"
+
+
 class Option(BaseModel):
     key: str = Field(min_length=1, max_length=20)
     text: str = Field(min_length=1)
@@ -25,6 +32,7 @@ class Student(BaseModel):
     cpf: str
     birth_date: date
     name: str = Field(min_length=1)
+    student_id: str = ""
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @field_validator("cpf")
@@ -70,6 +78,8 @@ class Assessment(BaseModel):
     assigned_question_ids: list[str] = Field(default_factory=list)
     answers: list[AssessmentAnswer] = Field(default_factory=list)
     status: AssessmentStatus
+    level: AssessmentLevel = AssessmentLevel.INICIANTE
+    archived: bool = False
     started_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     completed_at: datetime | None = None
 

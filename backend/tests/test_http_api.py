@@ -40,7 +40,7 @@ class _AssessmentServiceStub:
         self.questions_response = []
         self.submit_response = {"status": "COMPLETED", "completed_at": datetime.now(UTC).isoformat()}
         self.current_response = {"status": "NONE", "assessment_id": None, "completed_at": None}
-        self.create_response = {"status": "DRAFT", "assessment_id": str(ObjectId())}
+        self.create_response = {"status": "DRAFT", "assessment_id": str(ObjectId()), "level": "iniciante"}
         self.last_get_current_call = None
         self.last_create_call = None
         self.last_get_questions_call = None
@@ -51,8 +51,8 @@ class _AssessmentServiceStub:
         self.last_get_current_call = {"student_id": student_id}
         return self.current_response
 
-    async def create_assessment(self, *, student_id):
-        self.last_create_call = {"student_id": student_id}
+    async def create_assessment(self, *, student_id, level="iniciante"):
+        self.last_create_call = {"student_id": student_id, "level": level}
         return self.create_response
 
     async def get_questions_for_assessment(self, *, assessment_id, quantity=None, request_id=None):
@@ -191,11 +191,11 @@ async def test_create_assessment_http_success(http_app, client):
 
     http_app.dependency_overrides[deps.get_auth_context] = _override_auth(str(student_id), str(assessment_id))
 
-    response = await client.post("/assessments", headers={"Authorization": "Bearer any"})
+    response = await client.post("/assessments", headers={"Authorization": "Bearer any"}, json={})
 
     assert response.status_code == 200
     assert response.json()["status"] == "DRAFT"
-    assert http_app.state.assessment_service.last_create_call == {"student_id": str(student_id)}
+    assert http_app.state.assessment_service.last_create_call == {"student_id": str(student_id), "level": "iniciante"}
 
 
 @pytest.mark.asyncio

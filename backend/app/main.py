@@ -14,6 +14,7 @@ from app.api.routes.auth import router as auth_router
 from app.api.routes.health import router as health_router
 from app.core.config import settings
 from app.core.errors import AppError
+from app.db.collections import assessments_collection, questions_collection
 from app.db.indexes import ensure_indexes
 from app.db.mongo import close_client, get_db
 from app.repositories.assessment_repository import AssessmentRepository
@@ -29,7 +30,10 @@ http_logger = logging.getLogger("kodie.http")
 async def lifespan(app: FastAPI):
     db = get_db()
     auth_repository = AuthRepository(db=db)
-    assessment_repository = AssessmentRepository(db=db)
+    assessment_repository = AssessmentRepository(
+        collection=assessments_collection(db),
+        questions_collection=questions_collection(db),
+    )
     await ensure_indexes()
     try:
         yield {

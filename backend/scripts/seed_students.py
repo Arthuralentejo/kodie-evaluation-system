@@ -5,6 +5,7 @@ from datetime import UTC, date, datetime, time
 from pathlib import Path
 
 from pymongo import MongoClient
+from ulid import ULID
 
 from app.core.config import settings
 from app.core.utils import is_valid_cpf, normalize_cpf
@@ -85,10 +86,12 @@ def to_mongo_birth_date(value: date) -> datetime:
 def seed_students(*, rows: list[StudentSeedRow], mongo_uri: str, db_name: str, collection_name: str) -> tuple[int, int]:
     inserted = 0
     updated = 0
+    backfilled = 0
     now = datetime.now(UTC)
 
     with MongoClient(mongo_uri) as client:
         collection = client[db_name][collection_name]
+
         for row in rows:
             document = {
                 "cpf": row.cpf,
@@ -98,7 +101,10 @@ def seed_students(*, rows: list[StudentSeedRow], mongo_uri: str, db_name: str, c
             }
             result = collection.update_one(
                 {"cpf": row.cpf},
-                {"$set": document, "$setOnInsert": {"created_at": now}},
+                {
+                    "$set": document,
+                    "$setOnInsert": {"created_at": now, "student_id": str(ULID())},
+                },
                 upsert=True,
             )
             if result.upserted_id is not None:
@@ -106,7 +112,12 @@ def seed_students(*, rows: list[StudentSeedRow], mongo_uri: str, db_name: str, c
             elif result.matched_count:
                 updated += 1
 
-    return inserted, updated
+        # Backfill student_id for any existing documents that were inserted before this field existed
+        for doc in collection.find({"student_id": {"$exists": False}}):
+            collection.update_one({"_id": doc["_id"]}, {"$set": {"student_id": str(ULID())}})
+            backfilled += 1
+
+    return inserted, updated, backfilled
 
 
 def main() -> int:
@@ -119,7 +130,7 @@ def main() -> int:
         print(f"Validated {len(rows)} row(s).")
         return 0
 
-    inserted, updated = seed_students(
+    inserted, updated, backfilled = seed_students(
         rows=rows,
         mongo_uri=args.mongo_uri,
         db_name=args.db_name,
@@ -127,7 +138,7 @@ def main() -> int:
     )
     print(
         f"Seed completed for collection '{args.collection}': "
-        f"{len(rows)} row(s), {inserted} inserted, {updated} updated."
+        f"{len(rows)} row(s), {inserted} inserted, {updated} updated, {backfilled} backfilled with student_id."
     )
     return 0
 

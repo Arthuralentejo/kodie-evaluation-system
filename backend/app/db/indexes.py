@@ -1,4 +1,4 @@
-from pymongo import ASCENDING
+from pymongo import ASCENDING, DESCENDING
 
 from app.db.collections import (
     assessments_collection,
@@ -14,11 +14,19 @@ async def ensure_indexes() -> None:
 
     await students_collection(db).create_index([("cpf", ASCENDING)], unique=True, name="uq_students_cpf")
 
+    await students_collection(db).create_index([("student_id", ASCENDING)], unique=True, name="uq_students_student_id")
+
     await assessments_collection(db).create_index(
-        [("student_id", ASCENDING), ("status", ASCENDING)],
+        [("student_id", ASCENDING)],
         unique=True,
-        partialFilterExpression={"status": "DRAFT"},
-        name="uq_assessment_student_draft",
+        partialFilterExpression={"archived": False},
+        name="uq_assessment_active_student",
+    )
+
+    # Completed history lookups
+    await assessments_collection(db).create_index(
+        [("student_id", ASCENDING), ("status", ASCENDING), ("completed_at", DESCENDING)],
+        name="idx_assessment_student_status_completed_at",
     )
 
     await questions_collection(db).create_index(

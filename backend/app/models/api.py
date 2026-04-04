@@ -3,6 +3,7 @@ from datetime import date
 from pydantic import BaseModel, Field, field_validator
 
 from app.core.utils import is_valid_cpf, normalize_cpf
+from app.models.domain import AssessmentLevel
 
 
 class AuthRequest(BaseModel):
@@ -30,11 +31,24 @@ class AssessmentSummaryResponse(BaseModel):
     status: str
     assessment_id: str | None = None
     completed_at: str | None = None
+    level: str | None = None
+    assessments: list["CompletedAssessmentSummary"] = []
+
+
+class CreateAssessmentRequest(BaseModel):
+    level: AssessmentLevel = Field(default=AssessmentLevel.INICIANTE, description="The desired level for the assessment")
 
 
 class CreateAssessmentResponse(BaseModel):
     assessment_id: str
     status: str
+    level: str
+
+
+class CompletedAssessmentSummary(BaseModel):
+    assessment_id: str
+    level: str
+    completed_at: str
 
 
 class QuestionOptionResponse(BaseModel):

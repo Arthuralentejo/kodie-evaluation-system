@@ -9,3 +9,5 @@ output/
 *.log
 .claude
 docs
+.vscode
+*.csv

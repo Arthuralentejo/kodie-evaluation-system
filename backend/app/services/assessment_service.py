@@ -8,6 +8,7 @@ from pymongo.errors import DuplicateKeyError
 
 from app.core.config import settings
 from app.core.errors import AppError
+from app.models.domain import AssessmentLevel
 from app.repositories.assessment_repository import AssessmentRepository
 from app.services.question_selection import build_assigned_question_ids
 
@@ -34,58 +35,78 @@ class AssessmentService:
         self.repository = repository
 
     async def get_current_assessment(self, *, student_id: str):
-        student_oid = _ensure_object_id(student_id, code="INVALID_STUDENT_ID")
+        # Query 1: single active (non-archived) assessment
+        active = await self.repository.find_active_assessment_by_student(student_id=student_id)
 
-        completed = await self.repository.find_latest_completed_assessment_by_student(student_id=student_oid)
-        if completed:
+        # Query 2: ALL completed assessments (including archived) for history
+        completed_history = await self.repository.find_all_completed_assessments_by_student(student_id=student_id)
+        assessments = [
+            {
+                "assessment_id": str(a["_id"]),
+                "level": a.get("level", "iniciante"),
+                "completed_at": a["completed_at"].isoformat(),
+            }
+            for a in completed_history
+        ]
+
+        if active is not None:
             return {
-                "status": "COMPLETED",
-                "assessment_id": str(completed["_id"]),
-                "completed_at": completed["completed_at"].isoformat() if completed.get("completed_at") else None,
+                "status": active["status"],
+                "assessment_id": str(active["_id"]),
+                "completed_at": active["completed_at"].isoformat() if active.get("completed_at") else None,
+                "level": active.get("level", "iniciante"),
+                "assessments": assessments,
             }
 
-        draft = await self.repository.find_draft_assessment_by_student(student_id=student_oid)
-        if draft:
-            return {
-                "status": "DRAFT",
-                "assessment_id": str(draft["_id"]),
-                "completed_at": None,
-            }
+        return {"status": "NONE", "assessment_id": None, "completed_at": None, "level": None, "assessments": assessments}
 
-        return {"status": "NONE", "assessment_id": None, "completed_at": None}
+    async def create_assessment(self, *, student_id: str, level: str):
+        # Validate level
+        try:
+            AssessmentLevel(level)
+        except ValueError:
+            raise AppError(status_code=422, code="INVALID_LEVEL", message="Nível inválido.")
 
-    async def create_assessment(self, *, student_id: str):
-        student_oid = _ensure_object_id(student_id, code="INVALID_STUDENT_ID")
+        # Step 1: Check completed history (all completed, including archived) for this level
+        completed_history = await self.repository.find_all_completed_assessments_by_student(student_id=student_id)
+        if any(a.get("level") == level for a in completed_history):
+            raise AppError(status_code=409, code="LEVEL_ALREADY_COMPLETED",
+                           message="Este nível já foi concluído e não pode ser iniciado novamente.")
 
-        completed = await self.repository.find_latest_completed_assessment_by_student(student_id=student_oid)
-        if completed:
-            raise AppError(
-                status_code=409,
-                code="ASSESSMENT_ALREADY_COMPLETED",
-                message="Student already has a completed assessment",
-            )
+        # Step 2: Fetch the single active (non-archived) assessment
+        active = await self.repository.find_active_assessment_by_student(student_id=student_id)
 
-        existing_draft = await self.repository.find_draft_assessment_by_student(student_id=student_oid)
-        if existing_draft:
-            return {"assessment_id": str(existing_draft["_id"]), "status": "DRAFT"}
+        # Step 3: Handle based on active state
+        if active is not None:
+            if active.get("level") == level and active["status"] == "DRAFT":
+                # Idempotent: same level DRAFT — return it
+                return {"assessment_id": str(active["_id"]), "status": "DRAFT", "level": level}
+            
+            # Different level (or same level COMPLETED — already handled above): archive it
+            await self.repository.archive_assessment(assessment_id=active["_id"])
 
-        question_docs = await self.repository.list_questions_for_assignment()
+        # Step 4: Create new DRAFT
+        question_docs = await self.repository.list_questions_for_level(level=level)
         assigned_question_ids = build_assigned_question_ids(question_docs)
-        now = datetime.now(UTC)
+        if not assigned_question_ids:
+            raise AppError(status_code=409, code="NO_QUESTIONS_FOR_LEVEL",
+                           message="Não há questões disponíveis para o nível selecionado.")
 
+        now = datetime.now(UTC)
         try:
             created = await self.repository.create_assessment(
-                student_id=student_oid,
+                student_id=student_id,
                 assigned_question_ids=assigned_question_ids,
+                level=level,
                 now=now,
             )
         except DuplicateKeyError:
-            existing_draft = await self.repository.find_draft_assessment_by_student(student_id=student_oid)
-            if existing_draft:
-                return {"assessment_id": str(existing_draft["_id"]), "status": "DRAFT"}
+            active = await self.repository.find_active_assessment_by_student(student_id=student_id)
+            if active:
+                return {"assessment_id": str(active["_id"]), "status": "DRAFT", "level": level}
             raise AppError(status_code=503, code="DRAFT_BOOTSTRAP_FAILED", message="Failed to create assessment")
 
-        return {"assessment_id": str(created["_id"]), "status": "DRAFT"}
+        return {"assessment_id": str(created["_id"]), "status": "DRAFT", "level": level}
 
     async def get_questions_for_assessment(
         self,

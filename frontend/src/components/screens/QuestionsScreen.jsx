@@ -57,7 +57,7 @@ export function QuestionsScreen({
   const totalQuestions = questions.length;
   const questionNumber = totalQuestions > 0 ? currentIndex + 1 : 0;
   const remainingQuestions = Math.max(totalQuestions - answeredCount, 0);
-  const canFinish = totalQuestions === 20 && answeredCount === totalQuestions;
+  const canFinish = totalQuestions > 0 && answeredCount === totalQuestions;
   const options = currentQuestion
     ? [
         ...currentQuestion.options,

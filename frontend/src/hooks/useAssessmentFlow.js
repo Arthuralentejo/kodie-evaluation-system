@@ -33,6 +33,9 @@ export function useAssessmentFlow() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedAt, setCompletedAt] = useState("");
   const [assessmentStatus, setAssessmentStatus] = useState(ASSESSMENT_STATUS.IDLE);
+  const [selectedLevel, setSelectedLevel] = useState("iniciante");
+  const [completedAssessments, setCompletedAssessments] = useState([]);
+  const [assessmentLevel, setAssessmentLevel] = useState(null);
   const saveVersionsRef = useRef({});
 
   const authHeader = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token]);
@@ -199,6 +202,8 @@ export function useAssessmentFlow() {
       logFlow("assessment_current_load_succeeded", { status: data.status, assessmentId: data.assessment_id || null });
       setAssessmentStatus(data.status);
       setCompletedAt(data.completed_at || "");
+      setCompletedAssessments(data.assessments || []);
+      setAssessmentLevel(data.level || null);
 
       if (data.status === ASSESSMENT_STATUS.DRAFT && data.assessment_id) {
         setAssessmentId(data.assessment_id);
@@ -212,17 +217,16 @@ export function useAssessmentFlow() {
     }
   }
 
-  async function startAssessment() {
-    if (assessmentStatus === ASSESSMENT_STATUS.COMPLETED) return;
-
+  async function startAssessment(level) {
     setScreenError("");
     setIsBusy(true);
-    logFlow("assessment_create_started", {});
+    logFlow("assessment_create_started", { level });
 
     try {
       const response = await fetch(`${API_BASE}/assessments`, {
         method: "POST",
-        headers: authHeader,
+        headers: { "Content-Type": "application/json", ...authHeader },
+        body: JSON.stringify({ level }),
       });
 
       if (!response.ok) {
@@ -236,8 +240,8 @@ export function useAssessmentFlow() {
       }
 
       const data = await response.json();
-      logFlow("assessment_create_succeeded", { assessmentId: data.assessment_id });
-      setAssessmentStatus(data.status);
+      logFlow("assessment_create_succeeded", { assessmentId: data.assessment_id, level: data.level });
+      setAssessmentLevel(data.level);
       setAssessmentId(data.assessment_id);
       setStage(STAGES.QUESTIONS);
     } catch (error) {
@@ -382,9 +386,11 @@ export function useAssessmentFlow() {
     answeredCount,
     answerStates,
     assessmentId,
+    assessmentLevel,
     assessmentStatus,
     authError,
     birthDate,
+    completedAssessments,
     completedAt,
     completionDate,
     cpf,
@@ -396,11 +402,13 @@ export function useAssessmentFlow() {
     protocolNumber,
     questions,
     screenError,
+    selectedLevel,
     stage,
     goToReview,
     setBirthDate,
     setCpf,
     setCurrentIndex,
+    setSelectedLevel,
     setStage,
     login,
     loadQuestions,

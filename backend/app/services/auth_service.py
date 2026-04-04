@@ -129,7 +129,7 @@ class AuthService:
         await self._reset_attempts("cpf", cpf)
         await self._reset_attempts("ip", ip)
 
-        token, claims = create_access_token(student_id=str(student["_id"]))
+        token, claims = create_access_token(student_id=str(student.get("student_id") or "") or str(student["_id"]))
 
         return {"token": token, "claims": claims}
 

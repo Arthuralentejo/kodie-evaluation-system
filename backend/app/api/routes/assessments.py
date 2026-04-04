@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from app.api.deps import AuthContext, get_assessment_service, get_auth_context
 from app.models.api import (
     AssessmentSummaryResponse,
+    CreateAssessmentRequest,
     CreateAssessmentResponse,
     QuestionResponse,
     SubmitResponse,
@@ -28,10 +29,14 @@ async def get_current_assessment(
 
 @router.post("", response_model=CreateAssessmentResponse)
 async def create_assessment(
+    payload: CreateAssessmentRequest,
     context: AuthContext = Depends(get_auth_context),
     assessment_service: AssessmentService = Depends(get_assessment_service),
 ):
-    result = await assessment_service.create_assessment(student_id=context.student_id)
+    result = await assessment_service.create_assessment(
+        student_id=context.student_id,
+        level=payload.level.value,
+    )
     return CreateAssessmentResponse(**result)
 
 

@@ -262,7 +262,7 @@ h2 {
   letter-spacing: -0.02em;
 }
 
-.panel__content > p,
+.panel__content>p,
 .lead {
   margin-top: clamp(10px, 1.4vh, 16px);
   max-width: 620px;
@@ -719,6 +719,7 @@ h2 {
 }
 
 @media (max-width: 768px) {
+
   .screen-topbar,
   .questionnaire-header {
     padding: 14px 16px;
@@ -767,7 +768,7 @@ h2 {
     font-size: 20px;
   }
 
-  .panel__content > p,
+  .panel__content>p,
   .lead {
     font-size: 14px;
   }
@@ -817,5 +818,173 @@ h2 {
 
   .session-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Level picker */
+.level-picker-section {
+  margin-top: 18px;
+}
+
+.level-picker-label {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.level-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.level-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 56px;
+  padding: 10px 12px;
+  border-radius: var(--radius-soft);
+  border: 1.5px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.22);
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+  cursor: pointer;
+}
+
+.level-card:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: rgba(34, 106, 143, 0.06);
+  transform: translateY(-1px);
+}
+
+.level-card--selected {
+  border-color: var(--color-primary);
+  background: rgba(34, 106, 143, 0.12);
+  color: var(--color-primary);
+}
+
+.level-card--completed {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.level-card:disabled {
+  cursor: not-allowed;
+}
+
+.level-card__label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.level-card__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #d9f0e1;
+  color: #3f6f59;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #b6d9c6;
+}
+
+/* Completed assessments list */
+.completed-assessments {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: var(--radius-soft);
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.completed-assessments h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.completed-assessments ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.completed-assessment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.completed-assessment-item__level {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.completed-assessment-item__date {
+  color: var(--color-muted);
+}
+
+/* Override confirmation modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(21, 45, 68, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+  padding: clamp(24px, 3vh, 36px) clamp(20px, 2.4vw, 32px);
+  max-width: 440px;
+  width: 100%;
+}
+
+.modal h2 {
+  font-size: clamp(18px, 1.4vw, 22px);
+  margin-bottom: 12px;
+}
+
+.modal p {
+  color: var(--color-muted);
+  font-size: 15px;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+.modal__note {
+  font-size: 13px;
+  color: var(--color-muted);
+  margin-top: 10px;
+}
+
+.modal__actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .modal__actions {
+    flex-direction: column;
   }
 }

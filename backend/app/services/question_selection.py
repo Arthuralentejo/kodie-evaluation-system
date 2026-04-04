@@ -1,7 +1,7 @@
 from bson import ObjectId
 
 from app.core.config import settings
-from app.models.domain import Category
+from app.models.domain import AssessmentLevel, Category
 
 
 CATEGORY_ORDER = (
@@ -71,6 +71,10 @@ def select_questions_by_difficulty(question_docs: list[dict], quantity: int | No
     return selected
 
 
-def build_assigned_question_ids(question_docs: list[dict]) -> list[ObjectId]:
+def build_assigned_question_ids(
+    question_docs: list[dict],
+    level: AssessmentLevel = AssessmentLevel.INICIANTE,
+) -> list[ObjectId]:
+    # question_docs already pre-filtered by category=level at DB level
     selected_questions = select_questions_by_difficulty(question_docs, settings.assessment_question_count)
     return [question["_id"] for question in selected_questions]

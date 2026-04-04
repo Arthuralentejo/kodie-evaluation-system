@@ -33,7 +33,10 @@ export function App() {
           screenError={flow.screenError}
           onBack={flow.resetToStart}
           onLogout={flow.logout}
-          onStart={flow.startAssessment}
+          onStart={() => flow.startAssessment(flow.selectedLevel)}
+          completedAssessments={flow.completedAssessments}
+          selectedLevel={flow.selectedLevel}
+          onLevelChange={flow.setSelectedLevel}
         />
       </main>
     );
