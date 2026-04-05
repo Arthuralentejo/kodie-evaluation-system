@@ -3,7 +3,9 @@ SHELL := /bin/bash
 BACKEND_DIR := backend
 FRONTEND_DIR := frontend
 
-.PHONY: help install install-backend install-frontend dev-backend dev-frontend dev build build-backend build-frontend test test-backend test-frontend etl clean clean-backend clean-frontend
+.PHONY: help install install-backend install-frontend dev-backend dev-frontend dev build build-backend build-frontend test test-backend test-frontend etl seed seed-questions seed-students clean clean-backend clean-frontend
+
+STUDENTS_CSV ?= backend/scripts/students.sample.csv
 
 help:
 	@echo "Available targets:"
@@ -20,6 +22,9 @@ help:
 	@echo "  test-backend      Run backend pytest suite"
 	@echo "  test-frontend     Run frontend tests if package script exists"
 	@echo "  etl               Run extraction script (scripts/extract.py)"
+	@echo "  seed              Seed questions + students (uses defaults)"
+	@echo "  seed-questions    Seed questions from assets/exam.json"
+	@echo "  seed-students     Seed students from CSV (STUDENTS_CSV=path/to/file.csv)"
 	@echo "  clean             Remove generated caches/artifacts"
 
 install: install-backend install-frontend
@@ -63,6 +68,14 @@ test-frontend:
 
 etl:
 	cd $(BACKEND_DIR) && poetry run python ../scripts/extract.py
+
+seed: seed-questions seed-students
+
+seed-questions:
+	cd $(BACKEND_DIR) && poetry run python scripts/seed_questions.py ../assets/exam.json
+
+seed-students:
+	cd $(BACKEND_DIR) && poetry run python scripts/seed_students.py ../$(STUDENTS_CSV)
 
 clean: clean-backend clean-frontend
 
