@@ -51,6 +51,7 @@ class Question(BaseModel):
     options: list[Option] = Field(min_length=1)
     correct_option: str
     category: Category
+    tags: list[str] = Field(default_factory=list)
 
     @field_validator("options")
     @classmethod

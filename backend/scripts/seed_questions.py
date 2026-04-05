@@ -59,6 +59,7 @@ def _build_row(raw_item: dict, index: int) -> Question:
         statement = str(raw_item["pergunta"]).strip()
         options = _option_items(raw_item["alternativas"], number)
         correct_option = str(raw_item["resposta_correta"]).strip().upper()
+        tags = [str(t).strip() for t in raw_item.get("tags", [])]
     except KeyError as exc:
         raise ValueError(f"Question entry #{index + 1} is missing required field {exc.args[0]!r}.") from exc
 
@@ -69,6 +70,7 @@ def _build_row(raw_item: dict, index: int) -> Question:
             options=options,
             correct_option=correct_option,
             category=category,
+            tags=tags,
         )
     except ValidationError as exc:
         raise ValueError(f"Question {number}: invalid payload: {exc}") from exc
@@ -131,6 +133,7 @@ def seed_questions(*, rows: list[Question], mongo_uri: str, db_name: str, collec
                 "options": [option.model_dump() for option in row.options],
                 "correct_option": row.correct_option,
                 "category": row.category.value,
+                "tags": row.tags,
                 "updated_at": now,
             }
             result = collection.update_one(

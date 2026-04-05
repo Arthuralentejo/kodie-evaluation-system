@@ -2,6 +2,11 @@
   {
     "numero": 1,
     "categoria": "iniciante",
+    "tags": [
+      "hardware",
+      "cpu",
+      "fundamentos"
+    ],
     "pergunta": "Em um computador, qual componente é responsável por executar instruções e processar cálculos do programa?",
     "alternativas": {
       "a": "Memória RAM",
@@ -15,6 +20,10 @@
   {
     "numero": 2,
     "categoria": "iniciante",
+    "tags": [
+      "sistema-operacional",
+      "fundamentos"
+    ],
     "pergunta": "Qual cenário representa melhor o papel de um sistema operacional?",
     "alternativas": {
       "a": "Converter código-fonte em binário",
@@ -28,6 +37,11 @@
   {
     "numero": 3,
     "categoria": "iniciante",
+    "tags": [
+      "hardware",
+      "memoria",
+      "fundamentos"
+    ],
     "pergunta": "O que diferencia a memória RAM do armazenamento em disco (HD/SSD)?",
     "alternativas": {
       "a": "A RAM é mais lenta, porém armazena dados permanentemente",
@@ -41,6 +55,11 @@
   {
     "numero": 4,
     "categoria": "iniciante",
+    "tags": [
+      "linux",
+      "permissoes",
+      "fundamentos"
+    ],
     "pergunta": "No Linux, permissões `rwx` em arquivos e diretórios são usadas principalmente para:",
     "alternativas": {
       "a": "Definir versão do kernel instalada",
@@ -54,6 +73,11 @@
   {
     "numero": 5,
     "categoria": "iniciante",
+    "tags": [
+      "linux",
+      "distribuicoes",
+      "fundamentos"
+    ],
     "pergunta": "Qual das seguintes distribuições Linux é baseada no Debian?",
     "alternativas": {
       "a": "Fedora",
@@ -67,6 +91,11 @@
   {
     "numero": 6,
     "categoria": "iniciante",
+    "tags": [
+      "linux",
+      "filesystem",
+      "fundamentos"
+    ],
     "pergunta": "No Linux, o que representa o símbolo `/` (barra) em um caminho de arquivo?",
     "alternativas": {
       "a": "O diretório pessoal do usuário atual",
@@ -80,12 +109,17 @@
   {
     "numero": 7,
     "categoria": "iniciante",
+    "tags": [
+      "linux",
+      "cli",
+      "fundamentos"
+    ],
     "pergunta": "Qual comando Linux é usado para listar os arquivos e diretórios do diretório atual?",
     "alternativas": {
-      "a": "cd",
-      "b": "pwd",
-      "c": "ls",
-      "d": "mv"
+      "a": "`cd`",
+      "b": "`pwd`",
+      "c": "`ls`",
+      "d": "`mv`"
     },
     "resposta_correta": "c",
     "explicacao": "O comando `ls` (list) exibe o conteúdo de um diretório. O `cd` muda o diretório atual, `pwd` exibe o caminho do diretório atual, e `mv` move ou renomeia arquivos."
@@ -93,6 +127,10 @@
   {
     "numero": 8,
     "categoria": "iniciante",
+    "tags": [
+      "git",
+      "controle-de-versao"
+    ],
     "pergunta": "Qual é a principal vantagem de usar controle de versão com Git em um projeto?",
     "alternativas": {
       "a": "Aumentar automaticamente a velocidade de execução do programa",
@@ -106,6 +144,11 @@
   {
     "numero": 9,
     "categoria": "iniciante",
+    "tags": [
+      "programacao",
+      "variaveis",
+      "fundamentos"
+    ],
     "pergunta": "O que são variáveis em programação?",
     "alternativas": {
       "a": "Instruções fixas que o programa sempre executa na mesma ordem",
@@ -119,6 +162,11 @@
   {
     "numero": 10,
     "categoria": "iniciante",
+    "tags": [
+      "programacao",
+      "crud",
+      "fundamentos"
+    ],
     "pergunta": "O que significa CRUD em desenvolvimento de software?",
     "alternativas": {
       "a": "Create, Run, Update, Deploy",
@@ -127,11 +175,16 @@
       "d": "Configure, Register, Upload, Delete"
     },
     "resposta_correta": "b",
-    "explicacao": "CRUD é o acrônimo das quatro operações básicas de persistência de dados: Create (criar), Read (ler), Update (atualizar) e Delete (excluir). É a base de qualquer sistema que interage com um banco de dados."
+    "explicacao": "CRUD é o acrônimo das quatro operações básicas de persistência de dados: **C**reate (criar), **R**ead (ler), **U**pdate (atualizar) e **D**elete (excluir). É a base de qualquer sistema que interage com um banco de dados."
   },
   {
     "numero": 11,
     "categoria": "iniciante",
+    "tags": [
+      "api",
+      "rest",
+      "fundamentos"
+    ],
     "pergunta": "O que é uma API REST?",
     "alternativas": {
       "a": "Um banco de dados relacional acessível pela internet",
@@ -145,12 +198,17 @@
   {
     "numero": 12,
     "categoria": "junior",
+    "tags": [
+      "linux",
+      "cli",
+      "shell"
+    ],
     "pergunta": "Você precisa listar apenas linhas de erro de um log e salvar o resultado em arquivo. Qual combinação reflete corretamente o uso de pipe e redirecionamento?",
     "alternativas": {
-      "a": "cat app.log > grep ERROR > erros.txt",
-      "b": "grep ERROR app.log | erros.txt",
-      "c": "cat app.log | grep ERROR > erros.txt",
-      "d": "grep | ERROR app.log > erros.txt"
+      "a": "`cat app.log > grep ERROR > erros.txt`",
+      "b": "`grep ERROR app.log | erros.txt`",
+      "c": "`cat app.log | grep ERROR > erros.txt`",
+      "d": "`grep | ERROR app.log > erros.txt`"
     },
     "resposta_correta": "c",
     "explicacao": "O pipe (`|`) envia a saída de `cat` para `grep`, e `>` redireciona o resultado filtrado para `erros.txt`."
@@ -158,6 +216,11 @@
   {
     "numero": 13,
     "categoria": "junior",
+    "tags": [
+      "algoritmos",
+      "busca",
+      "complexidade"
+    ],
     "pergunta": "Em um algoritmo de busca em uma lista ordenada, quando a busca binária tende a ser mais adequada do que busca linear?",
     "alternativas": {
       "a": "Quando a lista não está ordenada e muda o tempo todo",
@@ -171,6 +234,10 @@
   {
     "numero": 14,
     "categoria": "junior",
+    "tags": [
+      "banco-de-dados",
+      "modelagem"
+    ],
     "pergunta": "No contexto de modelagem de dados para um sistema CRUD, qual decisão melhora integridade e manutenção?",
     "alternativas": {
       "a": "Duplicar informações em várias tabelas sem relação",
@@ -184,6 +251,11 @@
   {
     "numero": 15,
     "categoria": "junior",
+    "tags": [
+      "orientacao-a-objetos",
+      "heranca",
+      "design"
+    ],
     "pergunta": "Qual alternativa descreve melhor quando usar herança em orientação a objetos?",
     "alternativas": {
       "a": "Quando classes compartilham comportamento e relação \"é um\" de forma estável",
@@ -197,6 +269,10 @@
   {
     "numero": 16,
     "categoria": "junior",
+    "tags": [
+      "git",
+      "controle-de-versao"
+    ],
     "pergunta": "Qual a diferença entre `git merge` e `git rebase`?",
     "alternativas": {
       "a": "`git merge` apaga a branch de origem após integrar as mudanças; `git rebase` mantém todas as branches",
@@ -210,6 +286,11 @@
   {
     "numero": 17,
     "categoria": "junior",
+    "tags": [
+      "linux",
+      "permissoes",
+      "cli"
+    ],
     "pergunta": "No Linux, o que representa a permissão `chmod 755 arquivo.sh`?",
     "alternativas": {
       "a": "O dono pode ler, escrever e executar; grupo e outros podem apenas ler e executar",
@@ -223,6 +304,11 @@
   {
     "numero": 18,
     "categoria": "junior",
+    "tags": [
+      "banco-de-dados",
+      "sql",
+      "nosql"
+    ],
     "pergunta": "Qual é a diferença entre SQL e NoSQL?",
     "alternativas": {
       "a": "SQL é mais rápido que NoSQL em qualquer cenário de uso",
@@ -236,6 +322,11 @@
   {
     "numero": 19,
     "categoria": "junior",
+    "tags": [
+      "docker",
+      "containers",
+      "infraestrutura"
+    ],
     "pergunta": "O que é um container Docker?",
     "alternativas": {
       "a": "Uma máquina virtual completa com kernel próprio e sistema operacional independente",
@@ -249,6 +340,10 @@
   {
     "numero": 20,
     "categoria": "junior",
+    "tags": [
+      "estruturas-de-dados",
+      "algoritmos"
+    ],
     "pergunta": "O que é uma estrutura de dados do tipo \"mapa\" (ou dicionário)?",
     "alternativas": {
       "a": "Uma coleção ordenada de elementos acessados por índice numérico",
@@ -262,6 +357,11 @@
   {
     "numero": 21,
     "categoria": "junior",
+    "tags": [
+      "git",
+      "controle-de-versao",
+      "colaboracao"
+    ],
     "pergunta": "O que é um Pull Request (PR) no contexto do Git?",
     "alternativas": {
       "a": "Um comando para baixar mudanças de um repositório remoto para o local",
@@ -275,6 +375,11 @@
   {
     "numero": 22,
     "categoria": "junior",
+    "tags": [
+      "algoritmos",
+      "complexidade",
+      "big-o"
+    ],
     "pergunta": "O que é a notação Big O em análise de algoritmos?",
     "alternativas": {
       "a": "Uma métrica que mede o consumo de energia de um algoritmo em diferentes hardwares",
@@ -288,6 +393,10 @@
   {
     "numero": 23,
     "categoria": "junior",
+    "tags": [
+      "cloud",
+      "infraestrutura"
+    ],
     "pergunta": "Qual é a diferença entre IaaS, PaaS e SaaS na computação em nuvem?",
     "alternativas": {
       "a": "São três protocolos de comunicação usados em redes de computadores",
@@ -296,11 +405,16 @@
       "d": "Referem-se a três níveis de segurança aplicados a sistemas em nuvem"
     },
     "resposta_correta": "b",
-    "explicacao": "IaaS (Infrastructure as a Service) fornece recursos de infraestrutura virtualizados (servidores, rede, armazenamento). PaaS (Platform as a Service) fornece plataforma de desenvolvimento/deploy sem gerenciar infraestrutura. SaaS (Software as a Service) entrega aplicações prontas via internet."
+    "explicacao": "- **IaaS** (Infrastructure as a Service): fornece recursos de infraestrutura virtualizados (servidores, rede, armazenamento) — ex: AWS EC2, Azure VMs"
   },
   {
     "numero": 24,
     "categoria": "pleno",
+    "tags": [
+      "arquitetura",
+      "microsservicos",
+      "system-design"
+    ],
     "pergunta": "Uma aplicação foi dividida em serviço de API, banco de dados e mensageria. Qual benefício arquitetural essa separação traz?",
     "alternativas": {
       "a": "Elimina totalmente a necessidade de monitoramento",
@@ -314,6 +428,12 @@
   {
     "numero": 25,
     "categoria": "pleno",
+    "tags": [
+      "arquitetura",
+      "mensageria",
+      "assincrono",
+      "system-design"
+    ],
     "pergunta": "Qual situação caracteriza melhor integração assíncrona entre sistemas?",
     "alternativas": {
       "a": "Cliente espera resposta imediata da API antes de continuar fluxo",
@@ -327,6 +447,11 @@
   {
     "numero": 26,
     "categoria": "pleno",
+    "tags": [
+      "ci-cd",
+      "deploy",
+      "infraestrutura"
+    ],
     "pergunta": "Em CI/CD, qual prática reduz risco durante deploy de nova versão em produção?",
     "alternativas": {
       "a": "Publicar diretamente sem testes para ganhar velocidade",
@@ -340,6 +465,11 @@
   {
     "numero": 27,
     "categoria": "pleno",
+    "tags": [
+      "docker",
+      "iac",
+      "infraestrutura"
+    ],
     "pergunta": "No uso de Docker e infraestrutura como código, qual combinação representa uma prática consistente?",
     "alternativas": {
       "a": "Configurar tudo manualmente em produção para manter flexibilidade",
@@ -353,6 +483,11 @@
   {
     "numero": 28,
     "categoria": "pleno",
+    "tags": [
+      "solid",
+      "orientacao-a-objetos",
+      "design"
+    ],
     "pergunta": "Qual dos princípios SOLID é violado quando uma classe possui métodos tanto para persistência em banco de dados quanto para cálculos de negócio e formatação de relatórios?",
     "alternativas": {
       "a": "Open/Closed Principle (OCP)",
@@ -361,11 +496,16 @@
       "d": "Dependency Inversion Principle (DIP)"
     },
     "resposta_correta": "c",
-    "explicacao": "O Single Responsibility Principle (SRP) determina que uma classe deve ter apenas um motivo para mudar, ou seja, uma única responsabilidade. Uma classe que mistura persistência, lógica de negócio e formatação viola esse princípio, tornando o código difícil de manter e testar."
+    "explicacao": "O **Single Responsibility Principle** (SRP) determina que uma classe deve ter apenas um motivo para mudar, ou seja, uma única responsabilidade. Uma classe que mistura persistência, lógica de negócio e formatação viola esse princípio, tornando o código difícil de manter e testar. Cada responsabilidade deve ser separada em classes distintas."
   },
   {
     "numero": 29,
     "categoria": "pleno",
+    "tags": [
+      "banco-de-dados",
+      "sql",
+      "performance"
+    ],
     "pergunta": "Qual a finalidade principal de um índice em um banco de dados relacional?",
     "alternativas": {
       "a": "Garantir a integridade referencial entre tabelas por meio de chaves estrangeiras",
@@ -374,11 +514,16 @@
       "d": "Controlar o nível de isolamento das transações simultâneas"
     },
     "resposta_correta": "b",
-    "explicacao": "Índices são estruturas de dados auxiliares (geralmente B-trees) que aceleram consultas em colunas específicas, evitando full table scans. O trade-off é que ocupam espaço adicional em disco e tornam operações de escrita mais lentas, pois o índice também precisa ser atualizado."
+    "explicacao": "Índices são estruturas de dados auxiliares (geralmente B-trees) que aceleram consultas em colunas específicas, evitando full table scans. O trade-off é que ocupam espaço adicional em disco e tornam operações de escrita (INSERT, UPDATE, DELETE) mais lentas, pois o índice também precisa ser atualizado. Devem ser usados criteriosamente em colunas de alta seletividade e frequente consulta."
   },
   {
     "numero": 30,
     "categoria": "pleno",
+    "tags": [
+      "observabilidade",
+      "distributed-tracing",
+      "microsservicos"
+    ],
     "pergunta": "O que é \"tracing distribuído\" (distributed tracing) em observabilidade?",
     "alternativas": {
       "a": "Um mecanismo de backup que rastreia alterações em arquivos de configuração de múltiplos servidores",
@@ -392,6 +537,10 @@
   {
     "numero": 31,
     "categoria": "pleno",
+    "tags": [
+      "seguranca",
+      "owasp"
+    ],
     "pergunta": "No contexto de segurança de aplicações, o que é o OWASP Top 10?",
     "alternativas": {
       "a": "Uma lista dos dez frameworks web mais utilizados globalmente, com suas melhores práticas",
@@ -400,11 +549,16 @@
       "d": "Uma certificação de segurança que classifica desenvolvedores em dez níveis de proficiência"
     },
     "resposta_correta": "b",
-    "explicacao": "O OWASP Top 10 é uma referência amplamente reconhecida que documenta as dez vulnerabilidades mais críticas em aplicações web, como Injection (SQL Injection), Broken Authentication e XSS (Cross-Site Scripting). Serve como guia para equipes de desenvolvimento priorizarem controles de segurança."
+    "explicacao": "O **OWASP Top 10** é uma referência amplamente reconhecida que documenta as dez vulnerabilidades mais críticas em aplicações web, como Injection (SQL Injection), Broken Authentication, XSS (Cross-Site Scripting), entre outras. Serve como guia para equipes de desenvolvimento priorizarem controles de segurança."
   },
   {
     "numero": 32,
     "categoria": "pleno",
+    "tags": [
+      "solid",
+      "orientacao-a-objetos",
+      "design"
+    ],
     "pergunta": "Qual é o objetivo do princípio \"Dependency Inversion\" do SOLID?",
     "alternativas": {
       "a": "Garantir que dependências entre classes sejam sempre injetadas via construtor, nunca via setter",
@@ -413,11 +567,15 @@
       "d": "Inverter a ordem de inicialização de objetos para otimizar o uso de memória"
     },
     "resposta_correta": "b",
-    "explicacao": "O Dependency Inversion Principle (DIP) estabelece que módulos de alto nível não devem depender de módulos de baixo nível — ambos devem depender de abstrações. Isso permite trocar implementações sem alterar o código que as utiliza, facilitando testes e manutenção."
+    "explicacao": "O **Dependency Inversion Principle** (DIP) estabelece que: (1) módulos de alto nível não devem depender de módulos de baixo nível — ambos devem depender de abstrações; (2) abstrações não devem depender de detalhes — detalhes devem depender de abstrações. Isso permite trocar implementações sem alterar o código que as utiliza, facilitando testes e manutenção."
   },
   {
     "numero": 33,
     "categoria": "pleno",
+    "tags": [
+      "git",
+      "controle-de-versao"
+    ],
     "pergunta": "Em Git, qual é a finalidade do `git rebase -i` (interativo)?",
     "alternativas": {
       "a": "São comandos completamente diferentes: rebase reorganiza branches inteiras; squash é um comando independente para comprimir arquivos",
@@ -431,6 +589,11 @@
   {
     "numero": 34,
     "categoria": "pleno",
+    "tags": [
+      "arquitetura",
+      "ddd",
+      "design"
+    ],
     "pergunta": "O que é Domain-Driven Design (DDD)?",
     "alternativas": {
       "a": "Uma metodologia ágil de gestão de projetos focada em entregas por domínio de negócio",
@@ -439,11 +602,16 @@
       "d": "Uma técnica de testes que simula domínios de usuários para validar requisitos de sistema"
     },
     "resposta_correta": "b",
-    "explicacao": "DDD (Domain-Driven Design), conceito de Eric Evans, propõe que o design do software deve refletir profundamente o domínio do negócio. Envolve conceitos como Linguagem Ubíqua, Bounded Contexts, Agregados, Entidades e Value Objects, com o objetivo de criar software que modele fielmente os processos de negócio."
+    "explicacao": "DDD (Domain-Driven Design), conceito de Eric Evans, propõe que o design do software deve refletir profundamente o domínio do negócio. Envolve conceitos como Linguagem Ubíqua (terminologia compartilhada entre técnicos e especialistas de negócio), Bounded Contexts, Agregados, Entidades e Value Objects. O objetivo é criar software que modele fielmente os processos de negócio."
   },
   {
     "numero": 35,
     "categoria": "sênior",
+    "tags": [
+      "observabilidade",
+      "monitoramento",
+      "sre"
+    ],
     "pergunta": "Um time recebe alertas frequentes, mas demora para identificar causa raiz. Qual mudança traz maior ganho de observabilidade?",
     "alternativas": {
       "a": "Aumentar apenas capacidade de CPU dos servidores",
@@ -457,6 +625,10 @@
   {
     "numero": 36,
     "categoria": "sênior",
+    "tags": [
+      "seguranca",
+      "boas-praticas"
+    ],
     "pergunta": "No contexto de segurança em aplicações e infraestrutura, qual abordagem está mais alinhada às boas práticas do mercado?",
     "alternativas": {
       "a": "Tratar segurança apenas na etapa final do projeto",
@@ -470,6 +642,11 @@
   {
     "numero": 37,
     "categoria": "sênior",
+    "tags": [
+      "seguranca",
+      "lgpd",
+      "governanca"
+    ],
     "pergunta": "Um sistema precisa cumprir LGPD, manter governança e ainda evoluir rápido. Qual decisão técnica-processual é mais adequada?",
     "alternativas": {
       "a": "Ignorar rastreabilidade para ganhar agilidade",
@@ -483,6 +660,12 @@
   {
     "numero": 38,
     "categoria": "sênior",
+    "tags": [
+      "arquitetura",
+      "microsservicos",
+      "resiliencia",
+      "system-design"
+    ],
     "pergunta": "Em um sistema de alta disponibilidade com microsserviços, qual padrão é mais adequado para evitar que a falha de um serviço dependente propague falhas em cascata para todo o sistema?",
     "alternativas": {
       "a": "Singleton Pattern — garantindo que apenas uma instância do serviço problemático exista",
@@ -491,11 +674,16 @@
       "d": "Repository Pattern — isolando chamadas ao serviço problemático atrás de uma camada de abstração de dados"
     },
     "resposta_correta": "b",
-    "explicacao": "O Circuit Breaker monitora chamadas a serviços externos e, quando detecta uma taxa de falha acima de um limiar, \"abre o circuito\" — interrompendo as chamadas por um período e retornando respostas de fallback imediatamente. Isso evita o desperdício de recursos e previne falhas em cascata."
+    "explicacao": "O **Circuit Breaker** monitora chamadas a serviços externos e, quando detecta uma taxa de falha acima de um limiar, \"abre o circuito\" — interrompendo as chamadas por um período e retornando respostas de fallback imediatamente. Isso evita o desperdício de recursos esperando por serviços indisponíveis e previne falhas em cascata. Implementado por bibliotecas como Hystrix e Resilience4j."
   },
   {
     "numero": 39,
     "categoria": "sênior",
+    "tags": [
+      "git",
+      "controle-de-versao",
+      "ci-cd"
+    ],
     "pergunta": "Qual é a principal diferença entre as estratégias de branching \"Git Flow\" e \"Trunk Based Development\"?",
     "alternativas": {
       "a": "Git Flow usa repositórios distribuídos; Trunk Based Development usa repositório centralizado",
@@ -504,11 +692,16 @@
       "d": "Git Flow automatiza deploys; Trunk Based Development requer aprovação manual em todas as etapas de release"
     },
     "resposta_correta": "b",
-    "explicacao": "Git Flow estrutura o desenvolvimento com branches de longa duração (main, develop, feature/*, release/*, hotfix/*), adequado para releases periódicas. Trunk Based Development preconiza integração contínua na branch principal com commits frequentes e uso de feature flags, facilitando CI/CD verdadeiro e reduzindo conflitos de merge."
+    "explicacao": "**Git Flow** estrutura o desenvolvimento com branches de longa duração (main, develop, feature/*, release/*, hotfix/*), adequado para releases periódicas e versionamento semântico. **Trunk Based Development** preconiza integração contínua na branch principal (trunk/main) com commits frequentes e uso de feature flags para controlar a ativação de funcionalidades incompletas. TBD facilita CI/CD verdadeiro e reduz conflitos de merge."
   },
   {
     "numero": 40,
     "categoria": "sênior",
+    "tags": [
+      "kubernetes",
+      "containers",
+      "infraestrutura"
+    ],
     "pergunta": "Em Kubernetes, qual é a função de um \"Deployment\" em relação a \"Pods\"?",
     "alternativas": {
       "a": "Um Deployment é um Pod com mais recursos de CPU e memória reservados para workloads críticos",
@@ -517,11 +710,16 @@
       "d": "Um Deployment armazena as variáveis de ambiente e secrets que são injetados nos Pods durante a inicialização"
     },
     "resposta_correta": "b",
-    "explicacao": "No Kubernetes, Pods são as unidades mínimas de execução de containers. Um Deployment é um objeto de nível superior que declara o estado desejado (número de réplicas, imagem do container, estratégia de atualização) e faz o cluster convergir para esse estado, gerenciando rolling updates e rollbacks automaticamente."
+    "explicacao": "No Kubernetes, **Pods** são as unidades mínimas de execução de containers. Um **Deployment** é um objeto de nível superior que declara o estado desejado (número de réplicas, imagem do container, estratégia de atualização) e faz o cluster convergir para esse estado. Ele gerencia automaticamente rolling updates (atualizações sem downtime) e permite rollbacks para versões anteriores."
   },
   {
     "numero": 41,
     "categoria": "sênior",
+    "tags": [
+      "sre",
+      "observabilidade",
+      "monitoramento"
+    ],
     "pergunta": "O que são \"quatro sinais de ouro\" (Four Golden Signals) no contexto de SRE (Site Reliability Engineering)?",
     "alternativas": {
       "a": "Os quatro protocolos de rede mais importantes para monitorar em sistemas distribuídos: TCP, UDP, HTTP e HTTPS",
@@ -530,11 +728,16 @@
       "d": "As quatro etapas de resposta a incidentes: detecção, triagem, mitigação e post-mortem"
     },
     "resposta_correta": "b",
-    "explicacao": "Os Four Golden Signals (do Google SRE Book) são: (1) Latência — tempo para atender uma requisição; (2) Tráfego — demanda sobre o sistema (req/s); (3) Erros — taxa de requisições com falha; (4) Saturação — quão \"cheio\" está o sistema (CPU, memória, disco). Monitorar essas quatro métricas fornece visão abrangente da saúde de qualquer serviço."
+    "explicacao": "Os **Four Golden Signals** (do Google SRE Book) são: (1) **Latência** — tempo para atender uma requisição; (2) **Tráfego** — demanda sobre o sistema (req/s); (3) **Erros** — taxa de requisições com falha; (4) **Saturação** — quão \"cheio\" está o sistema (CPU, memória, disco). Monitorar essas quatro métricas fornece uma visão abrangente da saúde operacional de qualquer serviço."
   },
   {
     "numero": 42,
     "categoria": "sênior",
+    "tags": [
+      "seguranca",
+      "sast",
+      "dast"
+    ],
     "pergunta": "Em segurança de aplicações, qual é a diferença entre SAST e DAST?",
     "alternativas": {
       "a": "SAST analisa o código-fonte estaticamente sem execução; DAST testa a aplicação em execução simulando ataques externos",
@@ -543,11 +746,17 @@
       "d": "SAST e DAST são sinônimos para pentesting automatizado realizados em diferentes ambientes"
     },
     "resposta_correta": "a",
-    "explicacao": "SAST (Static Application Security Testing) analisa o código-fonte sem executar a aplicação, identificando vulnerabilidades como SQL injection e XSS no próprio código. DAST (Dynamic Application Security Testing) testa a aplicação em execução, simulando ataques de um usuário externo. O uso combinado de ambos oferece cobertura de segurança mais abrangente no pipeline de CI/CD."
+    "explicacao": "**SAST** (Static Application Security Testing) analisa o código-fonte, bytecode ou binários sem executar a aplicação, identificando vulnerabilidades como SQL injection e XSS no próprio código. **DAST** (Dynamic Application Security Testing) testa a aplicação em execução, simulando ataques de um usuário externo para descobrir vulnerabilidades de runtime. O uso combinado de ambos oferece cobertura de segurança mais abrangente no pipeline de CI/CD."
   },
   {
     "numero": 43,
     "categoria": "sênior",
+    "tags": [
+      "api",
+      "rest",
+      "versionamento",
+      "system-design"
+    ],
     "pergunta": "Em Design de APIs RESTful, qual abordagem é mais adequada para versionar uma API que precisa de mudanças incompatíveis com versões anteriores?",
     "alternativas": {
       "a": "Modificar diretamente os endpoints existentes sem aviso, pois clientes devem se adaptar automaticamente",
@@ -556,11 +765,16 @@
       "d": "Usar apenas query parameters para versionar (ex: `?version=2`), pois é o único método padronizado pelo REST"
     },
     "resposta_correta": "b",
-    "explicacao": "O versionamento de APIs é essencial para evitar quebrar clientes existentes. As estratégias mais comuns são: URL versioning (`/v1/`, `/v2/`), Header versioning (`API-Version: 2`) e Media type versioning. O importante é manter versões antigas funcionando por um período de deprecação com comunicação clara aos consumidores."
+    "explicacao": "O versionamento de APIs é essencial para evitar quebrar clientes existentes. As estratégias mais comuns são: **URL versioning** (`/v1/`, `/v2/`) — simples e explícita; **Header versioning** (`API-Version: 2`) — mantém URLs limpas; **Media type versioning** (`Accept: application/vnd.api.v2+json`) — mais RESTful. O importante é manter versões antigas funcionando por um período de deprecação com comunicação clara aos consumidores."
   },
   {
     "numero": 44,
     "categoria": "sênior",
+    "tags": [
+      "lideranca-tecnica",
+      "code-review",
+      "boas-praticas"
+    ],
     "pergunta": "Ao revisar o código de um desenvolvedor júnior que implementou uma solução funcional mas com alto acoplamento e sem testes, qual é a abordagem mais eficaz de um líder técnico?",
     "alternativas": {
       "a": "Rejeitar o PR sem explicações e reimplementar a solução corretamente, demonstrando o padrão esperado",
@@ -569,11 +783,17 @@
       "d": "Escalar imediatamente para o gerente de engenharia, pois código sem testes é bloqueador crítico de release"
     },
     "resposta_correta": "c",
-    "explicacao": "A abordagem eficaz equilibra qualidade técnica com desenvolvimento humano. Rejeitar sem explicação desmotiva e não ensina; aprovar negligencia a qualidade e o crescimento. O feedback construtivo e específico — explicando o \"porquê\" dos problemas e definindo expectativas claras — transforma a revisão em oportunidade de mentoria."
+    "explicacao": "A abordagem eficaz equilibra qualidade técnica com desenvolvimento humano. Rejeitar sem explicação desmotiva e não ensina; aprovar negligencia a qualidade e o crescimento. O feedback construtivo e específico — explicando o \"porquê\" dos problemas, sugerindo recursos e definindo expectativas claras — transforma a revisão em oportunidade de mentoria e acelera o crescimento do júnior."
   },
   {
     "numero": 45,
     "categoria": "sênior",
+    "tags": [
+      "seguranca",
+      "autenticacao",
+      "autorizacao",
+      "jwt"
+    ],
     "pergunta": "Qual é a diferença entre autenticação e autorização em sistemas de segurança, e quais tecnologias são tipicamente usadas para cada uma em APIs modernas?",
     "alternativas": {
       "a": "Autenticação e autorização são sinônimos; ambas são implementadas exclusivamente com certificados SSL/TLS",
@@ -582,11 +802,16 @@
       "d": "Autenticação é responsabilidade do frontend; autorização é responsabilidade exclusiva do banco de dados"
     },
     "resposta_correta": "b",
-    "explicacao": "Autenticação (AuthN) responde \"quem é você?\" — verifica identidade via credenciais. Autorização (AuthZ) responde \"o que você pode fazer?\" — define permissões e scopes. OAuth 2.0 é um framework de autorização delegada; JWT (JSON Web Token) carrega claims de identidade e permissões verificáveis sem consulta ao servidor; OpenID Connect adiciona autenticação sobre o OAuth 2.0."
+    "explicacao": "**Autenticação** (AuthN) responde \"quem é você?\" — verifica identidade via credenciais. **Autorização** (AuthZ) responde \"o que você pode fazer?\" — define permissões e scopes. Em APIs modernas: **OAuth 2.0** é um framework de autorização delegada; **JWT** (JSON Web Token) é um formato de token que carrega claims de identidade e permissões, verificável sem consulta ao servidor; **OpenID Connect** adiciona autenticação sobre o OAuth 2.0."
   },
   {
     "numero": 46,
     "categoria": "sênior",
+    "tags": [
+      "arquitetura",
+      "documentacao",
+      "boas-praticas"
+    ],
     "pergunta": "No Projeto Final (TCC), qual evidência demonstra melhor consolidação das competências do curso?",
     "alternativas": {
       "a": "Apenas apresentação visual da ideia, sem código",
@@ -596,5 +821,557 @@
     },
     "resposta_correta": "c",
     "explicacao": "O TCC é integrador: deve combinar implementação, arquitetura, persistência/integração, documentação e apresentação estruturada, demonstrando autonomia e domínio do conjunto de competências desenvolvidas ao longo do curso."
+  },
+  {
+    "numero": 47,
+    "categoria": "iniciante",
+    "tags": [
+      "python",
+      "operadores",
+      "programacao"
+    ],
+    "pergunta": "Observe o trecho de código Python abaixo:\n\n```python\nx = 10\ny = 3\nprint(x // y)\nprint(x % y)\n```\n\nQual será a saída?",
+    "alternativas": {
+      "a": "`3.33` e `1`",
+      "b": "`3` e `1`",
+      "c": "`3` e `3`",
+      "d": "`4` e `1`"
+    },
+    "resposta_correta": "b",
+    "explicacao": "`//` é divisão inteira (floor division): `10 // 3 = 3`. `%` é o operador módulo, que retorna o resto da divisão: `10 % 3 = 1`. Diferente de `/`, que retornaria `3.3333...`."
+  },
+  {
+    "numero": 48,
+    "categoria": "iniciante",
+    "tags": [
+      "python",
+      "listas",
+      "programacao"
+    ],
+    "pergunta": "Considere o código abaixo:\n\n```python\nfrutas = [\"maçã\", \"banana\", \"laranja\"]\nprint(frutas[1])\n```\n\nO que será impresso?",
+    "alternativas": {
+      "a": "`maçã`",
+      "b": "`banana`",
+      "c": "`laranja`",
+      "d": "Um erro, pois listas começam no índice 1"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Em Python (e na maioria das linguagens), listas são indexadas a partir de 0. Portanto, `frutas[0]` é `\"maçã\"`, `frutas[1]` é `\"banana\"` e `frutas[2]` é `\"laranja\"`."
+  },
+  {
+    "numero": 49,
+    "categoria": "iniciante",
+    "tags": [
+      "linux",
+      "cli",
+      "shell"
+    ],
+    "pergunta": "O que o código abaixo faz?\n\n```bash\nmkdir projetos\ncd projetos\ntouch README.md\nls\n```",
+    "alternativas": {
+      "a": "Cria um arquivo chamado `projetos`, entra nele e lista seu conteúdo",
+      "b": "Cria um diretório `projetos`, entra nele, cria um arquivo `README.md` e lista o conteúdo do diretório",
+      "c": "Cria um diretório `projetos` e move o arquivo `README.md` para dentro dele",
+      "d": "Lista todos os arquivos `.md` dentro do diretório `projetos`"
+    },
+    "resposta_correta": "b",
+    "explicacao": "`mkdir` cria um diretório, `cd` muda para ele, `touch` cria um arquivo vazio e `ls` lista o conteúdo do diretório atual. A sequência resulta em um diretório `projetos` contendo `README.md`."
+  },
+  {
+    "numero": 50,
+    "categoria": "iniciante",
+    "tags": [
+      "python",
+      "loops",
+      "programacao"
+    ],
+    "pergunta": "Analise o código:\n\n```python\nfor i in range(3):\n    print(i)\n```\n\nQual é a saída?",
+    "alternativas": {
+      "a": "`1`, `2`, `3`",
+      "b": "`0`, `1`, `2`, `3`",
+      "c": "`0`, `1`, `2`",
+      "d": "`1`, `2`"
+    },
+    "resposta_correta": "c",
+    "explicacao": "`range(3)` gera os valores `0, 1, 2` — começa em 0 e vai até (mas não inclui) o valor passado. Para incluir o 3, seria necessário `range(4)` ou `range(1, 4)`."
+  },
+  {
+    "numero": 51,
+    "categoria": "junior",
+    "tags": [
+      "python",
+      "funcoes",
+      "programacao"
+    ],
+    "pergunta": "Qual é o resultado da execução do código abaixo?\n\n```python\ndef soma(a, b=5):\n    return a + b\n\nprint(soma(3))\nprint(soma(3, 10))\n```",
+    "alternativas": {
+      "a": "`8` e `13`",
+      "b": "`3` e `13`",
+      "c": "`8` e `8`",
+      "d": "Erro, pois `b` não foi passado na primeira chamada"
+    },
+    "resposta_correta": "a",
+    "explicacao": "`b=5` é um parâmetro com valor padrão. Na primeira chamada `soma(3)`, `b` assume o valor padrão `5`, resultando em `3 + 5 = 8`. Na segunda, `b=10` é passado explicitamente, resultando em `3 + 10 = 13`."
+  },
+  {
+    "numero": 52,
+    "categoria": "junior",
+    "tags": [
+      "javascript",
+      "arrays",
+      "programacao-funcional"
+    ],
+    "pergunta": "Observe o código JavaScript:\n\n```javascript\nconst numeros = [1, 2, 3, 4, 5];\nconst resultado = numeros.filter(n => n % 2 === 0).map(n => n * 10);\nconsole.log(resultado);\n```\n\nO que será impresso?",
+    "alternativas": {
+      "a": "`[10, 20, 30, 40, 50]`",
+      "b": "`[2, 4]`",
+      "c": "`[20, 40]`",
+      "d": "`[1, 3, 5]`"
+    },
+    "resposta_correta": "c",
+    "explicacao": "`filter(n => n % 2 === 0)` seleciona apenas os números pares: `[2, 4]`. Em seguida, `map(n => n * 10)` multiplica cada um por 10: `[20, 40]`. As operações são encadeadas (chaining) e executadas em sequência."
+  },
+  {
+    "numero": 53,
+    "categoria": "junior",
+    "tags": [
+      "python",
+      "algoritmos",
+      "busca"
+    ],
+    "pergunta": "Analise a função Python abaixo:\n\n```python\ndef busca_binaria(lista, alvo):\n    esq, dir = 0, len(lista) - 1\n    while esq <= dir:\n        meio = (esq + dir) // 2\n        if lista[meio] == alvo:\n            return meio\n        elif lista[meio] < alvo:\n            esq = meio + 1\n        else:\n            dir = meio - 1\n    return -1\n\nprint(busca_binaria([1, 3, 5, 7, 9, 11], 7))\n```\n\nQual é o retorno?",
+    "alternativas": {
+      "a": "`7`",
+      "b": "`3`",
+      "c": "`4`",
+      "d": "`-1`"
+    },
+    "resposta_correta": "b",
+    "explicacao": "A lista `[1, 3, 5, 7, 9, 11]` tem índices 0–5. A busca binária encontra `7` no índice `3`. A função retorna o índice, não o valor. Iterações: meio=2 (valor 5, muito pequeno → esq=3), meio=4 (valor 9, muito grande → dir=3), meio=3 (valor 7 = alvo → retorna 3)."
+  },
+  {
+    "numero": 54,
+    "categoria": "junior",
+    "tags": [
+      "sql",
+      "banco-de-dados",
+      "queries"
+    ],
+    "pergunta": "O que o código SQL abaixo retorna?\n\n```sql\nSELECT departamento, COUNT(*) as total\nFROM funcionarios\nWHERE salario > 5000\nGROUP BY departamento\nHAVING COUNT(*) >= 3\nORDER BY total DESC;\n```",
+    "alternativas": {
+      "a": "Todos os funcionários com salário acima de 5000, ordenados por departamento",
+      "b": "O número total de funcionários por departamento, sem nenhum filtro",
+      "c": "Os departamentos com pelo menos 3 funcionários que ganham mais de 5000, ordenados do maior para o menor número de funcionários",
+      "d": "Os 3 departamentos com maior salário médio acima de 5000"
+    },
+    "resposta_correta": "c",
+    "explicacao": "`WHERE salario > 5000` filtra linhas antes do agrupamento. `GROUP BY departamento` agrupa os resultados. `HAVING COUNT(*) >= 3` filtra grupos com menos de 3 funcionários (aplicado após o agrupamento, diferente do `WHERE`). `ORDER BY total DESC` ordena do maior para o menor."
+  },
+  {
+    "numero": 55,
+    "categoria": "junior",
+    "tags": [
+      "docker",
+      "containers",
+      "boas-praticas"
+    ],
+    "pergunta": "Considere o Dockerfile abaixo:\n\n```dockerfile\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install -r requirements.txt\nCOPY . .\nCMD [\"python\", \"main.py\"]\n```\n\nPor que `COPY requirements.txt .` e `RUN pip install` aparecem antes de `COPY . .`?",
+    "alternativas": {
+      "a": "É apenas uma convenção estética sem impacto real na build",
+      "b": "Para garantir que o arquivo `main.py` seja copiado por último, evitando conflitos de nome",
+      "c": "Para aproveitar o cache de camadas do Docker: se o código mudar mas `requirements.txt` não, a camada de instalação de dependências é reutilizada",
+      "d": "Porque o Docker exige que arquivos de configuração sejam copiados antes do código-fonte"
+    },
+    "resposta_correta": "c",
+    "explicacao": "O Docker constrói imagens em camadas e cacheia cada instrução. Ao copiar e instalar dependências antes do código, a camada `pip install` só é reexecutada quando `requirements.txt` muda. Se o código mudar (o que acontece com frequência), apenas as camadas após `COPY . .` são reconstruídas, tornando as builds muito mais rápidas."
+  },
+  {
+    "numero": 56,
+    "categoria": "junior",
+    "tags": [
+      "python",
+      "armadilhas",
+      "programacao"
+    ],
+    "pergunta": "Qual é o problema no código Python abaixo?\n\n```python\ndef adicionar_item(item, lista=[]):\n    lista.append(item)\n    return lista\n\nprint(adicionar_item(\"a\"))\nprint(adicionar_item(\"b\"))\nprint(adicionar_item(\"c\"))\n```",
+    "alternativas": {
+      "a": "Nenhum problema; cada chamada retorna uma lista com um único elemento",
+      "b": "O argumento padrão mutável `[]` é criado uma única vez e compartilhado entre todas as chamadas, acumulando itens inesperadamente",
+      "c": "`append` não funciona com strings, apenas com inteiros",
+      "d": "A função retorna `None` porque não há `return` explícito para listas"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Em Python, argumentos padrão mutáveis (como listas e dicionários) são avaliados uma única vez na definição da função, não a cada chamada. A saída será `['a']`, `['a', 'b']`, `['a', 'b', 'c']` — não três listas separadas. O padrão correto é usar `lista=None` e criar a lista dentro da função: `if lista is None: lista = []`."
+  },
+  {
+    "numero": 57,
+    "categoria": "pleno",
+    "tags": [
+      "python",
+      "asyncio",
+      "concorrencia"
+    ],
+    "pergunta": "Analise o código Python abaixo:\n\n```python\nimport asyncio\n\nasync def buscar_dados(id):\n    await asyncio.sleep(1)  # simula I/O\n    return f\"dados_{id}\"\n\nasync def main():\n    resultado = await asyncio.gather(\n        buscar_dados(1),\n        buscar_dados(2),\n        buscar_dados(3),\n    )\n    print(resultado)\n\nasyncio.run(main())\n```\n\nQuanto tempo aproximadamente esse código leva para executar, e por quê?",
+    "alternativas": {
+      "a": "~3 segundos, pois cada `buscar_dados` aguarda 1 segundo sequencialmente",
+      "b": "~1 segundo, pois `asyncio.gather` executa as corrotinas concorrentemente no mesmo event loop",
+      "c": "~0 segundos, pois `asyncio.sleep` não bloqueia o processo e é ignorado",
+      "d": "Tempo indeterminado, pois `asyncio.gather` cria threads separadas para cada chamada"
+    },
+    "resposta_correta": "b",
+    "explicacao": "`asyncio.gather` agenda todas as corrotinas para execução concorrente no mesmo event loop. Enquanto uma corrotina aguarda o `await asyncio.sleep(1)`, o event loop executa as outras. Como todas esperam 1 segundo simultaneamente, o tempo total é ~1 segundo. Importante: isso é concorrência, não paralelismo — não há threads separadas."
+  },
+  {
+    "numero": 58,
+    "categoria": "pleno",
+    "tags": [
+      "design-patterns",
+      "injecao-de-dependencia",
+      "solid"
+    ],
+    "pergunta": "Observe o código abaixo e identifique qual princípio de design está sendo aplicado:\n\n```python\nclass RelatorioService:\n    def __init__(self, repositorio, formatador, notificador):\n        self.repositorio = repositorio\n        self.formatador = formatador\n        self.notificador = notificador\n\n    def gerar(self, filtros):\n        dados = self.repositorio.buscar(filtros)\n        relatorio = self.formatador.formatar(dados)\n        self.notificador.enviar(relatorio)\n        return relatorio\n```",
+    "alternativas": {
+      "a": "Herança — `RelatorioService` herda comportamento de `repositorio`, `formatador` e `notificador`",
+      "b": "Injeção de dependência — as colaborações são recebidas via construtor, não instanciadas internamente",
+      "c": "Singleton — garante que apenas uma instância de `RelatorioService` exista na aplicação",
+      "d": "Template Method — define o esqueleto do algoritmo em `gerar`, delegando passos às subclasses"
+    },
+    "resposta_correta": "b",
+    "explicacao": "O padrão de Injeção de Dependência (DI) consiste em receber colaboradores via construtor (ou setter/método) em vez de instanciá-los internamente com `self.repositorio = Repositorio()`. Isso torna a classe testável (basta passar stubs/mocks), desacoplada de implementações concretas e alinhada ao Dependency Inversion Principle do SOLID."
+  },
+  {
+    "numero": 59,
+    "categoria": "pleno",
+    "tags": [
+      "seguranca",
+      "sql-injection",
+      "api"
+    ],
+    "pergunta": "Qual é o problema de segurança no código abaixo?\n\n```python\n@app.get(\"/usuario\")\nasync def buscar_usuario(nome: str, db: Session = Depends(get_db)):\n    query = f\"SELECT * FROM usuarios WHERE nome = '{nome}'\"\n    resultado = db.execute(query)\n    return resultado.fetchall()\n```",
+    "alternativas": {
+      "a": "O uso de `async def` é incompatível com operações de banco de dados síncronas",
+      "b": "A query está vulnerável a SQL Injection, pois o parâmetro `nome` é interpolado diretamente na string SQL",
+      "c": "`fetchall()` retorna dados em formato binário, causando erro de serialização no JSON",
+      "d": "O endpoint deveria usar `POST` em vez de `GET` para consultas ao banco de dados"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Interpolar parâmetros diretamente em strings SQL permite SQL Injection. Um atacante pode passar `nome = \"' OR '1'='1\"` para retornar todos os usuários, ou `\"'; DROP TABLE usuarios; --\"` para destruir dados. A correção é usar queries parametrizadas: `db.execute(\"SELECT * FROM usuarios WHERE nome = :nome\", {\"nome\": nome})`."
+  },
+  {
+    "numero": 60,
+    "categoria": "pleno",
+    "tags": [
+      "testes",
+      "stubs",
+      "boas-praticas"
+    ],
+    "pergunta": "Analise o código de teste abaixo:\n\n```python\nclass StubRepositorio:\n    def __init__(self, usuarios):\n        self._usuarios = usuarios\n\n    async def buscar_por_email(self, email):\n        return next((u for u in self._usuarios if u[\"email\"] == email), None)\n\nasync def test_login_usuario_inexistente():\n    repo = StubRepositorio(usuarios=[])\n    service = AuthService(repositorio=repo)\n    \n    with pytest.raises(AppError) as exc:\n        await service.login(\"naoexiste@email.com\", \"1990-01-01\")\n    \n    assert exc.value.code == \"USER_NOT_FOUND\"\n```\n\nQual é a vantagem de usar `StubRepositorio` em vez de conectar ao banco de dados real no teste?",
+    "alternativas": {
+      "a": "Stubs são mais rápidos de escrever do que configurar um banco de dados, mas produzem resultados menos confiáveis",
+      "b": "O teste fica isolado, determinístico e rápido — sem dependência de infraestrutura externa, rede ou estado do banco",
+      "c": "Stubs permitem testar apenas o repositório, ignorando a lógica do serviço",
+      "d": "É obrigatório usar stubs em Python porque `pytest` não suporta conexões assíncronas com bancos de dados"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Testes com stubs são isolados (não dependem de banco real), determinísticos (o estado é controlado pelo teste), rápidos (sem I/O de rede) e portáveis (rodam em qualquer ambiente, incluindo CI). Isso segue o princípio de testes unitários: testar uma unidade de lógica de forma independente. O `StubRepositorio` simula o contrato da interface sem implementar acesso real ao banco."
+  },
+  {
+    "numero": 61,
+    "categoria": "pleno",
+    "tags": [
+      "seguranca",
+      "docker",
+      "secrets"
+    ],
+    "pergunta": "Observe o trecho de configuração abaixo:\n\n```yaml\n# docker-compose.yml\nservices:\n  api:\n    build: .\n    environment:\n      - DATABASE_URL=mongodb://mongo:27017/app\n      - SECRET_KEY=minha-chave-super-secreta-123\n    ports:\n      - \"8000:8000\"\n  mongo:\n    image: mongo:7\n```\n\nQual é o problema crítico nessa configuração?",
+    "alternativas": {
+      "a": "O serviço `mongo` deveria expor a porta `27017` explicitamente para que a `api` consiga se conectar",
+      "b": "`DATABASE_URL` e `SECRET_KEY` estão hardcoded no arquivo versionado, expondo credenciais no repositório",
+      "c": "O `docker-compose.yml` não define volumes, então os dados do MongoDB serão perdidos ao reiniciar",
+      "d": "A `api` deveria usar `depends_on: mongo` para garantir que o banco suba antes da aplicação"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Commitar segredos (chaves, senhas, tokens) diretamente em arquivos versionados é uma das vulnerabilidades mais comuns e graves. Qualquer pessoa com acesso ao repositório (incluindo histórico do Git) terá acesso às credenciais. A prática correta é usar variáveis de ambiente via arquivo `.env` (adicionado ao `.gitignore`) e referenciar com `env_file: .env` ou `${SECRET_KEY}` no compose."
+  },
+  {
+    "numero": 62,
+    "categoria": "sênior",
+    "tags": [
+      "python",
+      "asyncio",
+      "concorrencia",
+      "race-condition"
+    ],
+    "pergunta": "Analise o código Python abaixo e identifique o problema de concorrência:\n\n```python\ncontador = 0\n\nasync def incrementar():\n    global contador\n    valor_atual = contador\n    await asyncio.sleep(0)  # cede controle ao event loop\n    contador = valor_atual + 1\n\nasync def main():\n    await asyncio.gather(*[incrementar() for _ in range(100)])\n    print(contador)  # Qual valor esperado?\n```",
+    "alternativas": {
+      "a": "O código é thread-safe pois usa `asyncio`, que é single-threaded; o resultado será sempre `100`",
+      "b": "Há uma race condition: `await asyncio.sleep(0)` cede o controle, permitindo que outras corrotinas leiam `contador` antes da escrita, resultando em valor menor que `100`",
+      "c": "O código lança `RuntimeError` pois variáveis globais não podem ser modificadas em corrotinas assíncronas",
+      "d": "O resultado será `100` na maioria das execuções, mas pode variar por causa do GIL do Python"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Mesmo sendo single-threaded, `asyncio` tem pontos de troca de contexto nos `await`. Quando `incrementar` lê `contador=0` e cede o controle com `await asyncio.sleep(0)`, outras 99 corrotinas também leem `contador=0` antes de qualquer escrita. Todas escrevem `0+1=1`. O resultado final será próximo de `1`, não `100`. A solução é usar `asyncio.Lock` para proteger a seção crítica."
+  },
+  {
+    "numero": 63,
+    "categoria": "sênior",
+    "tags": [
+      "banco-de-dados",
+      "mongodb",
+      "concorrencia",
+      "race-condition"
+    ],
+    "pergunta": "Considere o seguinte código de uma API FastAPI:\n\n```python\n@app.post(\"/pedidos\")\nasync def criar_pedido(dados: PedidoRequest, db=Depends(get_db)):\n    estoque = await db.estoque.find_one({\"produto_id\": dados.produto_id})\n    \n    if estoque[\"quantidade\"] < dados.quantidade:\n        raise HTTPException(400, \"Estoque insuficiente\")\n    \n    await db.estoque.update_one(\n        {\"produto_id\": dados.produto_id},\n        {\"$inc\": {\"quantidade\": -dados.quantidade}}\n    )\n    pedido = await db.pedidos.insert_one({\"...\": \"...\"})\n    return {\"pedido_id\": str(pedido.inserted_id)}\n```\n\nQual problema crítico existe nesse código em um ambiente com múltiplas requisições simultâneas?",
+    "alternativas": {
+      "a": "O uso de `async def` com Motor (driver assíncrono do MongoDB) é incompatível e causará erros de runtime",
+      "b": "Há uma race condition entre a verificação de estoque e a atualização: duas requisições simultâneas podem passar na verificação com o mesmo estoque disponível, resultando em estoque negativo",
+      "c": "`insert_one` não retorna o `inserted_id` no Motor assíncrono, causando `AttributeError`",
+      "d": "O endpoint deveria usar transação SQL para garantir atomicidade, mas MongoDB não suporta transações"
+    },
+    "resposta_correta": "b",
+    "explicacao": "O padrão \"check-then-act\" sem atomicidade é uma race condition clássica. Duas requisições simultâneas podem ambas ler `quantidade=1`, ambas passarem na verificação, e ambas decrementarem — resultando em `quantidade=-1`. A solução no MongoDB é usar operações atômicas com `find_one_and_update` com filtro de quantidade (`{\"quantidade\": {\"$gte\": dados.quantidade}}`), ou usar transações multi-documento disponíveis desde o MongoDB 4.0."
+  },
+  {
+    "numero": 64,
+    "categoria": "sênior",
+    "tags": [
+      "ci-cd",
+      "deploy",
+      "seguranca",
+      "system-design"
+    ],
+    "pergunta": "Analise o pipeline de CI abaixo e identifique o problema arquitetural:\n\n```yaml\n# .github/workflows/deploy.yml\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - name: Deploy to production\n        run: |\n          ssh user@prod-server \"cd /app && git pull && pip install -r requirements.txt && systemctl restart api\"\n        env:\n          SSH_KEY: ${{ secrets.SSH_KEY }}\n```",
+    "alternativas": {
+      "a": "O uso de `secrets.SSH_KEY` é inseguro; credenciais deveriam estar hardcoded no workflow para maior controle",
+      "b": "O deploy vai direto para produção sem etapas de teste, build ou validação, e usa `git pull` no servidor de produção — acoplando o servidor ao repositório e sem estratégia de rollback",
+      "c": "`systemctl restart` não funciona em servidores Linux modernos; deveria usar `service api restart`",
+      "d": "O workflow deveria rodar em `self-hosted` runners para ter acesso SSH ao servidor de produção"
+    },
+    "resposta_correta": "b",
+    "explicacao": "O pipeline tem múltiplos problemas: (1) não há etapas de teste — código quebrado vai direto para produção; (2) `git pull` no servidor acopla produção ao repositório e pode falhar por conflitos; (3) não há estratégia de rollback — se o deploy falhar, o servidor fica em estado inconsistente; (4) `pip install` em produção é lento e arriscado. O correto é: testar → buildar imagem Docker → fazer push para registry → deploy com estratégia blue/green ou rolling update com rollback automático."
+  },
+  {
+    "numero": 65,
+    "categoria": "sênior",
+    "tags": [
+      "arquitetura",
+      "microsservicos",
+      "saga",
+      "system-design"
+    ],
+    "pergunta": "Observe o código de um serviço que processa eventos:\n\n```python\nclass PedidoService:\n    async def processar_pagamento(self, pedido_id: str):\n        pedido = await self.repo.buscar(pedido_id)\n        resultado = await self.gateway_pagamento.cobrar(pedido.valor)\n        \n        if resultado.sucesso:\n            await self.repo.atualizar_status(pedido_id, \"PAGO\")\n            await self.email_service.enviar_confirmacao(pedido.cliente_email)\n            await self.estoque_service.reservar(pedido.itens)\n        \n        return resultado\n```\n\nSe `estoque_service.reservar` falhar após o pagamento já ter sido processado e o status atualizado, qual padrão arquitetural seria mais adequado para garantir consistência?",
+    "alternativas": {
+      "a": "Usar `try/except` para capturar o erro e reverter o pagamento chamando `gateway_pagamento.estornar()`",
+      "b": "Implementar o padrão Saga com compensating transactions ou usar uma fila de eventos para garantir consistência eventual entre os serviços",
+      "c": "Envolver toda a operação em uma transação de banco de dados SQL com `BEGIN/COMMIT/ROLLBACK`",
+      "d": "Aumentar o timeout do `estoque_service` para reduzir a probabilidade de falha"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Em sistemas distribuídos, transações ACID tradicionais não funcionam entre serviços independentes. O padrão **Saga** divide a transação em etapas locais com *compensating transactions* (ex: estornar pagamento se reserva falhar). Alternativamente, uma arquitetura orientada a eventos (event-driven) publica `PagamentoConfirmado` em uma fila, e cada serviço reage de forma independente com retry e idempotência. `try/except` com estorno manual é frágil — o próprio estorno pode falhar."
+  },
+  {
+    "numero": 66,
+    "categoria": "junior",
+    "tags": [
+      "system-design",
+      "cache",
+      "escalabilidade"
+    ],
+    "pergunta": "Um sistema de e-commerce precisa exibir a página de um produto para milhares de usuários simultâneos. Os dados do produto raramente mudam. Qual estratégia melhora melhor a escalabilidade dessa leitura?",
+    "alternativas": {
+      "a": "Aumentar o número de réplicas do banco de dados primário para distribuir as leituras",
+      "b": "Adicionar uma camada de cache (ex: Redis) na frente do banco, armazenando os dados do produto por um período definido",
+      "c": "Converter o banco relacional para NoSQL, pois NoSQL é sempre mais rápido para leituras",
+      "d": "Criar um índice em todas as colunas da tabela de produtos para acelerar qualquer consulta"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Dados que raramente mudam e são lidos com alta frequência são candidatos ideais para cache. Um cache como Redis armazena o resultado em memória, respondendo em microssegundos sem tocar o banco. Réplicas de leitura ajudam, mas ainda envolvem I/O de disco. Indexar todas as colunas degrada escritas e não resolve o problema de volume de leituras simultâneas."
+  },
+  {
+    "numero": 67,
+    "categoria": "junior",
+    "tags": [
+      "api",
+      "rest",
+      "system-design"
+    ],
+    "pergunta": "Você está desenhando uma API para um sistema de blog. Qual design de endpoint segue melhor as convenções REST para buscar os comentários de um post específico?",
+    "alternativas": {
+      "a": "`GET /buscarComentariosDoPost?postId=42`",
+      "b": "`POST /comentarios/listar` com `{\"post_id\": 42}` no body",
+      "c": "`GET /posts/42/comentarios`",
+      "d": "`GET /comentarios?acao=listar&post=42`"
+    },
+    "resposta_correta": "c",
+    "explicacao": "REST organiza recursos em hierarquias via URL. `GET /posts/42/comentarios` expressa claramente \"os comentários que pertencem ao post 42\" — é legível, usa o método correto (`GET` para leitura) e segue a convenção de sub-recursos. Usar verbos na URL (`buscarComentarios`) ou `POST` para leituras viola os princípios REST."
+  },
+  {
+    "numero": 68,
+    "categoria": "junior",
+    "tags": [
+      "seguranca",
+      "jwt",
+      "autenticacao"
+    ],
+    "pergunta": "Um serviço de autenticação retorna o seguinte token após login:\n\n```\neyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTcwMDAwMDAwMH0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\n```\n\nSobre JWTs, qual afirmação é correta?",
+    "alternativas": {
+      "a": "O payload do token é criptografado e não pode ser lido sem a chave secreta",
+      "b": "O payload é apenas codificado em Base64 e pode ser lido por qualquer pessoa; a assinatura garante integridade, não confidencialidade",
+      "c": "O token expira automaticamente no servidor quando o campo `exp` é atingido, invalidando sessões ativas",
+      "d": "JWTs devem ser armazenados em `localStorage` pois são imunes a ataques XSS por serem assinados"
+    },
+    "resposta_correta": "b",
+    "explicacao": "JWTs têm três partes separadas por `.`: header, payload e assinatura — todas em Base64URL. O payload pode ser decodificado por qualquer pessoa (tente em jwt.io). A assinatura garante que o token não foi adulterado, mas não esconde o conteúdo. Para dados sensíveis, use JWE (JSON Web Encryption). Armazenar em `localStorage` é arriscado por XSS; `httpOnly cookies` são mais seguros."
+  },
+  {
+    "numero": 69,
+    "categoria": "pleno",
+    "tags": [
+      "system-design",
+      "mensageria",
+      "assincrono",
+      "escalabilidade"
+    ],
+    "pergunta": "Um sistema de notificações precisa enviar e-mails para 500 mil usuários após um evento. O endpoint que dispara o envio responde em menos de 200ms. Como isso é viável?",
+    "alternativas": {
+      "a": "O servidor processa todos os 500 mil e-mails de forma síncrona em threads paralelas antes de responder",
+      "b": "O endpoint apenas publica uma mensagem em uma fila (ex: SQS, RabbitMQ) e retorna imediatamente; workers independentes consomem a fila e enviam os e-mails de forma assíncrona",
+      "c": "O banco de dados armazena os e-mails pendentes e um cron job os envia a cada 5 minutos em lotes",
+      "d": "O serviço de e-mail externo (ex: SendGrid) recebe todos os destinatários em uma única requisição HTTP e processa internamente"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Desacoplar o disparo do processamento via fila de mensagens é o padrão correto. O endpoint publica um evento (`EnviarNotificacoes`) e retorna 202 Accepted imediatamente. Workers escalam horizontalmente para consumir a fila e enviar os e-mails. Isso garante: resposta rápida ao cliente, resiliência (mensagens não se perdem se um worker cair), e escalabilidade independente do produtor."
+  },
+  {
+    "numero": 70,
+    "categoria": "pleno",
+    "tags": [
+      "system-design",
+      "sessoes",
+      "escalabilidade",
+      "cache"
+    ],
+    "pergunta": "Você precisa escolher entre armazenar sessões de usuário em memória local do servidor (in-process) ou em um cache distribuído (ex: Redis). A aplicação roda com 4 instâncias atrás de um load balancer. Qual é o problema da abordagem in-process?",
+    "alternativas": {
+      "a": "Sessões em memória são mais lentas que Redis porque não usam índices",
+      "b": "Se o load balancer rotear a segunda requisição do usuário para uma instância diferente, a sessão não será encontrada — o usuário precisará autenticar novamente",
+      "c": "Memória local não suporta dados de sessão maiores que 4KB por limitação do protocolo HTTP",
+      "d": "Sessões in-process expiram automaticamente após 30 segundos, independente da configuração"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Com múltiplas instâncias, cada servidor tem sua própria memória. Sem sticky sessions ou cache compartilhado, o usuário perde a sessão ao ser roteado para outra instância. Redis centraliza as sessões, tornando-as acessíveis por qualquer instância. Sticky sessions são uma alternativa, mas criam desequilíbrio de carga e falham se uma instância cair."
+  },
+  {
+    "numero": 71,
+    "categoria": "pleno",
+    "tags": [
+      "system-design",
+      "armazenamento",
+      "escalabilidade",
+      "infraestrutura"
+    ],
+    "pergunta": "Analise o diagrama de uma API que recebe uploads de imagens:\n\n```\nCliente → POST /imagens → API → salva no disco local → retorna URL\n```\n\nQuais são os dois principais problemas dessa arquitetura em produção com múltiplas instâncias?",
+    "alternativas": {
+      "a": "O método `POST` não é adequado para uploads; deveria usar `PUT`. E o disco local é mais lento que a memória RAM",
+      "b": "Arquivos salvos no disco de uma instância não são acessíveis pelas outras instâncias; e se a instância reiniciar ou for substituída, os arquivos são perdidos",
+      "c": "APIs REST não devem retornar URLs; deveriam retornar o binário da imagem diretamente no response",
+      "d": "O cliente deveria enviar a imagem em Base64 no JSON em vez de multipart/form-data para compatibilidade"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Disco local em ambientes com múltiplas instâncias cria dois problemas: (1) **inconsistência** — a imagem existe apenas na instância que recebeu o upload; outras instâncias não conseguem servi-la; (2) **efemeridade** — containers e VMs são substituídos, e o disco local é perdido. A solução é armazenamento de objetos externo (S3, GCS, Azure Blob), acessível por todas as instâncias e com durabilidade garantida."
+  },
+  {
+    "numero": 72,
+    "categoria": "pleno",
+    "tags": [
+      "system-design",
+      "banco-de-dados",
+      "performance",
+      "escalabilidade"
+    ],
+    "pergunta": "Um sistema de relatórios executa queries analíticas pesadas no mesmo banco de dados que serve a API transacional. Os usuários relatam lentidão nas operações do dia a dia. Qual padrão arquitetural resolve esse conflito?",
+    "alternativas": {
+      "a": "Adicionar mais índices ao banco para que tanto queries analíticas quanto transacionais sejam rápidas",
+      "b": "Separar as cargas com CQRS/read replicas: queries analíticas rodam em uma réplica de leitura ou data warehouse dedicado, sem impactar o banco primário",
+      "c": "Limitar o horário de execução dos relatórios para fora do horário comercial via cron job",
+      "d": "Aumentar o hardware do servidor de banco de dados para suportar ambas as cargas simultaneamente"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Cargas OLTP (transacional, muitas escritas pequenas) e OLAP (analítica, poucas queries pesadas) têm padrões de acesso opostos e competem por recursos. A solução arquitetural é separá-las: réplicas de leitura absorvem queries analíticas sem impactar o primário; ou um data warehouse (Redshift, BigQuery, ClickHouse) recebe dados via ETL/CDC para análises complexas. Escalar hardware é caro e não resolve o problema estrutural."
+  },
+  {
+    "numero": 73,
+    "categoria": "sênior",
+    "tags": [
+      "system-design",
+      "idempotencia",
+      "pagamentos",
+      "api"
+    ],
+    "pergunta": "Você está desenhando um sistema de pagamentos que precisa garantir que um pagamento nunca seja processado duas vezes, mesmo que o cliente reenvie a mesma requisição por timeout ou falha de rede. Qual mecanismo resolve isso?",
+    "alternativas": {
+      "a": "Usar `POST` com um campo `timestamp` no body — o servidor rejeita requisições com timestamps duplicados nas últimas 24 horas",
+      "b": "Implementar idempotência via chave única por operação (`idempotency-key` no header): o servidor armazena o resultado da primeira execução e retorna o mesmo resultado para requisições repetidas com a mesma chave",
+      "c": "Usar transações de banco de dados com `SERIALIZABLE` isolation level para bloquear processamentos simultâneos do mesmo pagamento",
+      "d": "Retornar HTTP 409 Conflict para qualquer requisição duplicada detectada por IP do cliente"
+    },
+    "resposta_correta": "b",
+    "explicacao": "O padrão de **idempotency key** é a solução padrão da indústria (usado por Stripe, Adyen, etc.). O cliente gera um UUID único por tentativa de pagamento e envia no header. O servidor armazena `(idempotency_key → resultado)` atomicamente. Requisições repetidas com a mesma chave retornam o resultado cacheado sem reprocessar. Timestamps são imprecisos e não garantem unicidade. Isolation level `SERIALIZABLE` resolve concorrência, mas não retentativas do cliente."
+  },
+  {
+    "numero": 74,
+    "categoria": "sênior",
+    "tags": [
+      "system-design",
+      "busca",
+      "elasticsearch",
+      "escalabilidade"
+    ],
+    "pergunta": "Um sistema de busca precisa retornar resultados em menos de 100ms para queries de texto livre sobre 50 milhões de documentos. O banco relacional atual leva 8 segundos para a mesma query com `LIKE '%termo%'`. Qual mudança arquitetural é necessária?",
+    "alternativas": {
+      "a": "Adicionar um índice `FULLTEXT` no MySQL e aumentar o `query_cache_size` para acelerar queries repetidas",
+      "b": "Migrar todos os dados para um banco NoSQL orientado a documentos, que é nativamente mais rápido para buscas de texto",
+      "c": "Introduzir um motor de busca dedicado (ex: Elasticsearch, OpenSearch) com índice invertido, alimentado por sincronização assíncrona do banco principal",
+      "d": "Particionar a tabela por data de criação e executar as queries em paralelo em cada partição"
+    },
+    "resposta_correta": "c",
+    "explicacao": "`LIKE '%termo%'` não usa índices — faz full scan. Índices `FULLTEXT` ajudam, mas não escalam para 50M documentos com latência de 100ms. Motores de busca como Elasticsearch usam **índice invertido** (mapeiam termos → documentos), permitindo buscas em milissegundos. O banco principal continua sendo a fonte de verdade; o Elasticsearch é sincronizado via CDC (Change Data Capture) ou eventos. Essa separação de responsabilidades é o padrão correto."
+  },
+  {
+    "numero": 75,
+    "categoria": "sênior",
+    "tags": [
+      "system-design",
+      "rate-limiting",
+      "escalabilidade",
+      "cache"
+    ],
+    "pergunta": "Você precisa desenhar um sistema de rate limiting para uma API pública que permite 100 requisições por minuto por usuário, distribuído em 10 instâncias de API. Analise as duas abordagens:\n\n**Abordagem A:** Cada instância mantém um contador local em memória.\n**Abordagem B:** Todas as instâncias incrementam um contador centralizado no Redis com TTL de 60 segundos.\n\nQual é o trade-off correto entre elas?",
+    "alternativas": {
+      "a": "A é mais precisa; B tem latência adicional de rede que torna o rate limiting impraticável em produção",
+      "b": "A permite até 1000 req/min por usuário (100 × 10 instâncias) sem que nenhuma instância perceba a violação; B é precisa mas adiciona uma dependência de infraestrutura e latência de rede",
+      "c": "Ambas são equivalentes se o load balancer usar sticky sessions para rotear sempre o mesmo usuário para a mesma instância",
+      "d": "A é a abordagem recomendada pois evita single point of failure; B cria gargalo centralizado que derruba todas as instâncias se o Redis cair"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Com contadores locais, cada instância permite 100 req/min independentemente — um usuário pode fazer 100 req em cada uma das 10 instâncias = 1000 req/min sem ser bloqueado. Redis centralizado garante precisão, mas adiciona ~1ms de latência por requisição e cria dependência. Na prática, usa-se Redis com algoritmos como **sliding window** ou **token bucket**, aceitando o trade-off de latência em troca de precisão. Sticky sessions ajudam, mas falham quando instâncias escalam ou reiniciam."
+  },
+  {
+    "numero": 76,
+    "categoria": "sênior",
+    "tags": [
+      "system-design",
+      "banco-de-dados",
+      "performance",
+      "particionamento"
+    ],
+    "pergunta": "Um sistema legado usa uma única tabela `eventos` com 2 bilhões de registros. Queries por intervalo de data levam 40 segundos. O DBA propõe particionar a tabela por mês. Um engenheiro sênior sugere também avaliar uma estratégia de arquivamento. Por que a sugestão do engenheiro é relevante?",
+    "alternativas": {
+      "a": "Particionamento por mês cria automaticamente 24 tabelas separadas, o que excede o limite de tabelas do PostgreSQL",
+      "b": "Particionamento melhora queries que filtram por data, mas a tabela continua com 2B registros; arquivar partições antigas em cold storage reduz o volume ativo, melhorando cache hit rate e manutenção",
+      "c": "O arquivamento é necessário porque particionamento só funciona em tabelas com menos de 1 bilhão de registros",
+      "d": "Particionamento e arquivamento são estratégias mutuamente exclusivas — implementar ambas causa inconsistência nos dados"
+    },
+    "resposta_correta": "b",
+    "explicacao": "Particionamento melhora o pruning de partições (queries só varrem partições relevantes), mas o volume total de dados permanece. Com 2B registros, mesmo particionado, partições antigas ocupam espaço, degradam backups e aumentam o tempo de VACUUM/ANALYZE. Arquivar partições antigas (ex: dados com mais de 1 ano) em object storage (S3 + Parquet) ou tabelas de arquivo reduz o conjunto ativo, melhora o cache do buffer pool e simplifica manutenção — complementando, não substituindo, o particionamento."
   }
 ]
