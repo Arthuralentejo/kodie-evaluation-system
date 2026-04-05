@@ -167,6 +167,55 @@ Extend the assessment flow so students can choose a difficulty level before star
   - Update the Figma file at https://www.figma.com/design/zSYPF89omQ51ZuPKPyuBZw/Evaluation-System?node-id=0-1&m=dev to reflect the level picker and completed assessments list screens
   - _Requirements: 11.1_
 
+## Geral Level Tasks
+
+- [ ] 17. Add `GERAL = "geral"` to `AssessmentLevel` enum in `domain.py`
+  - In `backend/app/models/domain.py`, add `GERAL = "geral"` to the `AssessmentLevel` enum
+  - _Requirements: 1.1, 1.2_
+
+- [ ] 18. Add `list_questions_for_geral()` to `AssessmentRepository`
+  - In `backend/app/repositories/assessment_repository.py`, add:
+    ```python
+    async def list_questions_for_geral(self) -> list[dict]:
+        return await self.questions_collection.find(
+            {},
+            {"_id": 1, "number": 1, "category": 1},
+        ).to_list(length=None)
+    ```
+  - No category filter — returns all questions from all categories
+  - _Requirements: 3.5_
+
+- [ ] 19. Add `build_geral_question_ids()` to `question_selection.py`
+  - In `backend/app/services/question_selection.py`, add a new function `build_geral_question_ids(question_docs: list[dict]) -> list[ObjectId]`
+  - Implement equal distribution: `per_category = assessment_question_count // 4`, `remainder = assessment_question_count % 4`
+  - Bucket questions by category (`iniciante`, `junior`, `pleno`, `senior`), allocate `per_category` from each, distribute remainder round-robin starting from `iniciante`
+  - Return `[q["_id"] for q in selected]`
+  - _Requirements: 3.6_
+
+  - [ ]* 19.1 Write property test for geral equal distribution (Property 13)
+    - **Property 13: `build_geral_question_ids` distributes questions equally across all four categories**
+    - **Validates: Requirements 3.6**
+    - Use `hypothesis` to generate arbitrary question pools with all four categories; assert counts per category match `assessment_question_count // 4` (plus at most 1 for remainder categories), and total ≤ `assessment_question_count`
+
+- [ ] 20. Update `AssessmentService.create_assessment` to branch on `level == "geral"`
+  - In `backend/app/services/assessment_service.py`, update the question-fetching step in `create_assessment`:
+    - If `level == AssessmentLevel.GERAL`: call `repository.list_questions_for_geral()` then `build_geral_question_ids(question_docs)`
+    - Otherwise: call `repository.list_questions_for_level(level=level)` then `build_assigned_question_ids(question_docs, level=level)`
+  - `NO_QUESTIONS_FOR_LEVEL` error still applies if the returned pool is empty (for geral: if any category has no questions, the pool may be insufficient)
+  - _Requirements: 3.5, 3.7_
+
+  - [ ]* 20.1 Write unit tests for `create_assessment` with `geral` level
+    - Extend `_AssessmentRepositoryStub` with `list_questions_for_geral` returning questions from all four categories
+    - Test: `level="geral"` with full question pool → creates new DRAFT with questions from all four categories
+    - Test: `level="geral"` with empty pool → raises `NO_QUESTIONS_FOR_LEVEL`
+    - Test: `level="geral"` follows same one-active-assessment and completed-lock rules as other levels
+    - _Requirements: 3.5, 3.6, 3.7_
+
+- [ ] 21. Add "Geral" card to `IntroScreen` level picker
+  - In `frontend/src/components/screens/IntroScreen.jsx`, add `{ value: "geral", label: "Geral" }` to the `LEVELS` array
+  - Add `geral: "Geral"` to the `LEVEL_LABELS` map
+  - _Requirements: 8.1_
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for a faster MVP

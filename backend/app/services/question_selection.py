@@ -78,3 +78,27 @@ def build_assigned_question_ids(
     # question_docs already pre-filtered by category=level at DB level
     selected_questions = select_questions_by_difficulty(question_docs, settings.assessment_question_count)
     return [question["_id"] for question in selected_questions]
+
+
+def build_geral_question_ids(question_docs: list[dict]) -> list[ObjectId]:
+    """Equal distribution across all four categories for the 'geral' level."""
+    n = settings.assessment_question_count
+    per_category = n // 4
+    remainder = n % 4
+
+    buckets: dict[Category, list[dict]] = {cat: [] for cat in CATEGORY_ORDER}
+    for q in question_docs:
+        cat = normalize_category(q.get("category", ""))
+        if cat in buckets:
+            buckets[cat].append(q)
+
+    counts = {cat: per_category for cat in CATEGORY_ORDER}
+    for i in range(remainder):
+        counts[CATEGORY_ORDER[i]] += 1
+
+    selected: list[dict] = []
+    for cat in CATEGORY_ORDER:
+        bucket = sorted(buckets[cat], key=lambda q: q.get("number", 0))
+        selected.extend(bucket[: counts[cat]])
+
+    return [q["_id"] for q in selected]

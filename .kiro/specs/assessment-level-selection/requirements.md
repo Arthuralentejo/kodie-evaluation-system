@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document defines the requirements for the **assessment-level-selection** feature of the Kodie platform. The feature extends the assessment flow so that students can choose a difficulty level (`iniciante`, `junior`, `pleno`, or `senior`) before starting an assessment.
+This document defines the requirements for the **assessment-level-selection** feature of the Kodie platform. The feature extends the assessment flow so that students can choose a difficulty level (`iniciante`, `junior`, `pleno`, `senior`, or `geral`) before starting an assessment.
 
 A student always has **at most one active (non-archived) assessment** across all levels at any time. When a student picks a different level, their current active assessment is archived and a new DRAFT is created at the new level. Completed levels are permanently locked — a level is locked if it appears anywhere in the student's completed history, including archived completed assessments.
 
@@ -19,7 +19,7 @@ The feature touches the backend domain model, question-selection logic, REST API
 - **QuestionSelector**: The function `build_assigned_question_ids` that selects questions for a new assessment.
 - **IntroScreen**: The frontend React component that renders the introduction/level-selection screen.
 - **Hook**: The `useAssessmentFlow` React hook that manages all frontend application state.
-- **Level**: One of the four difficulty tiers — `iniciante`, `junior`, `pleno`, `senior`.
+- **Level**: One of the five difficulty tiers — `iniciante`, `junior`, `pleno`, `senior`, `geral`.
 - **DRAFT**: An assessment that has been started but not yet submitted.
 - **COMPLETED**: An assessment that has been fully submitted and is permanently locked.
 - **Active assessment**: The single non-archived assessment for a student (DRAFT or COMPLETED). At most one exists per student at any time.
@@ -39,8 +39,8 @@ The feature touches the backend domain model, question-selection logic, REST API
 
 #### Acceptance Criteria
 
-1. THE AssessmentService SHALL recognise exactly four valid level values: `iniciante`, `junior`, `pleno`, and `senior`.
-2. WHEN an Assessment document is created, THE AssessmentRepository SHALL persist the `level` field and `archived: false` on the document.
+1. THE AssessmentService SHALL recognise exactly five valid level values: `iniciante`, `junior`, `pleno`, `senior`, and `geral`.
+2. WHEN an Assessment document is created, THE AssessmentRepository SHALL persist the `level` field and `archived: false` on the document. The `level` field SHALL be one of `iniciante | junior | pleno | senior | geral`.
 3. WHEN an Assessment document that has no `level` field is read, THE AssessmentService SHALL treat its level as `"iniciante"`.
 4. WHEN an Assessment document that has no `archived` field is read, THE AssessmentService SHALL treat it as `archived: false`.
 5. THE AssessmentRepository SHALL receive the MongoDB collection object at construction time and SHALL use `self.collection` for all operations, rather than resolving the collection per method call.
@@ -70,6 +70,9 @@ The feature touches the backend domain model, question-selection logic, REST API
 2. WHEN `build_assigned_question_ids` is called, THE QuestionSelector SHALL return only question IDs from the pre-filtered pool provided by `list_questions_for_level`, all of which have `category` exactly equal to the requested level.
 3. THE QuestionSelector SHALL return at most `assessment_question_count` question IDs.
 4. IF the filtered question pool for the chosen level contains no questions, THEN THE AssessmentService SHALL raise an error with HTTP status 409 and code `NO_QUESTIONS_FOR_LEVEL` with the message "Não há questões disponíveis para o nível selecionado."
+5. WHEN `level` is `geral`, THE AssessmentRepository SHALL call `list_questions_for_geral()` (no category filter) instead of `list_questions_for_level(level)`, and THE QuestionSelector SHALL call `build_geral_question_ids(question_docs)` instead of `build_assigned_question_ids`.
+6. WHEN `build_geral_question_ids` is called, THE QuestionSelector SHALL distribute `assessment_question_count` questions equally across the four categories (`iniciante`, `junior`, `pleno`, `senior`): `per_category = assessment_question_count // 4` questions per category, with the remainder distributed round-robin starting from `iniciante`. The total returned SHALL be at most `assessment_question_count`.
+7. IF any of the four categories has no questions when `level` is `geral`, THE AssessmentService SHALL raise an error with HTTP status 409 and code `NO_QUESTIONS_FOR_LEVEL`.
 
 ---
 
@@ -131,7 +134,7 @@ The feature touches the backend domain model, question-selection logic, REST API
 
 #### Acceptance Criteria
 
-1. WHEN the IntroScreen renders and `assessmentStatus` is not `"DRAFT"`, THE IntroScreen SHALL display a level picker containing one selectable option for each of the four levels.
+1. WHEN the IntroScreen renders and `assessmentStatus` is not `"DRAFT"`, THE IntroScreen SHALL display a level picker containing one selectable option for each of the five levels: `iniciante`, `junior`, `pleno`, `senior`, and `geral`.
 2. WHEN a student selects a level in the picker, THE IntroScreen SHALL visually highlight the selected level to indicate the current selection.
 3. WHEN a level is present in `completedAssessments` (which includes archived completed assessments), THE IntroScreen SHALL render that level's picker option as disabled and display a "Concluído" badge on it.
 4. WHEN the student clicks "Iniciar avaliação", THE IntroScreen SHALL invoke `onStart` and THE Hook SHALL send the `selectedLevel` value in the body of `POST /assessments`.

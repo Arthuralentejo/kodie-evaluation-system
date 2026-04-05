@@ -45,6 +45,12 @@ class AssessmentRepository:
             {"_id": 1, "number": 1, "category": 1},
         ).to_list(length=None)
 
+    async def list_questions_for_geral(self) -> list[dict]:
+        return await self.questions_collection.find(
+            {},
+            {"_id": 1, "number": 1, "category": 1},
+        ).to_list(length=None)
+
     async def create_assessment(
         self,
         *,

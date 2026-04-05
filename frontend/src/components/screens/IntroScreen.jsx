@@ -7,6 +7,7 @@ const LEVELS = [
   { value: "junior", label: "Júnior" },
   { value: "pleno", label: "Pleno" },
   { value: "senior", label: "Sênior" },
+  { value: "geral", label: "Geral" },
 ];
 
 const LEVEL_LABELS = {
@@ -14,6 +15,7 @@ const LEVEL_LABELS = {
   junior: "Júnior",
   pleno: "Pleno",
   senior: "Sênior",
+  geral: "Geral",
 };
 
 function formatDatePtBR(dateStr) {

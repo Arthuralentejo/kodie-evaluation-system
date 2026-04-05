@@ -16,6 +16,7 @@ class AssessmentLevel(str, Enum):
     JUNIOR = "junior"
     PLENO = "pleno"
     SENIOR = "senior"
+    GERAL = "geral"
 
 
 class Option(BaseModel):

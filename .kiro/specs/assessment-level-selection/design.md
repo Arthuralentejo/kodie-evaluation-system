@@ -4,6 +4,8 @@
 
 This feature extends the Introduction screen so that students can choose the difficulty level of their assessment before starting, and also see a summary of any previously completed assessments. A student always has **at most one active (non-archived) assessment** across all levels at any time. When a student picks a different level, their current active assessment is archived and a new DRAFT is created at the new level. A student who has already completed a level cannot start it again — completed levels are permanently locked regardless of whether the assessment is archived.
 
+Five levels are available: `iniciante`, `junior`, `pleno`, `senior`, and `geral`. The `geral` level draws questions equally from all four categories (iniciante, junior, pleno, senior), splitting `assessment_question_count` evenly across them with remainder distributed round-robin starting from iniciante. All other business rules (one active assessment, completed-level lock, archiving) apply to `geral` identically to the other levels.
+
 The `archived` flag enforces the "one active assessment at a time" invariant across levels. Archived assessments are excluded from active queries (resume, current status) but are preserved in history. The `assessments` array in `GET /assessments/current` returns the full completed history — all COMPLETED assessments including archived ones — so students can see every level they have ever finished.
 
 The feature touches the backend domain model (adding `level` and `archived` to `Assessment`), the question-selection logic (filtering by exact level at the database query level), the API (accepting `level` on creation and returning it on summary), and the frontend Introduction screen (level picker + completed assessments list).
@@ -157,9 +159,10 @@ class AssessmentLevel(str, Enum):
     JUNIOR    = "junior"
     PLENO     = "pleno"
     SENIOR    = "senior"
+    GERAL     = "geral"
 ```
 
-`AssessmentLevel` reuses the same values as the existing `Category` enum so that question filtering is a direct equality match.
+`AssessmentLevel` values for `iniciante`/`junior`/`pleno`/`senior` match the `Category` enum directly, enabling a simple equality filter. `geral` is a meta-level that queries all four categories and distributes questions equally.
 
 ### Backend: Student identity — application-level student_id
 
@@ -235,6 +238,11 @@ async def archive_assessment(self, *, assessment_id: ObjectId) -> None:
 async def list_questions_for_level(self, *, level: str) -> list[dict]:
     # MongoDB query includes category filter: { category: level }
     # Returns only _id, number, category fields
+    # NOTE: for level == "geral", use list_questions_for_geral() instead
+
+async def list_questions_for_geral(self) -> list[dict]:
+    # Fetches ALL questions (no category filter) — used when level == "geral"
+    # Returns only _id, number, category fields
 
 async def create_assessment(
     self,
@@ -278,6 +286,8 @@ async def create_assessment(self, *, student_id: str, level: str) -> dict:
 
 `build_assigned_question_ids` no longer uses `LEVEL_CATEGORY_MAP`. Questions are filtered at the MongoDB query level by passing `level` as the `category` filter. Only questions whose `category` exactly matches the selected level are returned.
 
+For `geral`, a separate function `build_geral_question_ids` handles equal distribution across all four categories.
+
 ```python
 def build_assigned_question_ids(
     question_docs: list[dict],
@@ -287,6 +297,18 @@ def build_assigned_question_ids(
     # select_questions_by_difficulty applies weighted distribution within the pool
     selected = select_questions_by_difficulty(question_docs, settings.assessment_question_count)
     return [q["_id"] for q in selected]
+
+def build_geral_question_ids(question_docs: list[dict]) -> list[ObjectId]:
+    # question_docs contains questions from ALL four categories
+    # Distributes assessment_question_count equally across iniciante/junior/pleno/senior
+    # Remainder distributed round-robin starting from iniciante
+    #
+    # per_category = assessment_question_count // 4
+    # remainder    = assessment_question_count % 4
+    # categories   = [iniciante, junior, pleno, senior]
+    # counts[cat]  = per_category (+ 1 for the first `remainder` categories)
+    # select counts[cat] questions from each category bucket
+    ...
 ```
 
 The repository method `list_questions_for_level(level)` issues the category filter to MongoDB:
@@ -295,6 +317,13 @@ The repository method `list_questions_for_level(level)` issues the category filt
 async def list_questions_for_level(self, *, level: str) -> list[dict]:
     return await self.questions_collection.find(
         {"category": level},
+        {"_id": 1, "number": 1, "category": 1},
+    ).to_list(length=None)
+
+async def list_questions_for_geral(self) -> list[dict]:
+    # No category filter — returns all questions
+    return await self.questions_collection.find(
+        {},
         {"_id": 1, "number": 1, "category": 1},
     ).to_list(length=None)
 ```
@@ -351,7 +380,7 @@ async function startAssessment(level) {
 
 Two new visual sections:
 
-1. **Level picker** — shown when `assessmentStatus !== "DRAFT"`. One card per level. Selected level is highlighted. Levels present in `completedAssessments` are rendered with a "Concluído" badge and are **disabled** (not selectable) — completed levels are permanently locked. The "Iniciar avaliação" button is disabled while `isBusy`, no level is selected, or the selected level is already completed.
+1. **Level picker** — shown when `assessmentStatus !== "DRAFT"`. One card per level. Selected level is highlighted. Levels present in `completedAssessments` are rendered with a "Concluído" badge and are **disabled** (not selectable) — completed levels are permanently locked. The "Iniciar avaliação" button is disabled while `isBusy`, no level is selected, or the selected level is already completed. Five levels are shown: Iniciante, Júnior, Pleno, Sênior, Geral.
 
 2. **Completed assessments list** — shown when `completedAssessments.length > 0`. Displays level name and completion date per entry.
 
@@ -373,7 +402,7 @@ onLevelChange,          // (level: string) => void
 {
   _id:                    ObjectId,
   student_id:             string (ULID),          // app-level identity, NOT ObjectId
-  level:                  "iniciante" | "junior" | "pleno" | "senior",
+  level:                  "iniciante" | "junior" | "pleno" | "senior" | "geral",
   archived:               boolean,                // true = superseded (student moved to a different level)
   assigned_question_ids:  [ObjectId],
   answers:                [{ question_id, selected_option, answered_at }],
@@ -466,8 +495,13 @@ PROCEDURE create_assessment(student_id, level)
   END IF
 
   // Step 4: Create new DRAFT at the requested level
-  question_docs ← repository.list_questions_for_level(level=level)
-  assigned_ids  ← build_assigned_question_ids(question_docs, level=level)
+  IF level = "geral" THEN
+    question_docs ← repository.list_questions_for_geral()
+    assigned_ids  ← build_geral_question_ids(question_docs)
+  ELSE
+    question_docs ← repository.list_questions_for_level(level=level)
+    assigned_ids  ← build_assigned_question_ids(question_docs, level=level)
+  END IF
 
   IF assigned_ids IS EMPTY THEN
     RAISE AppError(409, "NO_QUESTIONS_FOR_LEVEL",
@@ -488,7 +522,7 @@ END PROCEDURE
 
 **Preconditions:**
 - `student_id` is a valid ULID string
-- `level` is one of `iniciante | junior | pleno | senior`
+- `level` is one of `iniciante | junior | pleno | senior | geral`
 
 **Postconditions:**
 - If `level` appears in the student's completed history (archived or not), raises `LEVEL_ALREADY_COMPLETED` — no document is created or modified
@@ -566,13 +600,62 @@ END PROCEDURE
 
 ---
 
+### build_geral_question_ids
+
+```pascal
+PROCEDURE build_geral_question_ids(question_docs)
+  INPUT: question_docs: list[dict]  // all questions from all categories (no filter)
+  OUTPUT: list[ObjectId]
+
+  n          ← settings.assessment_question_count
+  categories ← [INICIANTE, JUNIOR, PLENO, SENIOR]
+
+  // Bucket questions by category
+  buckets ← { cat: [] FOR cat IN categories }
+  FOR each q IN question_docs DO
+    IF q.category IN buckets THEN
+      buckets[q.category].append(q)
+    END IF
+  END FOR
+
+  // Equal distribution with round-robin remainder
+  per_category ← n // 4
+  remainder    ← n % 4
+  counts ← { cat: per_category FOR cat IN categories }
+  FOR i IN range(remainder) DO
+    counts[categories[i]] += 1
+  END FOR
+
+  // Select from each bucket (sorted by number for determinism)
+  selected ← []
+  FOR cat IN categories DO
+    bucket ← sorted(buckets[cat], key=number)
+    selected.extend(bucket[: counts[cat]])
+  END FOR
+
+  RETURN [q._id FOR q IN selected]
+END PROCEDURE
+```
+
+**Preconditions:**
+- `question_docs` contains questions from all four categories (fetched via `list_questions_for_geral`)
+- `settings.assessment_question_count` is a positive integer
+
+**Postconditions:**
+- Total returned IDs ≤ `settings.assessment_question_count`
+- Questions are drawn from all four categories as evenly as possible
+- If any category has fewer questions than its allocated count, only available questions are returned for that category
+- Remainder questions are allocated starting from `iniciante`
+
+---
+
 ## Key Functions with Formal Specifications
 
 ### AssessmentService.create_assessment
 
 **Preconditions:**
 - `student_id` is a valid ULID string
-- `level` ∈ `{"iniciante", "junior", "pleno", "senior"}`
+- `level` ∈ `{"iniciante", "junior", "pleno", "senior", "geral"}`
 
 **Postconditions:**
 - If `level` appears in the student's completed history (archived or not), raises `AppError(409, "LEVEL_ALREADY_COMPLETED")` — no document is created or modified
@@ -624,21 +707,40 @@ END PROCEDURE
 ### AssessmentRepository.list_questions_for_level
 
 **Preconditions:**
-- `level` is a valid `AssessmentLevel` value string
+- `level` is a valid `AssessmentLevel` value string (not `"geral"`)
 
 **Postconditions:**
 - Returns only documents where `category == level` (filter applied at MongoDB query level)
+- Each document contains `_id`, `number`, and `category` fields
+
+### AssessmentRepository.list_questions_for_geral
+
+**Preconditions:** none (fetches all questions)
+
+**Postconditions:**
+- Returns all question documents regardless of category
 - Each document contains `_id`, `number`, and `category` fields
 
 ### build_assigned_question_ids (DB-pre-filtered)
 
 **Preconditions:**
 - `question_docs` contains documents with `_id` and `category` fields, all with `category == level`
-- `level` is a valid `AssessmentLevel`
+- `level` is a valid `AssessmentLevel` (not `"geral"`)
 
 **Postconditions:**
 - ∀ id ∈ result: the corresponding question's `category == level`
 - `len(result)` ≤ `settings.assessment_question_count`
+
+### build_geral_question_ids
+
+**Preconditions:**
+- `question_docs` contains questions from all four categories (returned by `list_questions_for_geral`)
+- `settings.assessment_question_count` is a positive integer
+
+**Postconditions:**
+- `len(result)` ≤ `settings.assessment_question_count`
+- Questions are drawn from all four categories with equal allocation (`assessment_question_count // 4` each, remainder round-robin from iniciante)
+- ∀ id ∈ result: the corresponding question's `category` ∈ `{"iniciante", "junior", "pleno", "senior"}`
 
 ---
 
@@ -658,7 +760,7 @@ END PROCEDURE
 
 ### No questions available for level
 
-**Condition:** The question pool for the chosen level is empty (no questions seeded for that category)
+**Condition:** The question pool for the chosen level is empty (no questions seeded for that category). For `geral`, this applies if any of the four categories has no questions.
 **Response:** HTTP 409, `code: "NO_QUESTIONS_FOR_LEVEL"`, message: "Não há questões disponíveis para o nível selecionado."
 **Recovery:** Service raises `AppError` before creating the assessment document
 
@@ -835,3 +937,11 @@ No new external dependencies beyond `python-ulid` (already required for seed scr
 *For any* student, no assessment with `archived=true` must appear as the top-level `assessment_id`/`status`/`level` in the response from `get_current_assessment`. However, archived assessments with `status: "COMPLETED"` MUST appear in the `assessments` history array — they are part of the student's permanent completed history.
 
 **Validates: Requirements 6.2, 6.3**
+
+---
+
+### Property 13: Geral level equal distribution
+
+*For any* question pool returned by `list_questions_for_geral`, `build_geral_question_ids` must return at most `assessment_question_count` IDs, with questions drawn from all four categories as evenly as possible (`assessment_question_count // 4` per category, remainder round-robin from iniciante). No question from a category outside `{iniciante, junior, pleno, senior}` is included.
+
+**Validates: Requirements 3.5, 3.6**

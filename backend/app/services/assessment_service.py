@@ -10,7 +10,7 @@ from app.core.config import settings
 from app.core.errors import AppError
 from app.models.domain import AssessmentLevel
 from app.repositories.assessment_repository import AssessmentRepository
-from app.services.question_selection import build_assigned_question_ids
+from app.services.question_selection import build_assigned_question_ids, build_geral_question_ids
 
 logger = logging.getLogger("kodie.assessment")
 
@@ -86,8 +86,12 @@ class AssessmentService:
             await self.repository.archive_assessment(assessment_id=active["_id"])
 
         # Step 4: Create new DRAFT
-        question_docs = await self.repository.list_questions_for_level(level=level)
-        assigned_question_ids = build_assigned_question_ids(question_docs)
+        if level == AssessmentLevel.GERAL.value:
+            question_docs = await self.repository.list_questions_for_geral()
+            assigned_question_ids = build_geral_question_ids(question_docs)
+        else:
+            question_docs = await self.repository.list_questions_for_level(level=level)
+            assigned_question_ids = build_assigned_question_ids(question_docs)
         if not assigned_question_ids:
             raise AppError(status_code=409, code="NO_QUESTIONS_FOR_LEVEL",
                            message="Não há questões disponíveis para o nível selecionado.")
