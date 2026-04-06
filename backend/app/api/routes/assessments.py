@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Query, Request
 
 from app.api.deps import AuthContext, get_assessment_service, get_auth_context
@@ -13,6 +15,8 @@ from app.models.api import (
 from app.services.assessment_service import AssessmentService
 
 logger = get_logger("kodie.api.assessments")
+AuthContextDep = Annotated[AuthContext, Depends(get_auth_context)]
+AssessmentServiceDep = Annotated[AssessmentService, Depends(get_assessment_service)]
 router = APIRouter(
     prefix="/assessments",
     tags=["assessments"],
@@ -23,8 +27,8 @@ router = APIRouter(
 @router.get("/current", response_model=AssessmentSummaryResponse)
 async def get_current_assessment(
     request: Request,
-    context: AuthContext = Depends(get_auth_context),
-    assessment_service: AssessmentService = Depends(get_assessment_service),
+    context: AuthContextDep,
+    assessment_service: AssessmentServiceDep,
 ):
     logger.info(
         build_log_message(
@@ -33,7 +37,9 @@ async def get_current_assessment(
             student_ref=hash_identifier(context.student_id),
         )
     )
-    result = await assessment_service.get_current_assessment(student_id=context.student_id)
+    result = await assessment_service.get_current_assessment(
+        student_id=context.student_id
+    )
     logger.info(
         build_log_message(
             "assessment_current_completed",
@@ -51,8 +57,8 @@ async def get_current_assessment(
 async def create_assessment(
     payload: CreateAssessmentRequest,
     request: Request,
-    context: AuthContext = Depends(get_auth_context),
-    assessment_service: AssessmentService = Depends(get_assessment_service),
+    context: AuthContextDep,
+    assessment_service: AssessmentServiceDep,
 ):
     logger.info(
         build_log_message(
@@ -83,8 +89,8 @@ async def create_assessment(
 async def get_questions(
     assessment_id: str,
     request: Request,
+    assessment_service: AssessmentServiceDep,
     quantity: int = Query(default=20, ge=1),
-    assessment_service: AssessmentService = Depends(get_assessment_service),
 ):
     logger.info(
         build_log_message(
@@ -115,7 +121,7 @@ async def patch_answer(
     assessment_id: str,
     payload: UpsertAnswerRequest,
     request: Request,
-    assessment_service: AssessmentService = Depends(get_assessment_service),
+    assessment_service: AssessmentServiceDep,
 ):
     logger.info(
         build_log_message(
@@ -147,7 +153,7 @@ async def patch_answer(
 async def submit(
     assessment_id: str,
     request: Request,
-    assessment_service: AssessmentService = Depends(get_assessment_service),
+    assessment_service: AssessmentServiceDep,
 ):
     logger.info(
         build_log_message(

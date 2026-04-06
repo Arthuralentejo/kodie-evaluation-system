@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Request
 
 from app.api.deps import AuthContext, get_auth_context, get_auth_service
@@ -8,15 +10,23 @@ from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 logger = get_logger("kodie.api.auth")
+AuthContextDep = Annotated[AuthContext, Depends(get_auth_context)]
+AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 
 
 @router.post("", response_model=AuthResponse)
 async def auth(
     payload: AuthRequest,
     request: Request,
-    auth_service: AuthService = Depends(get_auth_service),
+    auth_service: AuthServiceDep,
 ) -> AuthResponse:
-    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown").split(",")[0].strip()
+    ip = (
+        request.headers.get(
+            "x-forwarded-for", request.client.host if request.client else "unknown"
+        )
+        .split(",")[0]
+        .strip()
+    )
     logger.info(
         build_log_message(
             "auth_request_received",
@@ -32,15 +42,17 @@ async def auth(
         ip=ip,
         request_id=request.state.request_id,
     )
-    logger.info(build_log_message("auth_request_succeeded", request_id=request.state.request_id))
+    logger.info(
+        build_log_message("auth_request_succeeded", request_id=request.state.request_id)
+    )
 
     return AuthResponse(token=result["token"])
 
 
 @router.post("/revoke", response_model=RevokeResponse)
 async def revoke(
-    context: AuthContext = Depends(get_auth_context),
-    auth_service: AuthService = Depends(get_auth_service),
+    context: AuthContextDep,
+    auth_service: AuthServiceDep,
 ) -> RevokeResponse:
     # Token self-revocation is used for emergency session invalidation.
     logger.info(

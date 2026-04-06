@@ -25,7 +25,11 @@ async def ready() -> JSONResponse:
         await ping_db()
     except Exception:
         elapsed_ms = round((perf_counter() - started_at) * 1000, 2)
-        logger.warning(build_log_message("health_ready_failed", dependency="mongodb", time_ms=elapsed_ms))
+        logger.warning(
+            build_log_message(
+                "health_ready_failed", dependency="mongodb", time_ms=elapsed_ms
+            )
+        )
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content={
@@ -40,7 +44,11 @@ async def ready() -> JSONResponse:
         )
 
     elapsed_ms = round((perf_counter() - started_at) * 1000, 2)
-    logger.debug(build_log_message("health_ready_completed", dependency="mongodb", time_ms=elapsed_ms))
+    logger.debug(
+        build_log_message(
+            "health_ready_completed", dependency="mongodb", time_ms=elapsed_ms
+        )
+    )
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={

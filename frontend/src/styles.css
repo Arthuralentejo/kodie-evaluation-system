@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
   --color-bg-1: #dcecf6;
@@ -29,9 +29,13 @@ body,
 }
 
 body {
-  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
   color: var(--color-text);
-  background: linear-gradient(90deg, var(--color-bg-1) 0%, var(--color-bg-2) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-1) 0%,
+    var(--color-bg-2) 100%
+  );
   overflow-x: hidden;
 }
 
@@ -53,7 +57,7 @@ button {
 
 .app-shell::before,
 .app-shell::after {
-  content: "";
+  content: '';
   position: absolute;
   border-radius: 999px;
   pointer-events: none;
@@ -154,7 +158,11 @@ button {
   color: var(--color-muted);
   font-size: 13px;
   font-weight: 600;
-  transition: transform 140ms ease, border-color 140ms ease, background-color 140ms ease, color 140ms ease;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease,
+    color 140ms ease;
 }
 
 .questionnaire-step.is-active {
@@ -189,7 +197,8 @@ button {
   max-width: 1320px;
   width: 100%;
   margin: 0 auto;
-  padding: clamp(16px, 2vh, 24px) clamp(18px, 2.6vw, 36px) clamp(18px, 2.2vh, 28px);
+  padding: clamp(16px, 2vh, 24px) clamp(18px, 2.6vw, 36px)
+    clamp(18px, 2.2vh, 28px);
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr);
   gap: clamp(16px, 1.6vw, 24px);
@@ -262,7 +271,7 @@ h2 {
   letter-spacing: -0.02em;
 }
 
-.panel__content>p,
+.panel__content > p,
 .lead {
   margin-top: clamp(10px, 1.4vh, 16px);
   max-width: 620px;
@@ -383,7 +392,10 @@ h2 {
   padding: 0 18px;
   font-size: 14px;
   font-weight: 600;
-  transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease;
+  transition:
+    transform 140ms ease,
+    background-color 140ms ease,
+    border-color 140ms ease;
 }
 
 .button:hover:not(:disabled),
@@ -464,7 +476,8 @@ h2 {
   max-width: 1080px;
   width: 100%;
   margin: 0 auto;
-  padding: clamp(14px, 1.8vh, 22px) clamp(18px, 2.6vw, 36px) clamp(18px, 2vh, 28px);
+  padding: clamp(14px, 1.8vh, 22px) clamp(18px, 2.6vw, 36px)
+    clamp(18px, 2vh, 28px);
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -719,7 +732,6 @@ h2 {
 }
 
 @media (max-width: 768px) {
-
   .screen-topbar,
   .questionnaire-header {
     padding: 14px 16px;
@@ -768,7 +780,7 @@ h2 {
     font-size: 20px;
   }
 
-  .panel__content>p,
+  .panel__content > p,
   .lead {
     font-size: 14px;
   }
@@ -853,7 +865,10 @@ h2 {
   color: var(--color-text);
   font-size: 14px;
   font-weight: 600;
-  transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    transform 140ms ease;
   cursor: pointer;
 }
 

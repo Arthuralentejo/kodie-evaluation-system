@@ -3,7 +3,7 @@ export function wait(ms) {
 }
 
 export async function readApiError(response) {
-  let message = "Nao foi possivel concluir a operacao.";
+  let message = 'Nao foi possivel concluir a operacao.';
 
   try {
     const payload = await response.json();

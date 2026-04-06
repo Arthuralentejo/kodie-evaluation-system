@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from time import time
 
 import pytest
 from bson import ObjectId
@@ -32,7 +33,9 @@ class _AuthRepositoryStub:
 
     async def update_attempt(self, *, kind, key, update):
         attempt = self.attempts[(kind, key)]
-        attempt["count"] = attempt.get("count", 0) + update.get("$inc", {}).get("count", 0)
+        attempt["count"] = attempt.get("count", 0) + update.get("$inc", {}).get(
+            "count", 0
+        )
         attempt.update(update.get("$set", {}))
 
     async def delete_attempt(self, *, kind, key):
@@ -65,7 +68,14 @@ async def test_auth_looks_up_student_by_birth_date_day_range(monkeypatch):
     service = AuthService(repository=repository)
     monkeypatch.setattr(
         "app.services.auth_service.create_access_token",
-        lambda **kwargs: ("token", {"sub": kwargs["student_id"]}),
+        lambda **kwargs: (
+            "token",
+            {
+                "sub": kwargs["student_id"],
+                "jti": "test-jti",
+                "exp": int(time()) + 3600,
+            },
+        ),
     )
 
     result = await service.authenticate_and_issue_token(
@@ -77,8 +87,12 @@ async def test_auth_looks_up_student_by_birth_date_day_range(monkeypatch):
 
     assert result["token"] == "token"
     assert repository.last_student_lookup["cpf"] == "52998224725"
-    assert repository.last_student_lookup["birth_date"]["$gte"] == datetime(2000, 1, 1, 0, 0)
-    assert repository.last_student_lookup["birth_date"]["$lt"] == datetime(2000, 1, 2, 0, 0)
+    assert repository.last_student_lookup["birth_date"]["$gte"] == datetime(
+        2000, 1, 1, 0, 0
+    )
+    assert repository.last_student_lookup["birth_date"]["$lt"] == datetime(
+        2000, 1, 2, 0, 0
+    )
 
 
 def test_birth_date_query_covers_single_day():

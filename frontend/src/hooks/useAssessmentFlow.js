@@ -1,50 +1,57 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { API_BASE, SESSION_KEY, STAGES } from "../config";
-import { toApiBirthDate } from "../utils/formatters";
-import { readApiError, wait } from "../utils/http";
+import { API_BASE, SESSION_KEY, STAGES } from '../config';
+import { toApiBirthDate } from '../utils/formatters';
+import { readApiError, wait } from '../utils/http';
 
 const QUESTIONS_LIMIT = 20;
 const ASSESSMENT_STATUS = {
-  IDLE: "IDLE",
-  NONE: "NONE",
-  DRAFT: "DRAFT",
-  COMPLETED: "COMPLETED",
+  IDLE: 'IDLE',
+  NONE: 'NONE',
+  DRAFT: 'DRAFT',
+  COMPLETED: 'COMPLETED',
 };
 
-function logFlow(event, details = {}, level = "info") {
+function logFlow(event, details = {}, level = 'info') {
   const logger = console[level] || console.info;
   logger(`[assessment-flow] ${event}`, details);
 }
 
 export function useAssessmentFlow() {
   const [stage, setStage] = useState(STAGES.AUTH);
-  const [cpf, setCpf] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [token, setToken] = useState("");
-  const [assessmentId, setAssessmentId] = useState("");
+  const [cpf, setCpf] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [token, setToken] = useState('');
+  const [assessmentId, setAssessmentId] = useState('');
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answerStates, setAnswerStates] = useState({});
   const [missingQuestionIds, setMissingQuestionIds] = useState([]);
-  const [authError, setAuthError] = useState("");
-  const [screenError, setScreenError] = useState("");
+  const [authError, setAuthError] = useState('');
+  const [screenError, setScreenError] = useState('');
   const [isBusy, setIsBusy] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [completedAt, setCompletedAt] = useState("");
-  const [assessmentStatus, setAssessmentStatus] = useState(ASSESSMENT_STATUS.IDLE);
-  const [selectedLevel, setSelectedLevel] = useState("iniciante");
+  const [completedAt, setCompletedAt] = useState('');
+  const [assessmentStatus, setAssessmentStatus] = useState(
+    ASSESSMENT_STATUS.IDLE
+  );
+  const [selectedLevel, setSelectedLevel] = useState('iniciante');
   const [completedAssessments, setCompletedAssessments] = useState([]);
   const [assessmentLevel, setAssessmentLevel] = useState(null);
   const saveVersionsRef = useRef({});
 
-  const authHeader = useMemo(() => (token ? { Authorization: `Bearer ${token}` } : {}), [token]);
+  const authHeader = useMemo(
+    () => (token ? { Authorization: `Bearer ${token}` } : {}),
+    [token]
+  );
   const currentQuestion = questions[currentIndex];
-  const answeredCount = questions.filter((question) => Boolean(question.selected_option)).length;
+  const answeredCount = questions.filter((question) =>
+    Boolean(question.selected_option)
+  ).length;
   const completionDate = completedAt ? new Date(completedAt) : new Date();
   const protocolNumber = assessmentId
     ? `KD-${assessmentId.slice(0, 4).toUpperCase()}-${assessmentId.slice(-5)}`
-    : "KD-0000-00000";
+    : 'KD-0000-00000';
 
   useEffect(() => {
     try {
@@ -53,7 +60,9 @@ export function useAssessmentFlow() {
 
       const parsed = JSON.parse(saved);
       if (parsed?.token) {
-        logFlow("session_restored", { assessmentId: parsed.assessmentId || null });
+        logFlow('session_restored', {
+          assessmentId: parsed.assessmentId || null,
+        });
         setToken(parsed.token);
         if (parsed.assessmentId) {
           setAssessmentId(parsed.assessmentId);
@@ -63,102 +72,104 @@ export function useAssessmentFlow() {
         }
       }
     } catch (error) {
-      logFlow("session_restore_failed", { error: String(error) }, "warn");
+      logFlow('session_restore_failed', { error: String(error) }, 'warn');
       localStorage.removeItem(SESSION_KEY);
     }
   }, []);
 
   useEffect(() => {
     if (token) {
-      const persistedAssessmentId = stage === STAGES.QUESTIONS ? assessmentId : "";
-      localStorage.setItem(SESSION_KEY, JSON.stringify({ token, assessmentId: persistedAssessmentId }));
+      const persistedAssessmentId =
+        stage === STAGES.QUESTIONS ? assessmentId : '';
+      localStorage.setItem(
+        SESSION_KEY,
+        JSON.stringify({ token, assessmentId: persistedAssessmentId })
+      );
       return;
     }
 
     localStorage.removeItem(SESSION_KEY);
   }, [token, assessmentId, stage]);
 
-  useEffect(() => {
-    if (stage === STAGES.QUESTIONS && token && assessmentId && questions.length === 0) {
-      void loadQuestions();
-    }
-  }, [stage, token, assessmentId, questions.length]);
-
-  useEffect(() => {
-    if (stage === STAGES.INTRO && token && !assessmentId) {
-      void loadCurrentAssessment();
-    }
-  }, [stage, token, assessmentId]);
-
-  function resetSession() {
-    setToken("");
-    setAssessmentId("");
+  const resetSession = useCallback(() => {
+    setToken('');
+    setAssessmentId('');
     setQuestions([]);
     setCurrentIndex(0);
     setAnswerStates({});
     setMissingQuestionIds([]);
-    setCompletedAt("");
+    setCompletedAt('');
     setAssessmentStatus(ASSESSMENT_STATUS.IDLE);
-    setScreenError("");
+    setScreenError('');
     localStorage.removeItem(SESSION_KEY);
-  }
+  }, []);
 
   async function login(event) {
     event.preventDefault();
-    setAuthError("");
-    setScreenError("");
+    setAuthError('');
+    setScreenError('');
 
     const apiBirthDate = toApiBirthDate(birthDate);
-    if (cpf.replace(/\D/g, "").length !== 11 || !apiBirthDate) {
-      setAuthError("Informe um CPF e uma data de nascimento validos.");
+    if (cpf.replace(/\D/g, '').length !== 11 || !apiBirthDate) {
+      setAuthError('Informe um CPF e uma data de nascimento validos.');
       return;
     }
 
     setIsBusy(true);
-    logFlow("auth_started", { cpfSuffix: cpf.replace(/\D/g, "").slice(-2) });
+    logFlow('auth_started', { cpfSuffix: cpf.replace(/\D/g, '').slice(-2) });
 
     try {
       const response = await fetch(`${API_BASE}/auth`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cpf: cpf.replace(/\D/g, ""), birth_date: apiBirthDate }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cpf: cpf.replace(/\D/g, ''),
+          birth_date: apiBirthDate,
+        }),
       });
 
       if (!response.ok) {
         const message = await readApiError(response);
-        logFlow("auth_failed", { status: response.status, message }, "warn");
+        logFlow('auth_failed', { status: response.status, message }, 'warn');
         setAuthError(message);
         return;
       }
 
       const data = await response.json();
-      logFlow("auth_succeeded", {});
+      logFlow('auth_succeeded', {});
       setToken(data.token);
-      setAssessmentId("");
+      setAssessmentId('');
       setAssessmentStatus(ASSESSMENT_STATUS.IDLE);
       setStage(STAGES.INTRO);
     } catch (error) {
-      logFlow("auth_request_failed", { error: String(error) }, "error");
-      setAuthError("Nao foi possivel conectar ao servidor.");
+      logFlow('auth_request_failed', { error: String(error) }, 'error');
+      setAuthError('Nao foi possivel conectar ao servidor.');
     } finally {
       setIsBusy(false);
     }
   }
 
-  async function loadQuestions() {
-    setScreenError("");
+  const loadQuestions = useCallback(async () => {
+    setScreenError('');
     setIsBusy(true);
-    logFlow("questions_load_started", { assessmentId, quantity: QUESTIONS_LIMIT });
+    logFlow('questions_load_started', {
+      assessmentId,
+      quantity: QUESTIONS_LIMIT,
+    });
 
     try {
       const response = await fetch(
         `${API_BASE}/assessments/${assessmentId}/questions?quantity=${QUESTIONS_LIMIT}`,
-        { headers: authHeader },
+        { headers: authHeader }
       );
 
       if (!response.ok) {
         const message = await readApiError(response);
-        logFlow("questions_load_failed", { assessmentId, status: response.status, message }, "warn");
+        logFlow(
+          'questions_load_failed',
+          { assessmentId, status: response.status, message },
+          'warn'
+        );
         setScreenError(message);
         if (response.status === 401 || response.status === 403) {
           resetSession();
@@ -168,28 +179,40 @@ export function useAssessmentFlow() {
       }
 
       const data = await response.json();
-      logFlow("questions_load_succeeded", { assessmentId, count: data.length });
+      logFlow('questions_load_succeeded', { assessmentId, count: data.length });
       setQuestions(data);
-      setCurrentIndex((previous) => Math.min(previous, Math.max(0, data.length - 1)));
+      setCurrentIndex((previous) =>
+        Math.min(previous, Math.max(0, data.length - 1))
+      );
     } catch (error) {
-      logFlow("questions_load_request_failed", { assessmentId, error: String(error) }, "error");
-      setScreenError("Nao foi possivel carregar as perguntas.");
+      logFlow(
+        'questions_load_request_failed',
+        { assessmentId, error: String(error) },
+        'error'
+      );
+      setScreenError('Nao foi possivel carregar as perguntas.');
     } finally {
       setIsBusy(false);
     }
-  }
+  }, [assessmentId, authHeader, resetSession]);
 
-  async function loadCurrentAssessment() {
-    setScreenError("");
+  const loadCurrentAssessment = useCallback(async () => {
+    setScreenError('');
     setIsBusy(true);
-    logFlow("assessment_current_load_started", {});
+    logFlow('assessment_current_load_started', {});
 
     try {
-      const response = await fetch(`${API_BASE}/assessments/current`, { headers: authHeader });
+      const response = await fetch(`${API_BASE}/assessments/current`, {
+        headers: authHeader,
+      });
 
       if (!response.ok) {
         const message = await readApiError(response);
-        logFlow("assessment_current_load_failed", { status: response.status, message }, "warn");
+        logFlow(
+          'assessment_current_load_failed',
+          { status: response.status, message },
+          'warn'
+        );
         setScreenError(message);
         if (response.status === 401 || response.status === 403) {
           resetSession();
@@ -199,9 +222,12 @@ export function useAssessmentFlow() {
       }
 
       const data = await response.json();
-      logFlow("assessment_current_load_succeeded", { status: data.status, assessmentId: data.assessment_id || null });
+      logFlow('assessment_current_load_succeeded', {
+        status: data.status,
+        assessmentId: data.assessment_id || null,
+      });
       setAssessmentStatus(data.status);
-      setCompletedAt(data.completed_at || "");
+      setCompletedAt(data.completed_at || '');
       setCompletedAssessments(data.assessments || []);
       setAssessmentLevel(data.assessment_type || null);
 
@@ -210,28 +236,53 @@ export function useAssessmentFlow() {
         setStage(STAGES.QUESTIONS);
       }
     } catch (error) {
-      logFlow("assessment_current_load_request_failed", { error: String(error) }, "error");
-      setScreenError("Nao foi possivel verificar sua avaliacao.");
+      logFlow(
+        'assessment_current_load_request_failed',
+        { error: String(error) },
+        'error'
+      );
+      setScreenError('Nao foi possivel verificar sua avaliacao.');
     } finally {
       setIsBusy(false);
     }
-  }
+  }, [authHeader, resetSession]);
+
+  useEffect(() => {
+    if (
+      stage === STAGES.QUESTIONS &&
+      token &&
+      assessmentId &&
+      questions.length === 0
+    ) {
+      void loadQuestions();
+    }
+  }, [stage, token, assessmentId, questions.length, loadQuestions]);
+
+  useEffect(() => {
+    if (stage === STAGES.INTRO && token && !assessmentId) {
+      void loadCurrentAssessment();
+    }
+  }, [stage, token, assessmentId, loadCurrentAssessment]);
 
   async function startAssessment(level) {
-    setScreenError("");
+    setScreenError('');
     setIsBusy(true);
-    logFlow("assessment_create_started", { level });
+    logFlow('assessment_create_started', { level });
 
     try {
       const response = await fetch(`${API_BASE}/assessments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeader },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({ assessment_type: level }),
       });
 
       if (!response.ok) {
         const message = await readApiError(response);
-        logFlow("assessment_create_failed", { status: response.status, message }, "warn");
+        logFlow(
+          'assessment_create_failed',
+          { status: response.status, message },
+          'warn'
+        );
         setScreenError(message);
         if (response.status === 409) {
           await loadCurrentAssessment();
@@ -240,58 +291,100 @@ export function useAssessmentFlow() {
       }
 
       const data = await response.json();
-      logFlow("assessment_create_succeeded", { assessmentId: data.assessment_id, assessment_type: data.assessment_type });
+      logFlow('assessment_create_succeeded', {
+        assessmentId: data.assessment_id,
+        assessment_type: data.assessment_type,
+      });
       setAssessmentLevel(data.assessment_type);
       setAssessmentId(data.assessment_id);
       setStage(STAGES.QUESTIONS);
     } catch (error) {
-      logFlow("assessment_create_request_failed", { error: String(error) }, "error");
-      setScreenError("Nao foi possivel iniciar a avaliacao.");
+      logFlow(
+        'assessment_create_request_failed',
+        { error: String(error) },
+        'error'
+      );
+      setScreenError('Nao foi possivel iniciar a avaliacao.');
     } finally {
       setIsBusy(false);
     }
   }
 
   async function saveAnswer(questionId, selectedOption) {
-    setMissingQuestionIds((previous) => previous.filter((id) => id !== questionId));
+    setMissingQuestionIds((previous) =>
+      previous.filter((id) => id !== questionId)
+    );
     setQuestions((current) =>
-      current.map((question) => (
-        question.id === questionId ? { ...question, selected_option: selectedOption } : question
-      ))
+      current.map((question) =>
+        question.id === questionId
+          ? { ...question, selected_option: selectedOption }
+          : question
+      )
     );
 
     const nextVersion = (saveVersionsRef.current[questionId] || 0) + 1;
     saveVersionsRef.current[questionId] = nextVersion;
-    setAnswerStates((previous) => ({ ...previous, [questionId]: "saving" }));
-    logFlow("answer_save_started", { assessmentId, questionId, selectedOption, version: nextVersion });
+    setAnswerStates((previous) => ({ ...previous, [questionId]: 'saving' }));
+    logFlow('answer_save_started', {
+      assessmentId,
+      questionId,
+      selectedOption,
+      version: nextVersion,
+    });
 
     const retryWait = [300, 800, 1500];
 
     for (let attempt = 0; attempt < retryWait.length; attempt += 1) {
       try {
-        const response = await fetch(`${API_BASE}/assessments/${assessmentId}/answers`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json", ...authHeader },
-          body: JSON.stringify({ question_id: questionId, selected_option: selectedOption }),
-        });
+        const response = await fetch(
+          `${API_BASE}/assessments/${assessmentId}/answers`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', ...authHeader },
+            body: JSON.stringify({
+              question_id: questionId,
+              selected_option: selectedOption,
+            }),
+          }
+        );
 
         if (saveVersionsRef.current[questionId] !== nextVersion) return;
 
         if (response.ok) {
-          logFlow("answer_save_succeeded", { assessmentId, questionId, selectedOption, attempt: attempt + 1 });
-          setAnswerStates((previous) => ({ ...previous, [questionId]: "saved" }));
+          logFlow('answer_save_succeeded', {
+            assessmentId,
+            questionId,
+            selectedOption,
+            attempt: attempt + 1,
+          });
+          setAnswerStates((previous) => ({
+            ...previous,
+            [questionId]: 'saved',
+          }));
           return;
         }
         logFlow(
-          "answer_save_retrying",
-          { assessmentId, questionId, selectedOption, attempt: attempt + 1, status: response.status },
-          "warn",
+          'answer_save_retrying',
+          {
+            assessmentId,
+            questionId,
+            selectedOption,
+            attempt: attempt + 1,
+            status: response.status,
+          },
+          'warn'
         );
       } catch (error) {
         logFlow(
-          "answer_save_request_failed",
-          { assessmentId, questionId, selectedOption, attempt: attempt + 1, error: String(error) },
-          "warn",
+          'answer_save_request_failed',
+          {
+            assessmentId,
+            questionId,
+            selectedOption,
+            attempt: attempt + 1,
+            error: String(error),
+          },
+          'warn'
         );
       }
 
@@ -299,33 +392,46 @@ export function useAssessmentFlow() {
     }
 
     if (saveVersionsRef.current[questionId] === nextVersion) {
-      logFlow("answer_save_failed", { assessmentId, questionId, selectedOption, version: nextVersion }, "error");
-      setAnswerStates((previous) => ({ ...previous, [questionId]: "error" }));
+      logFlow(
+        'answer_save_failed',
+        { assessmentId, questionId, selectedOption, version: nextVersion },
+        'error'
+      );
+      setAnswerStates((previous) => ({ ...previous, [questionId]: 'error' }));
     }
   }
 
   async function submitAssessment() {
-    setScreenError("");
+    setScreenError('');
     setIsSubmitting(true);
     setMissingQuestionIds([]);
-    logFlow("submit_started", {
+    logFlow('submit_started', {
       assessmentId,
       answeredCount,
       loadedQuestionCount: questions.length,
     });
 
     try {
-      const response = await fetch(`${API_BASE}/assessments/${assessmentId}/submit`, {
-        method: "POST",
-        headers: authHeader,
-      });
+      const response = await fetch(
+        `${API_BASE}/assessments/${assessmentId}/submit`,
+        {
+          method: 'POST',
+          headers: authHeader,
+        }
+      );
 
       if (response.status === 422) {
         const payload = await response.json();
-        const missing = payload?.details?.missing_question_ids || payload?.details?.question_ids || [];
-        const hiddenMissing = missing.filter((missingId) => !questions.some((question) => question.id === missingId));
+        const missing =
+          payload?.details?.missing_question_ids ||
+          payload?.details?.question_ids ||
+          [];
+        const hiddenMissing = missing.filter(
+          (missingId) =>
+            !questions.some((question) => question.id === missingId)
+        );
         logFlow(
-          "submit_incomplete",
+          'submit_incomplete',
           {
             assessmentId,
             requestId: payload?.request_id,
@@ -333,13 +439,15 @@ export function useAssessmentFlow() {
             hiddenMissingCount: hiddenMissing.length,
             hiddenMissing,
           },
-          "warn",
+          'warn'
         );
         setMissingQuestionIds(missing);
-        setScreenError(payload?.message || "Existem perguntas pendentes.");
+        setScreenError(payload?.message || 'Existem perguntas pendentes.');
 
         if (missing.length > 0) {
-          const index = questions.findIndex((question) => question.id === missing[0]);
+          const index = questions.findIndex(
+            (question) => question.id === missing[0]
+          );
           if (index >= 0) setCurrentIndex(index);
         }
 
@@ -350,19 +458,30 @@ export function useAssessmentFlow() {
 
       if (!response.ok) {
         const message = await readApiError(response);
-        logFlow("submit_failed", { assessmentId, status: response.status, message }, "error");
+        logFlow(
+          'submit_failed',
+          { assessmentId, status: response.status, message },
+          'error'
+        );
         setScreenError(message);
         return;
       }
 
       const payload = await response.json();
-      logFlow("submit_succeeded", { assessmentId, completedAt: payload.completed_at });
+      logFlow('submit_succeeded', {
+        assessmentId,
+        completedAt: payload.completed_at,
+      });
       setCompletedAt(payload.completed_at || new Date().toISOString());
       setAssessmentStatus(ASSESSMENT_STATUS.COMPLETED);
       setStage(STAGES.COMPLETED);
     } catch (error) {
-      logFlow("submit_request_failed", { assessmentId, error: String(error) }, "error");
-      setScreenError("Falha ao enviar a avaliacao.");
+      logFlow(
+        'submit_request_failed',
+        { assessmentId, error: String(error) },
+        'error'
+      );
+      setScreenError('Falha ao enviar a avaliacao.');
     } finally {
       setIsSubmitting(false);
     }
@@ -378,7 +497,7 @@ export function useAssessmentFlow() {
   }
 
   function goToReview() {
-    setScreenError("");
+    setScreenError('');
     setStage(STAGES.REVIEW);
   }
 

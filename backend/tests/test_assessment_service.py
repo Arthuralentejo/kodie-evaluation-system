@@ -24,7 +24,11 @@ class _AssessmentRepositoryStub:
         return self.assessments.get(assessment_id)
 
     async def find_questions_by_ids(self, *, question_ids):
-        return [self.questions[question_id] for question_id in question_ids if question_id in self.questions]
+        return [
+            self.questions[question_id]
+            for question_id in question_ids
+            if question_id in self.questions
+        ]
 
     async def find_question_by_id(self, *, question_id):
         return self.questions.get(question_id)
@@ -41,7 +45,9 @@ class _AssessmentRepositoryStub:
 
     async def find_active_assessment_by_student(self, *, student_id):
         for assessment in self.assessments.values():
-            if assessment["student_id"] == student_id and not assessment.get("archived", False):
+            if assessment["student_id"] == student_id and not assessment.get(
+                "archived", False
+            ):
                 return assessment
         return None
 
@@ -49,11 +55,13 @@ class _AssessmentRepositoryStub:
         completed = [
             assessment
             for assessment in self.assessments.values()
-            if assessment["student_id"] == student_id and assessment["status"] == "COMPLETED"
+            if assessment["student_id"] == student_id
+            and assessment["status"] == "COMPLETED"
         ]
         return sorted(
             completed,
-            key=lambda item: item.get("completed_at") or datetime.min.replace(tzinfo=UTC),
+            key=lambda item: item.get("completed_at")
+            or datetime.min.replace(tzinfo=UTC),
             reverse=True,
         )
 
@@ -65,7 +73,9 @@ class _AssessmentRepositoryStub:
     async def list_questions_for_level(self, *, level):
         return self.questions_by_level.get(level, [])
 
-    async def create_assessment(self, *, student_id, assigned_question_ids, assessment_type, now):
+    async def create_assessment(
+        self, *, student_id, assigned_question_ids, assessment_type, now
+    ):
         assessment_id = ObjectId()
         assessment = {
             "_id": assessment_id,
@@ -87,7 +97,9 @@ class _AssessmentRepositoryStub:
         assessment = self.assessments[assessment_id]
         assessment["answers"] = answers
 
-    async def complete_assessment(self, *, assessment_id, completed_at, evaluation_result=None):
+    async def complete_assessment(
+        self, *, assessment_id, completed_at, evaluation_result=None
+    ):
         assessment = self.assessments.get(assessment_id)
         if not assessment or assessment["status"] != "DRAFT":
             return None
@@ -100,7 +112,9 @@ class _AssessmentRepositoryStub:
 
 
 def _make_question_docs(level: str, count: int = 5) -> list[dict]:
-    return [{"_id": ObjectId(), "number": i + 1, "category": level} for i in range(count)]
+    return [
+        {"_id": ObjectId(), "number": i + 1, "category": level} for i in range(count)
+    ]
 
 
 @pytest.mark.asyncio
@@ -122,7 +136,9 @@ async def test_get_questions_restores_saved_answers(monkeypatch):
 
     service = AssessmentService(repository=repository)
 
-    result = await service.get_questions_for_assessment(assessment_id=str(assessment_id))
+    result = await service.get_questions_for_assessment(
+        assessment_id=str(assessment_id)
+    )
     assert result[0]["selected_option"] == "B"
 
 
@@ -172,7 +188,9 @@ async def test_create_assessment_creates_new_draft_when_none_exists():
 
     service = AssessmentService(repository=repository)
 
-    result = await service.create_assessment(student_id=student_id, assessment_type="iniciante")
+    result = await service.create_assessment(
+        student_id=student_id, assessment_type="iniciante"
+    )
 
     assert result["status"] == "DRAFT"
     assert result["assessment_type"] == "iniciante"
@@ -200,7 +218,9 @@ async def test_create_assessment_blocks_when_completed_exists():
     service = AssessmentService(repository=repository)
 
     with pytest.raises(AppError) as exc:
-        await service.create_assessment(student_id=student_id, assessment_type="iniciante")
+        await service.create_assessment(
+            student_id=student_id, assessment_type="iniciante"
+        )
 
     assert exc.value.status_code == 409
     assert exc.value.code == "LEVEL_ALREADY_COMPLETED"
@@ -255,7 +275,9 @@ async def test_submit_is_idempotent_and_atomic(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_submit_uses_required_question_window_for_legacy_oversized_drafts(monkeypatch):
+async def test_submit_uses_required_question_window_for_legacy_oversized_drafts(
+    monkeypatch,
+):
     assessment_id = ObjectId()
     assigned_ids = [ObjectId() for _ in range(25)]
     repository = _AssessmentRepositoryStub()
@@ -263,7 +285,10 @@ async def test_submit_uses_required_question_window_for_legacy_oversized_drafts(
         "_id": assessment_id,
         "student_id": STUDENT_ID,
         "assigned_question_ids": assigned_ids,
-        "answers": [{"question_id": question_id, "selected_option": "A"} for question_id in assigned_ids[:20]],
+        "answers": [
+            {"question_id": question_id, "selected_option": "A"}
+            for question_id in assigned_ids[:20]
+        ],
         "status": "DRAFT",
         "completed_at": None,
     }
@@ -288,12 +313,24 @@ async def test_get_questions_honors_quantity(monkeypatch):
         "assigned_question_ids": [q1, q2],
         "answers": [],
     }
-    repository.questions[q1] = {"_id": q1, "number": 1, "statement": "Q1", "options": [{"key": "A", "text": "x"}]}
-    repository.questions[q2] = {"_id": q2, "number": 2, "statement": "Q2", "options": [{"key": "A", "text": "y"}]}
+    repository.questions[q1] = {
+        "_id": q1,
+        "number": 1,
+        "statement": "Q1",
+        "options": [{"key": "A", "text": "x"}],
+    }
+    repository.questions[q2] = {
+        "_id": q2,
+        "number": 2,
+        "statement": "Q2",
+        "options": [{"key": "A", "text": "y"}],
+    }
 
     service = AssessmentService(repository=repository)
 
-    result = await service.get_questions_for_assessment(assessment_id=str(assessment_id), quantity=1)
+    result = await service.get_questions_for_assessment(
+        assessment_id=str(assessment_id), quantity=1
+    )
 
     assert len(result) == 1
     assert result[0]["statement"] == "Q1"
@@ -312,23 +349,85 @@ async def test_get_questions_distributes_difficulties_with_fewer_senior(monkeypa
         "answers": [],
     }
     docs = [
-        {"_id": ordered_ids[0], "number": 1, "category": "iniciante", "statement": "I1", "options": [{"key": "A", "text": "a"}]},
-        {"_id": ordered_ids[1], "number": 2, "category": "iniciante", "statement": "I2", "options": [{"key": "A", "text": "a"}]},
-        {"_id": ordered_ids[2], "number": 3, "category": "iniciante", "statement": "I3", "options": [{"key": "A", "text": "a"}]},
-        {"_id": ordered_ids[3], "number": 4, "category": "iniciante", "statement": "I4", "options": [{"key": "A", "text": "a"}]},
-        {"_id": ordered_ids[4], "number": 5, "category": "junior", "statement": "J1", "options": [{"key": "A", "text": "a"}]},
-        {"_id": ordered_ids[5], "number": 6, "category": "junior", "statement": "J2", "options": [{"key": "A", "text": "a"}]},
-        {"_id": ordered_ids[6], "number": 7, "category": "junior", "statement": "J3", "options": [{"key": "A", "text": "a"}]},
-        {"_id": ordered_ids[7], "number": 8, "category": "pleno", "statement": "P1", "options": [{"key": "A", "text": "a"}]},
-        {"_id": ordered_ids[8], "number": 9, "category": "pleno", "statement": "P2", "options": [{"key": "A", "text": "a"}]},
-        {"_id": ordered_ids[9], "number": 10, "category": "senior", "statement": "S1", "options": [{"key": "A", "text": "a"}]},
+        {
+            "_id": ordered_ids[0],
+            "number": 1,
+            "category": "iniciante",
+            "statement": "I1",
+            "options": [{"key": "A", "text": "a"}],
+        },
+        {
+            "_id": ordered_ids[1],
+            "number": 2,
+            "category": "iniciante",
+            "statement": "I2",
+            "options": [{"key": "A", "text": "a"}],
+        },
+        {
+            "_id": ordered_ids[2],
+            "number": 3,
+            "category": "iniciante",
+            "statement": "I3",
+            "options": [{"key": "A", "text": "a"}],
+        },
+        {
+            "_id": ordered_ids[3],
+            "number": 4,
+            "category": "iniciante",
+            "statement": "I4",
+            "options": [{"key": "A", "text": "a"}],
+        },
+        {
+            "_id": ordered_ids[4],
+            "number": 5,
+            "category": "junior",
+            "statement": "J1",
+            "options": [{"key": "A", "text": "a"}],
+        },
+        {
+            "_id": ordered_ids[5],
+            "number": 6,
+            "category": "junior",
+            "statement": "J2",
+            "options": [{"key": "A", "text": "a"}],
+        },
+        {
+            "_id": ordered_ids[6],
+            "number": 7,
+            "category": "junior",
+            "statement": "J3",
+            "options": [{"key": "A", "text": "a"}],
+        },
+        {
+            "_id": ordered_ids[7],
+            "number": 8,
+            "category": "pleno",
+            "statement": "P1",
+            "options": [{"key": "A", "text": "a"}],
+        },
+        {
+            "_id": ordered_ids[8],
+            "number": 9,
+            "category": "pleno",
+            "statement": "P2",
+            "options": [{"key": "A", "text": "a"}],
+        },
+        {
+            "_id": ordered_ids[9],
+            "number": 10,
+            "category": "senior",
+            "statement": "S1",
+            "options": [{"key": "A", "text": "a"}],
+        },
     ]
     for doc in docs:
         repository.questions[doc["_id"]] = doc
 
     service = AssessmentService(repository=repository)
 
-    result = await service.get_questions_for_assessment(assessment_id=str(assessment_id), quantity=10)
+    result = await service.get_questions_for_assessment(
+        assessment_id=str(assessment_id), quantity=10
+    )
 
     statements = [item["statement"] for item in result]
     assert len(result) == 10
@@ -350,11 +449,18 @@ async def test_upsert_answer_updates_embedded_answers(monkeypatch):
         "answers": [],
         "status": "DRAFT",
     }
-    repository.questions[question_id] = {"_id": question_id, "options": [{"key": "A", "text": "a"}]}
+    repository.questions[question_id] = {
+        "_id": question_id,
+        "options": [{"key": "A", "text": "a"}],
+    }
 
     service = AssessmentService(repository=repository)
 
-    await service.upsert_answer(assessment_id=str(assessment_id), question_id=str(question_id), selected_option="A")
+    await service.upsert_answer(
+        assessment_id=str(assessment_id),
+        question_id=str(question_id),
+        selected_option="A",
+    )
 
     payload = repository.last_update_answers["answers"]
     assert len(payload) == 1
@@ -370,7 +476,9 @@ async def test_create_assessment_creates_draft_at_given_level():
 
     service = AssessmentService(repository=repository)
 
-    result = await service.create_assessment(student_id=student_id, assessment_type="junior")
+    result = await service.create_assessment(
+        student_id=student_id, assessment_type="junior"
+    )
 
     assert result["status"] == "DRAFT"
     assert result["assessment_type"] == "junior"
@@ -395,7 +503,9 @@ async def test_create_assessment_returns_existing_draft_for_same_student_and_lev
 
     service = AssessmentService(repository=repository)
 
-    result = await service.create_assessment(student_id=student_id, assessment_type="pleno")
+    result = await service.create_assessment(
+        student_id=student_id, assessment_type="pleno"
+    )
 
     assert result["assessment_id"] == str(existing_draft_id)
     assert result["status"] == "DRAFT"
@@ -488,8 +598,9 @@ async def test_get_current_assessment_returns_none_when_no_assessments():
 
 # --- New tests for the 4-step algorithm ---
 
+
 @pytest.mark.asyncio
-async def test_create_assessment_archives_active_and_creates_new_draft_at_different_level():
+async def test_create_assessment_archives_active_for_new_level():
     student_id = STUDENT_ID
     active_id = ObjectId()
     repository = _AssessmentRepositoryStub()
@@ -507,7 +618,9 @@ async def test_create_assessment_archives_active_and_creates_new_draft_at_differ
 
     service = AssessmentService(repository=repository)
 
-    result = await service.create_assessment(student_id=student_id, assessment_type="junior")
+    result = await service.create_assessment(
+        student_id=student_id, assessment_type="junior"
+    )
 
     assert result["status"] == "DRAFT"
     assert result["assessment_type"] == "junior"
@@ -521,7 +634,7 @@ async def test_create_assessment_archives_active_and_creates_new_draft_at_differ
 
 @pytest.mark.asyncio
 async def test_create_assessment_archives_completed_active_and_creates_new_draft():
-    """A COMPLETED active assessment at a different level should be archived and a new DRAFT created."""
+    """Archive an active COMPLETED assessment before creating a new DRAFT."""
     student_id = STUDENT_ID
     completed_active_id = ObjectId()
     repository = _AssessmentRepositoryStub()
@@ -541,7 +654,9 @@ async def test_create_assessment_archives_completed_active_and_creates_new_draft
     service = AssessmentService(repository=repository)
 
     # "iniciante" is in completed history, so requesting "junior" should work
-    result = await service.create_assessment(student_id=student_id, assessment_type="junior")
+    result = await service.create_assessment(
+        student_id=student_id, assessment_type="junior"
+    )
 
     assert result["status"] == "DRAFT"
     assert result["assessment_type"] == "junior"
@@ -549,7 +664,7 @@ async def test_create_assessment_archives_completed_active_and_creates_new_draft
 
 
 @pytest.mark.asyncio
-async def test_create_assessment_blocks_when_level_in_completed_history_including_archived():
+async def test_create_assessment_blocks_archived_completed_level():
     """A completed+archived assessment still blocks re-starting that level."""
     student_id = STUDENT_ID
     archived_completed_id = ObjectId()
@@ -575,8 +690,8 @@ async def test_create_assessment_blocks_when_level_in_completed_history_includin
 
 
 @pytest.mark.asyncio
-async def test_get_current_assessment_returns_none_status_with_completed_history_when_no_active():
-    """No active assessment but completed history → status NONE with non-empty assessments."""
+async def test_get_current_assessment_returns_none_with_history():
+    """Return NONE with history when no active assessment exists."""
     student_id = STUDENT_ID
     completed_id = ObjectId()
     repository = _AssessmentRepositoryStub()

@@ -20,7 +20,9 @@ class AuthRepository:
         self.db = db
 
     async def find_attempt(self, *, kind: str, key: str) -> dict[str, Any] | None:
-        result = await auth_attempts_collection(self.db).find_one({"kind": kind, "key": key})
+        result = await auth_attempts_collection(self.db).find_one(
+            {"kind": kind, "key": key}
+        )
         logger.info(
             build_log_message(
                 "auth_attempt_lookup_completed",
@@ -33,12 +35,20 @@ class AuthRepository:
         )
         return result
 
-    async def reset_attempt_window(self, *, attempt_id: ObjectId, now: datetime) -> None:
+    async def reset_attempt_window(
+        self, *, attempt_id: ObjectId, now: datetime
+    ) -> None:
         await auth_attempts_collection(self.db).update_one(
             {"_id": attempt_id},
             {"$set": {"count": 0, "window_start": now}},
         )
-        logger.info(build_log_message("auth_attempt_window_reset", attempt_id=str(attempt_id), window_start=now))
+        logger.info(
+            build_log_message(
+                "auth_attempt_window_reset",
+                attempt_id=str(attempt_id),
+                window_start=now,
+            )
+        )
 
     async def create_attempt(self, *, kind: str, key: str, now: datetime) -> None:
         await auth_attempts_collection(self.db).insert_one(
@@ -60,8 +70,12 @@ class AuthRepository:
             )
         )
 
-    async def update_attempt(self, *, kind: str, key: str, update: dict[str, Any]) -> None:
-        await auth_attempts_collection(self.db).update_one({"kind": kind, "key": key}, update)
+    async def update_attempt(
+        self, *, kind: str, key: str, update: dict[str, Any]
+    ) -> None:
+        await auth_attempts_collection(self.db).update_one(
+            {"kind": kind, "key": key}, update
+        )
         logger.info(
             build_log_message(
                 "auth_attempt_updated",
@@ -81,24 +95,38 @@ class AuthRepository:
             )
         )
 
-    async def find_student_by_cpf_and_birth_date(self, *, cpf: str, birth_date_query: dict[str, Any]) -> dict | None:
-        result = await students_collection(self.db).find_one({"cpf": cpf, "birth_date": birth_date_query})
+    async def find_student_by_cpf_and_birth_date(
+        self, *, cpf: str, birth_date_query: dict[str, Any]
+    ) -> dict | None:
+        result = await students_collection(self.db).find_one(
+            {"cpf": cpf, "birth_date": birth_date_query}
+        )
         logger.info(
             build_log_message(
                 "student_lookup_by_cpf_completed",
                 cpf=mask_cpf(cpf),
                 found=result is not None,
-                student_ref=hash_identifier(result.get("student_id") or result["_id"]) if result else None,
+                student_ref=hash_identifier(result.get("student_id") or result["_id"])
+                if result
+                else None,
             )
         )
         return result
 
     async def find_revoked_token(self, *, jti: str) -> dict | None:
         result = await denylist_collection(self.db).find_one({"jti": jti})
-        logger.info(build_log_message("token_revocation_lookup_completed", jti_ref=hash_identifier(jti), found=result is not None))
+        logger.info(
+            build_log_message(
+                "token_revocation_lookup_completed",
+                jti_ref=hash_identifier(jti),
+                found=result is not None,
+            )
+        )
         return result
 
-    async def revoke_token(self, *, jti: str, expires_at: datetime, revoked_at: datetime) -> None:
+    async def revoke_token(
+        self, *, jti: str, expires_at: datetime, revoked_at: datetime
+    ) -> None:
         await denylist_collection(self.db).update_one(
             {"jti": jti},
             {"$set": {"jti": jti, "expires_at": expires_at, "revoked_at": revoked_at}},

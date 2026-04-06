@@ -1,12 +1,11 @@
-from datetime import UTC, datetime, timedelta
 import uuid
+from datetime import UTC, datetime, timedelta
 
 import jwt
 from jwt import InvalidTokenError
 
 from app.core.config import settings
 from app.core.errors import AppError
-
 
 REQUIRED_CLAIMS = {"sub", "iat", "exp", "jti"}
 
@@ -31,9 +30,13 @@ def create_access_token(*, student_id: str) -> tuple[str, dict[str, str | int]]:
 
 def decode_access_token(token: str) -> dict:
     try:
-        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+        payload = jwt.decode(
+            token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
+        )
     except InvalidTokenError as exc:
-        raise AppError(status_code=401, code="INVALID_TOKEN", message="Invalid or expired token") from exc
+        raise AppError(
+            status_code=401, code="INVALID_TOKEN", message="Invalid or expired token"
+        ) from exc
 
     missing = REQUIRED_CLAIMS.difference(payload.keys())
     if missing:

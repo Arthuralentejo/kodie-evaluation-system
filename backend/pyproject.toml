@@ -21,6 +21,18 @@ python-ulid = ">=3.0.0,<4.0.0"
 pytest = ">=8.4.0,<9.0.0"
 pytest-asyncio = ">=1.1.0,<2.0.0"
 httpx = ">=0.28.0,<1.0.0"
+ruff = ">=0.9.0,<1.0.0"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

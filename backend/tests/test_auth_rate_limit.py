@@ -21,7 +21,7 @@ class _AuthRepositoryStub:
 
 @pytest.mark.asyncio
 async def test_check_rate_limit_uses_retry_after(monkeypatch):
-    now = datetime.now(UTC)
+    datetime.now(UTC)
     service = AuthService(repository=_AuthRepositoryStub())
 
     async def fake_get_attempt_doc(kind, key, *, now):
@@ -46,7 +46,7 @@ async def test_check_rate_limit_uses_retry_after(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_check_rate_limit_blocks_by_ip_threshold(monkeypatch):
-    now = datetime.now(UTC)
+    datetime.now(UTC)
     service = AuthService(repository=_AuthRepositoryStub())
 
     async def fake_get_attempt_doc(kind, key, *, now):

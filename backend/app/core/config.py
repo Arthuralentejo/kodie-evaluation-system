@@ -7,7 +7,9 @@ from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
 
     app_name: str = "kodie-evaluation-backend"
     env: str = "dev"
@@ -54,12 +56,21 @@ class Settings(BaseSettings):
             except json.JSONDecodeError as exc:
                 bracket_content = raw_value[1:-1].strip()
                 if not raw_value.endswith("]"):
-                    raise ValueError(f"Invalid CORS_ALLOWED_ORIGINS format: {exc.msg}") from exc
+                    raise ValueError(
+                        f"Invalid CORS_ALLOWED_ORIGINS format: {exc.msg}"
+                    ) from exc
                 if not bracket_content:
                     return []
-                return [item.strip().strip("\"'") for item in bracket_content.split(",") if item.strip()]
+                return [
+                    item.strip().strip("\"'")
+                    for item in bracket_content.split(",")
+                    if item.strip()
+                ]
             if not isinstance(parsed, list):
-                raise ValueError("cors_allowed_origins must be a JSON array or comma-separated string")
+                raise ValueError(
+                    "cors_allowed_origins must be a JSON array "
+                    "or comma-separated string"
+                )
             return [str(item).strip() for item in parsed if str(item).strip()]
 
         return [item.strip() for item in raw_value.split(",") if item.strip()]

@@ -1,5 +1,3 @@
-from datetime import UTC, datetime, timedelta
-
 import pytest
 from fastapi.security import HTTPAuthorizationCredentials
 from starlette.requests import Request
@@ -42,13 +40,17 @@ async def test_auth_context_denies_foreign_assessment():
     request = _request_with_assessment(assessment_id)
 
     auth_service = _AuthServiceStub(
-        side_effect=AppError(status_code=403, code="FORBIDDEN", message="Assessment access denied")
+        side_effect=AppError(
+            status_code=403, code="FORBIDDEN", message="Assessment access denied"
+        )
     )
 
     with pytest.raises(AppError) as exc:
         await deps.get_auth_context(
             request=request,
-            credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+            credentials=HTTPAuthorizationCredentials(
+                scheme="Bearer", credentials="token"
+            ),
             auth_service=auth_service,
         )
 
@@ -61,13 +63,19 @@ async def test_auth_context_revocation_store_outage_returns_503():
     request = _request_with_assessment(assessment_id)
 
     auth_service = _AuthServiceStub(
-        side_effect=AppError(status_code=503, code="REVOCATION_STORE_UNAVAILABLE", message="Revocation store unavailable")
+        side_effect=AppError(
+            status_code=503,
+            code="REVOCATION_STORE_UNAVAILABLE",
+            message="Revocation store unavailable",
+        )
     )
 
     with pytest.raises(AppError) as exc:
         await deps.get_auth_context(
             request=request,
-            credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+            credentials=HTTPAuthorizationCredentials(
+                scheme="Bearer", credentials="token"
+            ),
             auth_service=auth_service,
         )
 
@@ -81,13 +89,17 @@ async def test_auth_context_rejects_revoked_token():
     request = _request_with_assessment(assessment_id)
 
     auth_service = _AuthServiceStub(
-        side_effect=AppError(status_code=401, code="TOKEN_REVOKED", message="Token has been revoked")
+        side_effect=AppError(
+            status_code=401, code="TOKEN_REVOKED", message="Token has been revoked"
+        )
     )
 
     with pytest.raises(AppError) as exc:
         await deps.get_auth_context(
             request=request,
-            credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+            credentials=HTTPAuthorizationCredentials(
+                scheme="Bearer", credentials="token"
+            ),
             auth_service=auth_service,
         )
 

@@ -1,19 +1,28 @@
-import { BrandMark } from "../ui";
+import { BrandMark } from '../ui';
 
-function QuestionsHeader({ currentIndex, onJumpToQuestion, onLogout, questions, remainingQuestions }) {
+function QuestionsHeader({
+  currentIndex,
+  onJumpToQuestion,
+  onLogout,
+  questions,
+  remainingQuestions,
+}) {
   return (
     <header className="questionnaire-header">
       <div className="questionnaire-header__brand">
         <BrandMark />
       </div>
-      <div className="questionnaire-header__stepper" aria-label="Navegacao entre perguntas">
+      <div
+        className="questionnaire-header__stepper"
+        aria-label="Navegacao entre perguntas"
+      >
         {questions.map((question, index) => {
           const statusClassName =
             index === currentIndex
-              ? "is-active"
+              ? 'is-active'
               : question.selected_option
-                ? "is-answered"
-                : "is-idle";
+                ? 'is-answered'
+                : 'is-idle';
 
           return (
             <button
@@ -55,13 +64,12 @@ export function QuestionsScreen({
   onFinish,
 }) {
   const totalQuestions = questions.length;
-  const questionNumber = totalQuestions > 0 ? currentIndex + 1 : 0;
   const remainingQuestions = Math.max(totalQuestions - answeredCount, 0);
   const canFinish = totalQuestions > 0 && answeredCount === totalQuestions;
   const options = currentQuestion
     ? [
         ...currentQuestion.options,
-        { key: "DONT_KNOW", text: "Nao sei responder.", isUtilityOption: true },
+        { key: 'DONT_KNOW', text: 'Nao sei responder.', isUtilityOption: true },
       ]
     : [];
 
@@ -78,11 +86,17 @@ export function QuestionsScreen({
         <div className="question-main">
           <div className="panel panel--content panel--question">
             <div className="panel__content panel__content--question">
-              {screenError && <p className="feedback feedback--error">{screenError}</p>}
+              {screenError && (
+                <p className="feedback feedback--error">{screenError}</p>
+              )}
 
               {!currentQuestion && (
                 <div className="empty-state">
-                  <h2>{isBusy ? "Carregando perguntas..." : "Nenhuma pergunta disponivel."}</h2>
+                  <h2>
+                    {isBusy
+                      ? 'Carregando perguntas...'
+                      : 'Nenhuma pergunta disponivel.'}
+                  </h2>
                 </div>
               )}
 
@@ -92,26 +106,35 @@ export function QuestionsScreen({
                     <h1>{currentQuestion.statement}</h1>
                   </div>
                   <p className="question-caption">
-                    Selecione a alternativa que melhor representa sua percepcao neste momento.
+                    Selecione a alternativa que melhor representa sua percepcao
+                    neste momento.
                   </p>
 
                   <div className="options-stack options-stack--spacious">
                     {options.map((option) => {
-                      const isSelected = currentQuestion.selected_option === option.key;
+                      const isSelected =
+                        currentQuestion.selected_option === option.key;
                       const isMissing =
-                        missingQuestionIds.includes(currentQuestion.id) && !currentQuestion.selected_option;
+                        missingQuestionIds.includes(currentQuestion.id) &&
+                        !currentQuestion.selected_option;
 
                       return (
                         <button
-                          className={`option-card option-card--large ${option.isUtilityOption ? "option-card--utility" : ""} ${isSelected ? "selected" : ""} ${isMissing ? "missing" : ""}`}
+                          className={`option-card option-card--large ${option.isUtilityOption ? 'option-card--utility' : ''} ${isSelected ? 'selected' : ''} ${isMissing ? 'missing' : ''}`}
                           key={option.key}
-                          onClick={() => onSaveAnswer(currentQuestion.id, option.key)}
+                          onClick={() =>
+                            onSaveAnswer(currentQuestion.id, option.key)
+                          }
                           type="button"
                         >
                           {!option.isUtilityOption ? (
-                            <span className="option-card__key option-card__key--large">{option.key}</span>
+                            <span className="option-card__key option-card__key--large">
+                              {option.key}
+                            </span>
                           ) : null}
-                          <span className="option-card__text option-card__text--large">{option.text}</span>
+                          <span className="option-card__text option-card__text--large">
+                            {option.text}
+                          </span>
                         </button>
                       );
                     })}

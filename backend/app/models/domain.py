@@ -23,11 +23,13 @@ class Option(BaseModel):
     key: str = Field(min_length=1, max_length=20)
     text: str = Field(min_length=1)
 
+
 class Category(str, Enum):
     INICIANTE = "iniciante"
     JUNIOR = "junior"
     PLENO = "pleno"
     SENIOR = "senior"
+
 
 class Student(BaseModel):
     cpf: str

@@ -1,5 +1,5 @@
-import json
 import hashlib
+import json
 import logging
 import sys
 from datetime import date, datetime
@@ -20,7 +20,11 @@ def configure_logging() -> logging.Logger:
     log_level = _resolve_log_level()
 
     stdout_handler = next(
-        (handler for handler in root_logger.handlers if handler.get_name() == STDOUT_HANDLER_NAME),
+        (
+            handler
+            for handler in root_logger.handlers
+            if handler.get_name() == STDOUT_HANDLER_NAME
+        ),
         None,
     )
     if stdout_handler is None:
@@ -56,9 +60,13 @@ def _serialize_log_value(value: Any) -> str:
     if isinstance(value, (datetime, date)):
         return json.dumps(value.isoformat(), ensure_ascii=True)
     if isinstance(value, (list, tuple, set)):
-        return json.dumps(list(value), ensure_ascii=True, default=str, separators=(",", ":"))
+        return json.dumps(
+            list(value), ensure_ascii=True, default=str, separators=(",", ":")
+        )
     if isinstance(value, dict):
-        return json.dumps(value, ensure_ascii=True, default=str, separators=(",", ":"), sort_keys=True)
+        return json.dumps(
+            value, ensure_ascii=True, default=str, separators=(",", ":"), sort_keys=True
+        )
     if isinstance(value, str):
         return json.dumps(value, ensure_ascii=True)
     return str(value)

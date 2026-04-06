@@ -9,7 +9,7 @@ logger = get_logger("kodie.repositories.assessment")
 
 
 def _ensure_utc(doc: dict | None) -> dict | None:
-    """Attach UTC tzinfo to offset-naive datetime fields that MongoDB strips on round-trip."""
+    """Attach UTC tzinfo to naive datetimes after MongoDB round-trips."""
     if doc is None:
         return None
     for field in ("started_at", "completed_at"):
@@ -37,8 +37,12 @@ class AssessmentRepository:
         )
         return result
 
-    async def find_questions_by_ids(self, *, question_ids: list[ObjectId]) -> list[dict]:
-        results = await self.questions_collection.find({"_id": {"$in": question_ids}}).to_list(length=None)
+    async def find_questions_by_ids(
+        self, *, question_ids: list[ObjectId]
+    ) -> list[dict]:
+        results = await self.questions_collection.find(
+            {"_id": {"$in": question_ids}}
+        ).to_list(length=None)
         logger.info(
             build_log_message(
                 "questions_lookup_by_ids_completed",
@@ -50,7 +54,13 @@ class AssessmentRepository:
 
     async def find_question_by_id(self, *, question_id: ObjectId) -> dict | None:
         result = await self.questions_collection.find_one({"_id": question_id})
-        logger.info(build_log_message("question_lookup_completed", question_id=str(question_id), found=result is not None))
+        logger.info(
+            build_log_message(
+                "question_lookup_completed",
+                question_id=str(question_id),
+                found=result is not None,
+            )
+        )
         return result
 
     async def find_draft_assessment_by_student(self, *, student_id: str) -> dict | None:
@@ -67,8 +77,12 @@ class AssessmentRepository:
         )
         return result
 
-    async def find_active_assessment_by_student(self, *, student_id: str) -> dict | None:
-        result = await self.collection.find_one({"student_id": student_id, "archived": False})
+    async def find_active_assessment_by_student(
+        self, *, student_id: str
+    ) -> dict | None:
+        result = await self.collection.find_one(
+            {"student_id": student_id, "archived": False}
+        )
         logger.info(
             build_log_message(
                 "active_assessment_lookup_completed",
@@ -80,7 +94,9 @@ class AssessmentRepository:
         )
         return result
 
-    async def find_all_completed_assessments_by_student(self, *, student_id: str) -> list[dict]:
+    async def find_all_completed_assessments_by_student(
+        self, *, student_id: str
+    ) -> list[dict]:
         # includes archived — full history
         results = await self.collection.find(
             {"student_id": student_id, "status": "COMPLETED"},
@@ -100,14 +116,22 @@ class AssessmentRepository:
             {"_id": assessment_id},
             {"$set": {"archived": True}},
         )
-        logger.info(build_log_message("assessment_archived", assessment_id=str(assessment_id)))
+        logger.info(
+            build_log_message("assessment_archived", assessment_id=str(assessment_id))
+        )
 
     async def list_questions_for_level(self, *, level: str) -> list[dict]:
         results = await self.questions_collection.find(
             {"category": level},
             {"_id": 1, "number": 1, "category": 1},
         ).to_list(length=None)
-        logger.info(build_log_message("questions_for_level_listed", assessment_type=level, returned_count=len(results)))
+        logger.info(
+            build_log_message(
+                "questions_for_level_listed",
+                assessment_type=level,
+                returned_count=len(results),
+            )
+        )
         return results
 
     async def list_questions_for_geral(self) -> list[dict]:
@@ -115,7 +139,9 @@ class AssessmentRepository:
             {},
             {"_id": 1, "number": 1, "category": 1},
         ).to_list(length=None)
-        logger.info(build_log_message("questions_for_geral_listed", returned_count=len(results)))
+        logger.info(
+            build_log_message("questions_for_geral_listed", returned_count=len(results))
+        )
         return results
 
     async def create_assessment(
@@ -150,7 +176,9 @@ class AssessmentRepository:
         )
         return document
 
-    async def update_assessment_answers(self, *, assessment_id: ObjectId, answers: list[dict]) -> None:
+    async def update_assessment_answers(
+        self, *, assessment_id: ObjectId, answers: list[dict]
+    ) -> None:
         await self.collection.update_one(
             {"_id": assessment_id},
             {"$set": {"answers": answers}},
@@ -173,11 +201,13 @@ class AssessmentRepository:
         update = {"status": "COMPLETED", "completed_at": completed_at}
         if evaluation_result is not None:
             update["evaluation_result"] = evaluation_result
-        result = _ensure_utc(await self.collection.find_one_and_update(
-            {"_id": assessment_id, "status": "DRAFT"},
-            {"$set": update},
-            return_document=ReturnDocument.AFTER,
-        ))
+        result = _ensure_utc(
+            await self.collection.find_one_and_update(
+                {"_id": assessment_id, "status": "DRAFT"},
+                {"$set": update},
+                return_document=ReturnDocument.AFTER,
+            )
+        )
         logger.info(
             build_log_message(
                 "assessment_completion_update_completed",
@@ -204,7 +234,12 @@ class AssessmentRepository:
             query["evaluation_result.classification_value"] = classification_value
         total = await self.collection.count_documents(query)
         skip = (page - 1) * page_size
-        docs = await self.collection.find(query, sort=[("completed_at", -1)]).skip(skip).limit(page_size).to_list(length=None)
+        docs = (
+            await self.collection.find(query, sort=[("completed_at", -1)])
+            .skip(skip)
+            .limit(page_size)
+            .to_list(length=None)
+        )
         logger.info(
             build_log_message(
                 "completed_assessments_listed",
@@ -219,41 +254,78 @@ class AssessmentRepository:
         return docs, total
 
     async def aggregate_analytics(self, *, assessment_type: str | None = None) -> dict:
-        match_stage: dict = {"status": "COMPLETED", "evaluation_result": {"$exists": True}}
+        match_stage: dict = {
+            "status": "COMPLETED",
+            "evaluation_result": {"$exists": True},
+        }
         if assessment_type:
             match_stage["assessment_type"] = assessment_type
 
         pipeline = [
             {"$match": match_stage},
-            {"$facet": {
-                "score_distribution_raw": [
-                    {"$group": {"_id": "$evaluation_result.score_total", "count": {"$sum": 1}}},
-                    {"$sort": {"_id": 1}},
-                ],
-                "score_distribution_normalized": [
-                    {"$bucket": {
-                        "groupBy": "$evaluation_result.score_percent",
-                        "boundaries": [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-                        "default": "100",
-                        "output": {"count": {"$sum": 1}},
-                    }},
-                ],
-                "classification_distribution": [
-                    {"$group": {"_id": "$evaluation_result.classification_value", "count": {"$sum": 1}}},
-                ],
-                "level_accuracy": [
-                    {"$project": {
-                        "levels": {"$objectToArray": "$evaluation_result.performance_by_level"}
-                    }},
-                    {"$unwind": "$levels"},
-                    {"$match": {"levels.v.accuracy": {"$ne": None}}},
-                    {"$group": {
-                        "_id": "$levels.k",
-                        "mean_accuracy": {"$avg": "$levels.v.accuracy"},
-                    }},
-                    {"$sort": {"_id": 1}},
-                ],
-            }},
+            {
+                "$facet": {
+                    "score_distribution_raw": [
+                        {
+                            "$group": {
+                                "_id": "$evaluation_result.score_total",
+                                "count": {"$sum": 1},
+                            }
+                        },
+                        {"$sort": {"_id": 1}},
+                    ],
+                    "score_distribution_normalized": [
+                        {
+                            "$bucket": {
+                                "groupBy": "$evaluation_result.score_percent",
+                                "boundaries": [
+                                    0,
+                                    10,
+                                    20,
+                                    30,
+                                    40,
+                                    50,
+                                    60,
+                                    70,
+                                    80,
+                                    90,
+                                    100,
+                                ],
+                                "default": "100",
+                                "output": {"count": {"$sum": 1}},
+                            }
+                        },
+                    ],
+                    "classification_distribution": [
+                        {
+                            "$group": {
+                                "_id": "$evaluation_result.classification_value",
+                                "count": {"$sum": 1},
+                            }
+                        },
+                    ],
+                    "level_accuracy": [
+                        {
+                            "$project": {
+                                "levels": {
+                                    "$objectToArray": (
+                                        "$evaluation_result.performance_by_level"
+                                    )
+                                }
+                            }
+                        },
+                        {"$unwind": "$levels"},
+                        {"$match": {"levels.v.accuracy": {"$ne": None}}},
+                        {
+                            "$group": {
+                                "_id": "$levels.k",
+                                "mean_accuracy": {"$avg": "$levels.v.accuracy"},
+                            }
+                        },
+                        {"$sort": {"_id": 1}},
+                    ],
+                }
+            },
         ]
         results = await self.collection.aggregate(pipeline).to_list(length=1)
         result = results[0] if results else {}
@@ -294,7 +366,12 @@ class AssessmentRepository:
 
         total = await self.collection.count_documents(query)
         skip = (page - 1) * page_size
-        docs = await self.collection.find(query, sort=sort).skip(skip).limit(page_size).to_list(length=None)
+        docs = (
+            await self.collection.find(query, sort=sort)
+            .skip(skip)
+            .limit(page_size)
+            .to_list(length=None)
+        )
         logger.info(
             build_log_message(
                 "completed_assessments_ranked",

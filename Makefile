@@ -3,7 +3,7 @@ SHELL := /bin/bash
 BACKEND_DIR := backend
 FRONTEND_DIR := frontend
 
-.PHONY: help install install-backend install-frontend dev-backend dev-frontend dev build build-backend build-frontend test test-backend test-frontend etl seed seed-questions seed-students clean clean-backend clean-frontend
+.PHONY: help install install-backend install-frontend dev-backend dev-frontend dev build build-backend build-frontend lint lint-backend lint-frontend format format-backend format-frontend test test-backend test-frontend etl seed seed-questions seed-students clean clean-backend clean-frontend
 
 STUDENTS_CSV ?= backend/scripts/students.sample.csv
 
@@ -18,9 +18,15 @@ help:
 	@echo "  build             Build backend package + frontend assets"
 	@echo "  build-backend     Build backend wheel/sdist via Poetry"
 	@echo "  build-frontend    Build frontend assets"
+	@echo "  lint              Run linting for backend + frontend"
+	@echo "  lint-backend      Run ruff check on backend"
+	@echo "  lint-frontend     Run eslint on frontend"
+	@echo "  format            Run formatting for backend + frontend"
+	@echo "  format-backend    Run ruff format on backend"
+	@echo "  format-frontend   Run prettier on frontend"
 	@echo "  test              Run backend + frontend tests"
 	@echo "  test-backend      Run backend pytest suite"
-	@echo "  test-frontend     Run frontend tests if package script exists"
+	@echo "  test-frontend     Run frontend vitest suite"
 	@echo "  seed              Seed questions + students (uses defaults)"
 	@echo "  seed-questions    Seed questions from assets/exam.json"
 	@echo "  seed-students     Seed students from CSV (STUDENTS_CSV=path/to/file.csv)"
@@ -57,13 +63,30 @@ build-backend:
 build-frontend:
 	cd $(FRONTEND_DIR) && npm run build
 
+lint: lint-backend lint-frontend
+
+lint-backend:
+	cd $(BACKEND_DIR) && poetry run ruff check . 
+
+lint-frontend:
+	cd $(FRONTEND_DIR) && npm run lint
+
+format: format-backend format-frontend
+
+format-backend:
+	cd $(BACKEND_DIR) && poetry run ruff check --select I --fix .
+	cd $(BACKEND_DIR) && poetry run ruff format .
+
+format-frontend:
+	cd $(FRONTEND_DIR) && npm run format
+
 test: test-backend test-frontend
 
 test-backend:
 	cd $(BACKEND_DIR) && poetry run pytest
 
 test-frontend:
-	cd $(FRONTEND_DIR) && if npm run | grep -q " test"; then npm test; else echo "No frontend test script found, skipping."; fi
+	cd $(FRONTEND_DIR) && npm run test
 
 
 seed: seed-questions seed-students

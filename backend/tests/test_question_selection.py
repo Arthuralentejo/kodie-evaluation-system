@@ -1,9 +1,12 @@
-from bson import ObjectId
 import pytest
+from bson import ObjectId
 
 from app.core.errors import AppError
 from app.models.domain import AssessmentType
-from app.services.question_selection import build_assigned_question_ids, build_geral_question_ids
+from app.services.question_selection import (
+    build_assigned_question_ids,
+    build_geral_question_ids,
+)
 
 
 def make_docs(categories: list[str]) -> list[dict]:
@@ -57,6 +60,7 @@ def test_build_assigned_question_ids_empty_pool_returns_empty():
 
 # --- build_geral_question_ids tests ---
 
+
 def _make_geral_pool(per_level: int = 5) -> list[dict]:
     """Create a pool with exactly `per_level` questions per canonical level."""
     levels = ["iniciante", "junior", "pleno", "senior"]
@@ -76,9 +80,6 @@ def test_build_geral_question_ids_returns_exactly_20():
 
 
 def test_build_geral_question_ids_exactly_5_per_level():
-    from app.models.domain import Category
-    from app.services.question_selection import normalize_category
-
     docs = _make_geral_pool(per_level=10)
     # attach category back for verification
     id_to_cat = {d["_id"]: d["category"] for d in docs}
@@ -95,7 +96,10 @@ def test_build_geral_question_ids_exactly_5_per_level():
 def test_build_geral_question_ids_raises_when_level_has_fewer_than_5():
     # Only 4 pleno questions — should raise
     levels = ["iniciante"] * 10 + ["junior"] * 10 + ["pleno"] * 4 + ["senior"] * 10
-    docs = [{"_id": ObjectId(), "number": i + 1, "category": lvl} for i, lvl in enumerate(levels)]
+    docs = [
+        {"_id": ObjectId(), "number": i + 1, "category": lvl}
+        for i, lvl in enumerate(levels)
+    ]
 
     with pytest.raises(AppError) as exc:
         build_geral_question_ids(docs)

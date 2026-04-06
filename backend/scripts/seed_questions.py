@@ -31,8 +31,12 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULT_INPUT,
         help="JSON file containing the exam questions. Defaults to scripts/exam.json.",
     )
-    parser.add_argument("--mongo-uri", default=settings.mongo_uri, help="MongoDB connection URI")
-    parser.add_argument("--db-name", default=settings.mongo_db_name, help="MongoDB database name")
+    parser.add_argument(
+        "--mongo-uri", default=settings.mongo_uri, help="MongoDB connection URI"
+    )
+    parser.add_argument(
+        "--db-name", default=settings.mongo_db_name, help="MongoDB database name"
+    )
     parser.add_argument(
         "--collection",
         default="questions",
@@ -48,8 +52,13 @@ def parse_args() -> argparse.Namespace:
 
 def _option_items(raw_options: dict[str, str], row_number: int) -> list[Option]:
     if not isinstance(raw_options, dict) or not raw_options:
-        raise ValueError(f"Question {row_number}: alternativas must be a non-empty object.")
-    return [Option(key=key.upper(), text=value.strip()) for key, value in raw_options.items()]
+        raise ValueError(
+            f"Question {row_number}: alternativas must be a non-empty object."
+        )
+    return [
+        Option(key=key.upper(), text=value.strip())
+        for key, value in raw_options.items()
+    ]
 
 
 def _build_row(raw_item: dict, index: int) -> Question:
@@ -61,7 +70,9 @@ def _build_row(raw_item: dict, index: int) -> Question:
         correct_option = str(raw_item["resposta_correta"]).strip().upper()
         tags = [str(t).strip() for t in raw_item.get("tags", [])]
     except KeyError as exc:
-        raise ValueError(f"Question entry #{index + 1} is missing required field {exc.args[0]!r}.") from exc
+        raise ValueError(
+            f"Question entry #{index + 1} is missing required field {exc.args[0]!r}."
+        ) from exc
 
     try:
         question = Question(
@@ -104,7 +115,9 @@ def load_rows(json_path: Path) -> list[Question]:
             try:
                 raw_content.append(json.loads(stripped))
             except json.JSONDecodeError as exc:
-                raise ValueError(f"Invalid JSON on line {line_number}: {exc.msg}") from exc
+                raise ValueError(
+                    f"Invalid JSON on line {line_number}: {exc.msg}"
+                ) from exc
 
     if not isinstance(raw_content, list):
         raise ValueError("Exam JSON must contain a top-level array of questions.")
@@ -119,7 +132,9 @@ def load_rows(json_path: Path) -> list[Question]:
     return rows
 
 
-def seed_questions(*, rows: list[Question], mongo_uri: str, db_name: str, collection_name: str) -> tuple[int, int]:
+def seed_questions(
+    *, rows: list[Question], mongo_uri: str, db_name: str, collection_name: str
+) -> tuple[int, int]:
     inserted = 0
     updated = 0
     now = datetime.now(UTC)

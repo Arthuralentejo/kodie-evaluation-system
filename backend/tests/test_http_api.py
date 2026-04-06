@@ -1,19 +1,22 @@
 from datetime import UTC, datetime
 
+import pytest
 from bson import ObjectId
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from httpx import ASGITransport, AsyncClient
-import pytest
 
 from app.api import deps
+from app.api.routes import health as health_route
+from app.api.routes.admin import router as admin_router
 from app.api.routes.assessments import router as assessments_router
 from app.api.routes.auth import router as auth_router
 from app.api.routes.health import router as health_router
-from app.api.routes import health as health_route
+from app.core.config import settings
 from app.core.errors import AppError
+from app.models.api import AnalyticsResult, RankingPage
 
 
 class _AuthServiceStub:
@@ -38,9 +41,20 @@ class _AuthServiceStub:
 class _AssessmentServiceStub:
     def __init__(self):
         self.questions_response = []
-        self.submit_response = {"status": "COMPLETED", "completed_at": datetime.now(UTC).isoformat()}
-        self.current_response = {"status": "NONE", "assessment_id": None, "completed_at": None}
-        self.create_response = {"status": "DRAFT", "assessment_id": str(ObjectId()), "assessment_type": "iniciante"}
+        self.submit_response = {
+            "status": "COMPLETED",
+            "completed_at": datetime.now(UTC).isoformat(),
+        }
+        self.current_response = {
+            "status": "NONE",
+            "assessment_id": None,
+            "completed_at": None,
+        }
+        self.create_response = {
+            "status": "DRAFT",
+            "assessment_id": str(ObjectId()),
+            "assessment_type": "iniciante",
+        }
         self.last_get_current_call = None
         self.last_create_call = None
         self.last_get_questions_call = None
@@ -52,10 +66,15 @@ class _AssessmentServiceStub:
         return self.current_response
 
     async def create_assessment(self, *, student_id, assessment_type="iniciante"):
-        self.last_create_call = {"student_id": student_id, "assessment_type": assessment_type}
+        self.last_create_call = {
+            "student_id": student_id,
+            "assessment_type": assessment_type,
+        }
         return self.create_response
 
-    async def get_questions_for_assessment(self, *, assessment_id, quantity=None, request_id=None):
+    async def get_questions_for_assessment(
+        self, *, assessment_id, quantity=None, request_id=None
+    ):
         self.last_get_questions_call = {
             "assessment_id": assessment_id,
             "quantity": quantity,
@@ -63,7 +82,9 @@ class _AssessmentServiceStub:
         }
         return self.questions_response
 
-    async def upsert_answer(self, *, assessment_id, question_id, selected_option, request_id=None):
+    async def upsert_answer(
+        self, *, assessment_id, question_id, selected_option, request_id=None
+    ):
         self.last_upsert_answer_call = {
             "assessment_id": assessment_id,
             "question_id": question_id,
@@ -72,7 +93,10 @@ class _AssessmentServiceStub:
         }
 
     async def submit_assessment(self, *, assessment_id, request_id=None):
-        self.last_submit_call = {"assessment_id": assessment_id, "request_id": request_id}
+        self.last_submit_call = {
+            "assessment_id": assessment_id,
+            "request_id": request_id,
+        }
         return self.submit_response
 
 
@@ -84,7 +108,9 @@ def http_app() -> FastAPI:
 
     @test_app.middleware("http")
     async def request_id_middleware(request: Request, call_next):
-        request.state.request_id = request.headers.get("x-request-id", "test-request-id")
+        request.state.request_id = request.headers.get(
+            "x-request-id", "test-request-id"
+        )
         request.state.auth_service = test_app.state.auth_service
         request.state.assessment_service = test_app.state.assessment_service
         response = await call_next(request)
@@ -143,7 +169,9 @@ def _override_auth(student_id: str, assessment_id: str):
 
 @pytest.mark.asyncio
 async def test_post_auth_validation_error_envelope(client):
-    response = await client.post("/auth", json={"cpf": "123", "birth_date": "2000-01-01"})
+    response = await client.post(
+        "/auth", json={"cpf": "123", "birth_date": "2000-01-01"}
+    )
 
     assert response.status_code == 422
     body = response.json()
@@ -158,11 +186,15 @@ async def test_post_auth_success(client, monkeypatch):
         "claims": {},
     }
 
-    response = await client.post("/auth", json={"cpf": "52998224725", "birth_date": "2000-01-01"})
+    response = await client.post(
+        "/auth", json={"cpf": "52998224725", "birth_date": "2000-01-01"}
+    )
 
     assert response.status_code == 200
     assert response.json()["token"] == "tkn"
-    assert client._transport.app.state.auth_service.last_auth_call["cpf"] == "52998224725"
+    assert (
+        client._transport.app.state.auth_service.last_auth_call["cpf"] == "52998224725"
+    )
 
 
 @pytest.mark.asyncio
@@ -170,18 +202,24 @@ async def test_get_current_assessment_http_success(http_app, client):
     assessment_id = ObjectId()
     student_id = ObjectId()
 
-    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(str(student_id), str(assessment_id))
+    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(
+        str(student_id), str(assessment_id)
+    )
     http_app.state.assessment_service.current_response = {
         "status": "DRAFT",
         "assessment_id": str(assessment_id),
         "completed_at": None,
     }
 
-    response = await client.get("/assessments/current", headers={"Authorization": "Bearer any"})
+    response = await client.get(
+        "/assessments/current", headers={"Authorization": "Bearer any"}
+    )
 
     assert response.status_code == 200
     assert response.json()["status"] == "DRAFT"
-    assert http_app.state.assessment_service.last_get_current_call == {"student_id": str(student_id)}
+    assert http_app.state.assessment_service.last_get_current_call == {
+        "student_id": str(student_id)
+    }
 
 
 @pytest.mark.asyncio
@@ -189,13 +227,22 @@ async def test_create_assessment_http_success(http_app, client):
     assessment_id = ObjectId()
     student_id = ObjectId()
 
-    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(str(student_id), str(assessment_id))
+    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(
+        str(student_id), str(assessment_id)
+    )
 
-    response = await client.post("/assessments", headers={"Authorization": "Bearer any"}, json={})
+    response = await client.post(
+        "/assessments",
+        headers={"Authorization": "Bearer any"},
+        json={"assessment_type": "iniciante"},
+    )
 
     assert response.status_code == 200
     assert response.json()["status"] == "DRAFT"
-    assert http_app.state.assessment_service.last_create_call == {"student_id": str(student_id), "assessment_type": "iniciante"}
+    assert http_app.state.assessment_service.last_create_call == {
+        "student_id": str(student_id),
+        "assessment_type": "iniciante",
+    }
 
 
 @pytest.mark.asyncio
@@ -204,12 +251,22 @@ async def test_get_questions_http_success(http_app, client):
     question_id = ObjectId()
     student_id = ObjectId()
 
-    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(str(student_id), str(assessment_id))
+    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(
+        str(student_id), str(assessment_id)
+    )
     http_app.state.assessment_service.questions_response = [
-        {"id": str(question_id), "statement": "Q", "options": [{"key": "A", "text": "a"}], "selected_option": "A"}
+        {
+            "id": str(question_id),
+            "statement": "Q",
+            "options": [{"key": "A", "text": "a"}],
+            "selected_option": "A",
+        }
     ]
 
-    response = await client.get(f"/assessments/{assessment_id}/questions", headers={"Authorization": "Bearer any"})
+    response = await client.get(
+        f"/assessments/{assessment_id}/questions",
+        headers={"Authorization": "Bearer any"},
+    )
 
     assert response.status_code == 200
     assert response.json()[0]["selected_option"] == "A"
@@ -225,7 +282,9 @@ async def test_get_questions_http_passes_quantity(http_app, client):
     assessment_id = ObjectId()
     student_id = ObjectId()
 
-    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(str(student_id), str(assessment_id))
+    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(
+        str(student_id), str(assessment_id)
+    )
     http_app.state.assessment_service.questions_response = []
 
     response = await client.get(
@@ -246,10 +305,16 @@ async def test_submit_http_uses_assessment_service(http_app, client):
     assessment_id = ObjectId()
     student_id = ObjectId()
 
-    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(str(student_id), str(assessment_id))
+    http_app.dependency_overrides[deps.get_auth_context] = _override_auth(
+        str(student_id), str(assessment_id)
+    )
 
-    first = await client.post(f"/assessments/{assessment_id}/submit", headers={"Authorization": "Bearer any"})
-    second = await client.post(f"/assessments/{assessment_id}/submit", headers={"Authorization": "Bearer any"})
+    first = await client.post(
+        f"/assessments/{assessment_id}/submit", headers={"Authorization": "Bearer any"}
+    )
+    second = await client.post(
+        f"/assessments/{assessment_id}/submit", headers={"Authorization": "Bearer any"}
+    )
 
     assert first.status_code == 200
     assert second.status_code == 200
@@ -312,13 +377,6 @@ async def test_ready_returns_503_when_mongodb_is_unavailable(client, monkeypatch
     assert body["checks"]["mongodb"]["time_ms"] >= 0
 
 
-# ── Admin API tests ──────────────────────────────────────────────────────────
-
-from app.api.routes.admin import router as admin_router
-from app.core.config import settings
-from app.models.api import AnalyticsResult, RankingPage
-
-
 class _RankingServiceStub:
     async def rank_by_type(self, *, assessment_type, page=1, page_size=20):
         return RankingPage(entries=[], total=0, page=page, page_size=page_size)
@@ -342,7 +400,9 @@ class _RepoStub:
     def __init__(self, docs=None):
         self._docs = docs or []
 
-    async def list_completed_assessments(self, *, assessment_type=None, classification_value=None, page=1, page_size=20):
+    async def list_completed_assessments(
+        self, *, assessment_type=None, classification_value=None, page=1, page_size=20
+    ):
         return self._docs, len(self._docs)
 
     async def find_assessment_by_id(self, *, assessment_id):
@@ -350,7 +410,8 @@ class _RepoStub:
 
 
 class _AssessmentServiceWithRepo:
-    """Wraps a stub repo so admin router can access request.state.assessment_service.repository."""
+    """Expose `.repository` for the admin router's request state lookup."""
+
     def __init__(self, repo):
         self.repository = repo
 
@@ -382,7 +443,12 @@ def admin_http_app(monkeypatch) -> FastAPI:
         details.pop("retry_after", None)
         return JSONResponse(
             status_code=exc.status_code,
-            content={"code": exc.code, "message": exc.message, "request_id": "test-request-id", "details": details or {}},
+            content={
+                "code": exc.code,
+                "message": exc.message,
+                "request_id": "test-request-id",
+                "details": details or {},
+            },
         )
 
     test_app.include_router(admin_router)
@@ -405,14 +471,18 @@ async def test_admin_results_returns_401_without_token(admin_client):
 
 @pytest.mark.asyncio
 async def test_admin_results_returns_403_with_wrong_token(admin_client):
-    response = await admin_client.get("/admin/results", headers={"Authorization": "Bearer wrong-token"})
+    response = await admin_client.get(
+        "/admin/results", headers={"Authorization": "Bearer wrong-token"}
+    )
     assert response.status_code == 403
     assert response.json()["code"] == "FORBIDDEN"
 
 
 @pytest.mark.asyncio
 async def test_admin_results_returns_200_with_correct_token(admin_client):
-    response = await admin_client.get("/admin/results", headers={"Authorization": "Bearer test-admin-token"})
+    response = await admin_client.get(
+        "/admin/results", headers={"Authorization": "Bearer test-admin-token"}
+    )
     assert response.status_code == 200
 
 

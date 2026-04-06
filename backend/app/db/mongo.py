@@ -24,23 +24,43 @@ class MongoClientSingleton:
                 )
             )
             self._client = AsyncIOMotorClient(settings.mongo_uri)
-            logger.info(build_log_message("mongo_client_initialized", mongo_db_name=settings.mongo_db_name))
+            logger.info(
+                build_log_message(
+                    "mongo_client_initialized", mongo_db_name=settings.mongo_db_name
+                )
+            )
         return self._client
 
     def get_db(self) -> AsyncIOMotorDatabase:
         return self.get_client()[settings.mongo_db_name]
 
     async def ping_db(self) -> None:
-        logger.debug(build_log_message("mongo_ping_started", mongo_db_name=settings.mongo_db_name))
+        logger.debug(
+            build_log_message(
+                "mongo_ping_started", mongo_db_name=settings.mongo_db_name
+            )
+        )
         await self.get_db().command("ping")
-        logger.debug(build_log_message("mongo_ping_completed", mongo_db_name=settings.mongo_db_name))
+        logger.debug(
+            build_log_message(
+                "mongo_ping_completed", mongo_db_name=settings.mongo_db_name
+            )
+        )
 
     async def close_client(self) -> None:
         if self._client is not None:
-            logger.info(build_log_message("mongo_client_closing", mongo_db_name=settings.mongo_db_name))
+            logger.info(
+                build_log_message(
+                    "mongo_client_closing", mongo_db_name=settings.mongo_db_name
+                )
+            )
             self._client.close()
             self._client = None
-            logger.info(build_log_message("mongo_client_closed", mongo_db_name=settings.mongo_db_name))
+            logger.info(
+                build_log_message(
+                    "mongo_client_closed", mongo_db_name=settings.mongo_db_name
+                )
+            )
 
 
 mongo_client_singleton = MongoClientSingleton()

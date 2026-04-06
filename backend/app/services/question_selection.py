@@ -4,7 +4,6 @@ from app.core.config import settings
 from app.core.errors import AppError
 from app.models.domain import AssessmentType, Category
 
-
 CATEGORY_ORDER = (
     Category.INICIANTE,
     Category.JUNIOR,
@@ -24,7 +23,9 @@ def normalize_category(category: str | Category) -> Category | None:
         return None
 
 
-def select_questions_by_difficulty(question_docs: list[dict], quantity: int | None) -> list[dict]:
+def select_questions_by_difficulty(
+    question_docs: list[dict], quantity: int | None
+) -> list[dict]:
     ordered_questions = sorted(question_docs, key=lambda item: item.get("number", 0))
     if quantity is None or quantity >= len(ordered_questions):
         return ordered_questions
@@ -49,7 +50,9 @@ def select_questions_by_difficulty(question_docs: list[dict], quantity: int | No
     }
     total_weight = sum(weights.values())
     counts = {
-        category: min(len(buckets[category]), (quantity * weights[category]) // total_weight)
+        category: min(
+            len(buckets[category]), (quantity * weights[category]) // total_weight
+        )
         for category in CATEGORY_ORDER
     }
 
@@ -77,14 +80,16 @@ def build_assigned_question_ids(
     level: AssessmentType = AssessmentType.INICIANTE,
 ) -> list[ObjectId]:
     # question_docs already pre-filtered by category=level at DB level
-    selected_questions = select_questions_by_difficulty(question_docs, settings.assessment_question_count)
+    selected_questions = select_questions_by_difficulty(
+        question_docs, settings.assessment_question_count
+    )
     return [question["_id"] for question in selected_questions]
 
 
 def build_geral_question_ids(question_docs: list[dict]) -> list[ObjectId]:
     """Selects exactly 5 questions per canonical level (20 total).
     Raises NO_QUESTIONS_FOR_LEVEL if any level has fewer than 5 questions."""
-    PER_LEVEL = 5
+    per_level = 5
 
     buckets: dict[Category, list[dict]] = {cat: [] for cat in CATEGORY_ORDER}
     for q in question_docs:
@@ -93,7 +98,7 @@ def build_geral_question_ids(question_docs: list[dict]) -> list[ObjectId]:
             buckets[cat].append(q)
 
     for cat in CATEGORY_ORDER:
-        if len(buckets[cat]) < PER_LEVEL:
+        if len(buckets[cat]) < per_level:
             raise AppError(
                 status_code=409,
                 code="NO_QUESTIONS_FOR_LEVEL",
@@ -103,6 +108,6 @@ def build_geral_question_ids(question_docs: list[dict]) -> list[ObjectId]:
     selected: list[dict] = []
     for cat in CATEGORY_ORDER:
         bucket = sorted(buckets[cat], key=lambda q: q.get("number", 0))
-        selected.extend(bucket[:PER_LEVEL])
+        selected.extend(bucket[:per_level])
 
     return [q["_id"] for q in selected]

@@ -1,6 +1,6 @@
-import { AUTH_FEATURES } from "../../content/stageContent";
-import { maskCpf, normalizeDateInput } from "../../utils/formatters";
-import { HelpLink, InfoCard, Badge, ScreenTopBar } from "../ui";
+import { AUTH_FEATURES } from '../../content/stageContent';
+import { maskCpf, normalizeDateInput } from '../../utils/formatters';
+import { HelpLink, InfoCard, Badge, ScreenTopBar } from '../ui';
 
 function AuthPanel({
   cpf,
@@ -40,7 +40,9 @@ function AuthPanel({
             <input
               id="birth_date"
               value={birthDate}
-              onChange={(event) => onBirthDateChange(normalizeDateInput(event.target.value))}
+              onChange={(event) =>
+                onBirthDateChange(normalizeDateInput(event.target.value))
+              }
               inputMode="numeric"
               autoComplete="bday"
               placeholder="DD/MM/AAAA"
@@ -54,8 +56,12 @@ function AuthPanel({
 
           {authError && <p className="feedback feedback--error">{authError}</p>}
 
-          <button className="button button--primary button--wide" disabled={isBusy} type="submit">
-            {isBusy ? "Validando..." : "Continuar"}
+          <button
+            className="button button--primary button--wide"
+            disabled={isBusy}
+            type="submit"
+          >
+            {isBusy ? 'Validando...' : 'Continuar'}
           </button>
         </form>
 
@@ -83,13 +89,17 @@ export function AuthScreen({
             <p className="eyebrow">Plataforma de avaliacao</p>
             <h1>Vamos comecar com sua identificacao</h1>
             <p className="lead">
-              Use seus dados para acessar a jornada de avaliacao com seguranca. O processo e simples,
-              direto e leva apenas alguns minutos.
+              Use seus dados para acessar a jornada de avaliacao com seguranca.
+              O processo e simples, direto e leva apenas alguns minutos.
             </p>
 
             <div className="info-stack">
               {AUTH_FEATURES.map((feature) => (
-                <InfoCard icon={feature.icon} key={feature.title} title={feature.title}>
+                <InfoCard
+                  icon={feature.icon}
+                  key={feature.title}
+                  title={feature.title}
+                >
                   {feature.description}
                 </InfoCard>
               ))}

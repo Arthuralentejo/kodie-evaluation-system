@@ -15,16 +15,32 @@ def test_mask_cpf() -> None:
 
 
 def test_deterministic_shuffle_stable_for_same_inputs() -> None:
-    options = [{"key": "A", "text": "1"}, {"key": "B", "text": "2"}, {"key": "C", "text": "3"}]
-    left = deterministic_shuffle_options(assessment_id="a1", question_id="q1", options=options)
-    right = deterministic_shuffle_options(assessment_id="a1", question_id="q1", options=options)
+    options = [
+        {"key": "A", "text": "1"},
+        {"key": "B", "text": "2"},
+        {"key": "C", "text": "3"},
+    ]
+    left = deterministic_shuffle_options(
+        assessment_id="a1", question_id="q1", options=options
+    )
+    right = deterministic_shuffle_options(
+        assessment_id="a1", question_id="q1", options=options
+    )
     assert left == right
 
 
 def test_deterministic_shuffle_differs_across_assessment() -> None:
-    options = [{"key": "A", "text": "1"}, {"key": "B", "text": "2"}, {"key": "C", "text": "3"}]
-    left = deterministic_shuffle_options(assessment_id="a1", question_id="q1", options=options)
-    right = deterministic_shuffle_options(assessment_id="a2", question_id="q1", options=options)
+    options = [
+        {"key": "A", "text": "1"},
+        {"key": "B", "text": "2"},
+        {"key": "C", "text": "3"},
+    ]
+    left = deterministic_shuffle_options(
+        assessment_id="a1", question_id="q1", options=options
+    )
+    right = deterministic_shuffle_options(
+        assessment_id="a2", question_id="q1", options=options
+    )
     assert {o["key"] for o in left} == {"A", "B", "C"}
     assert {o["key"] for o in right} == {"A", "B", "C"}
 

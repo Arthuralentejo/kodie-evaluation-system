@@ -3,9 +3,9 @@ Example-based tests for EvaluationEngine.
 Covers: score_max per type, score_total, score_percent, performance_by_level,
 single-level classification thresholds, geral classification.
 """
-from bson import ObjectId
 
 import pytest
+from bson import ObjectId
 
 from app.services.evaluation_engine import EvaluationEngine
 
@@ -16,16 +16,23 @@ engine = EvaluationEngine()
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_question(qid, category: str, correct_option: str = "A") -> dict:
-    return {"_id": qid, "category": category, "correct_option": correct_option,
-            "options": [{"key": "A", "text": "a"}, {"key": "B", "text": "b"}]}
+    return {
+        "_id": qid,
+        "category": category,
+        "correct_option": correct_option,
+        "options": [{"key": "A", "text": "a"}, {"key": "B", "text": "b"}],
+    }
 
 
 def _make_answer(qid, selected: str) -> dict:
     return {"question_id": qid, "selected_option": selected}
 
 
-def _make_assessment(assessment_type: str, answers: list[dict], assigned_ids: list) -> dict:
+def _make_assessment(
+    assessment_type: str, answers: list[dict], assigned_ids: list
+) -> dict:
     return {
         "assessment_type": assessment_type,
         "answers": answers,
@@ -39,13 +46,17 @@ def _make_assessment(assessment_type: str, answers: list[dict], assigned_ids: li
 # score_max per assessment_type
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("assessment_type,expected_max", [
-    ("iniciante", 40),
-    ("junior", 60),
-    ("pleno", 80),
-    ("senior", 100),
-    ("geral", 70),
-])
+
+@pytest.mark.parametrize(
+    "assessment_type,expected_max",
+    [
+        ("iniciante", 40),
+        ("junior", 60),
+        ("pleno", 80),
+        ("senior", 100),
+        ("geral", 70),
+    ],
+)
 def test_score_max_per_assessment_type(assessment_type, expected_max):
     result = engine.evaluate(
         assessment=_make_assessment(assessment_type, [], []),
@@ -58,16 +69,17 @@ def test_score_max_per_assessment_type(assessment_type, expected_max):
 # score_total: correct answers earn weight, wrong/DONT_KNOW earn 0
 # ---------------------------------------------------------------------------
 
+
 def test_score_total_correct_answers_earn_weight():
     q1 = ObjectId()
     q2 = ObjectId()
     q3 = ObjectId()
     q4 = ObjectId()
     questions = [
-        _make_question(q1, "iniciante"),   # weight 2
-        _make_question(q2, "junior"),      # weight 3
-        _make_question(q3, "pleno"),       # weight 4
-        _make_question(q4, "senior"),      # weight 5
+        _make_question(q1, "iniciante"),  # weight 2
+        _make_question(q2, "junior"),  # weight 3
+        _make_question(q3, "pleno"),  # weight 4
+        _make_question(q4, "senior"),  # weight 5
     ]
     answers = [
         _make_answer(q1, "A"),  # correct → +2
@@ -106,13 +118,13 @@ def test_score_total_mixed_answers():
     q2 = ObjectId()
     q3 = ObjectId()
     questions = [
-        _make_question(q1, "junior"),   # weight 3
-        _make_question(q2, "junior"),   # weight 3
-        _make_question(q3, "junior"),   # weight 3
+        _make_question(q1, "junior"),  # weight 3
+        _make_question(q2, "junior"),  # weight 3
+        _make_question(q3, "junior"),  # weight 3
     ]
     answers = [
-        _make_answer(q1, "A"),          # correct → +3
-        _make_answer(q2, "B"),          # wrong → 0
+        _make_answer(q1, "A"),  # correct → +3
+        _make_answer(q2, "B"),  # wrong → 0
         _make_answer(q3, "DONT_KNOW"),  # dont_know → 0
     ]
     assessment = _make_assessment("junior", answers, [q1, q2, q3])
@@ -126,6 +138,7 @@ def test_score_total_mixed_answers():
 # ---------------------------------------------------------------------------
 # score_percent formula
 # ---------------------------------------------------------------------------
+
 
 def test_score_percent_formula():
     # 2 correct iniciante questions → score_total=4, score_max=40 → 10.0%
@@ -148,10 +161,16 @@ def test_score_percent_zero_when_no_correct():
 # performance_by_level: all 4 canonical keys, accuracy=null when total=0
 # ---------------------------------------------------------------------------
 
+
 def test_performance_by_level_has_all_four_canonical_keys():
     assessment = _make_assessment("iniciante", [], [])
     result = engine.evaluate(assessment=assessment, question_docs=[])
-    assert set(result.performance_by_level.keys()) == {"iniciante", "junior", "pleno", "senior"}
+    assert set(result.performance_by_level.keys()) == {
+        "iniciante",
+        "junior",
+        "pleno",
+        "senior",
+    }
 
 
 def test_performance_by_level_accuracy_null_when_total_zero():
@@ -179,6 +198,7 @@ def test_performance_by_level_accuracy_computed_when_total_nonzero():
 # ---------------------------------------------------------------------------
 # Single-level classification thresholds
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize("assessment_type", ["iniciante", "junior", "pleno", "senior"])
 def test_single_level_classification_kind_is_level_fit(assessment_type):
@@ -233,6 +253,7 @@ def test_single_level_above_expected_when_score_percent_above_70():
 # Geral classification
 # ---------------------------------------------------------------------------
 
+
 def test_geral_classification_kind_is_consistency_level():
     assessment = _make_assessment("geral", [], [])
     result = engine.evaluate(assessment=assessment, question_docs=[])
@@ -258,9 +279,9 @@ def test_geral_classifies_by_highest_qualifying_level():
     # 5 questions per level, all correct → accuracy=1.0 for all → highest = senior
     qids_by_level = {
         "iniciante": [ObjectId() for _ in range(5)],
-        "junior":    [ObjectId() for _ in range(5)],
-        "pleno":     [ObjectId() for _ in range(5)],
-        "senior":    [ObjectId() for _ in range(5)],
+        "junior": [ObjectId() for _ in range(5)],
+        "pleno": [ObjectId() for _ in range(5)],
+        "senior": [ObjectId() for _ in range(5)],
     }
     questions = []
     answers = []
@@ -277,12 +298,12 @@ def test_geral_classifies_by_highest_qualifying_level():
 
 
 def test_geral_classifies_as_junior_when_only_iniciante_and_junior_qualify():
-    # iniciante: 5/5 correct (1.0), junior: 4/5 correct (0.8), pleno: 2/5 (0.4), senior: 0/5 (0.0)
+    # iniciante: 5/5 correct, junior: 4/5, pleno: 2/5, senior: 0/5
     qids_by_level = {
         "iniciante": [ObjectId() for _ in range(5)],
-        "junior":    [ObjectId() for _ in range(5)],
-        "pleno":     [ObjectId() for _ in range(5)],
-        "senior":    [ObjectId() for _ in range(5)],
+        "junior": [ObjectId() for _ in range(5)],
+        "pleno": [ObjectId() for _ in range(5)],
+        "senior": [ObjectId() for _ in range(5)],
     }
     questions = []
     answers = []
@@ -305,16 +326,15 @@ def test_geral_classifies_as_junior_when_only_iniciante_and_junior_qualify():
 def test_geral_accuracy_threshold_boundary_exactly_070():
     # junior: 7/10 correct = 0.70 → qualifies; pleno: 6/10 = 0.60 → does not
     qids_junior = [ObjectId() for _ in range(10)]
-    qids_pleno  = [ObjectId() for _ in range(10)]
-    questions = (
-        [_make_question(qid, "junior") for qid in qids_junior] +
-        [_make_question(qid, "pleno")  for qid in qids_pleno]
-    )
+    qids_pleno = [ObjectId() for _ in range(10)]
+    questions = [_make_question(qid, "junior") for qid in qids_junior] + [
+        _make_question(qid, "pleno") for qid in qids_pleno
+    ]
     answers = (
-        [_make_answer(qid, "A") for qid in qids_junior[:7]] +
-        [_make_answer(qid, "B") for qid in qids_junior[7:]] +
-        [_make_answer(qid, "A") for qid in qids_pleno[:6]] +
-        [_make_answer(qid, "B") for qid in qids_pleno[6:]]
+        [_make_answer(qid, "A") for qid in qids_junior[:7]]
+        + [_make_answer(qid, "B") for qid in qids_junior[7:]]
+        + [_make_answer(qid, "A") for qid in qids_pleno[:6]]
+        + [_make_answer(qid, "B") for qid in qids_pleno[6:]]
     )
     assigned_ids = qids_junior + qids_pleno
     assessment = _make_assessment("geral", answers, assigned_ids)

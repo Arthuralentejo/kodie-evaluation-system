@@ -22,9 +22,15 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Seed the students collection used by the authentication flow."
     )
-    parser.add_argument("input", type=Path, help="CSV file with columns: cpf,name,birth_date")
-    parser.add_argument("--mongo-uri", default=settings.mongo_uri, help="MongoDB connection URI")
-    parser.add_argument("--db-name", default=settings.mongo_db_name, help="MongoDB database name")
+    parser.add_argument(
+        "input", type=Path, help="CSV file with columns: cpf,name,birth_date"
+    )
+    parser.add_argument(
+        "--mongo-uri", default=settings.mongo_uri, help="MongoDB connection URI"
+    )
+    parser.add_argument(
+        "--db-name", default=settings.mongo_db_name, help="MongoDB database name"
+    )
     parser.add_argument(
         "--collection",
         default="students",
@@ -43,7 +49,8 @@ def parse_birth_date(raw_value: str, row_number: int) -> date:
         return date.fromisoformat(raw_value.strip())
     except ValueError as exc:
         raise ValueError(
-            f"Row {row_number}: invalid birth_date {raw_value!r}. Expected format YYYY-MM-DD."
+            f"Row {row_number}: invalid birth_date {raw_value!r}. "
+            "Expected format YYYY-MM-DD."
         ) from exc
 
 
@@ -55,11 +62,15 @@ def load_rows(csv_path: Path) -> list[StudentSeedRow]:
         reader = csv.DictReader(handle)
         expected = {"cpf", "name", "birth_date"}
         if reader.fieldnames is None:
-            raise ValueError("CSV file must include a header row with cpf,name,birth_date.")
+            raise ValueError(
+                "CSV file must include a header row with cpf,name,birth_date."
+            )
 
         missing = expected.difference(reader.fieldnames)
         if missing:
-            raise ValueError(f"CSV file is missing required columns: {', '.join(sorted(missing))}")
+            raise ValueError(
+                f"CSV file is missing required columns: {', '.join(sorted(missing))}"
+            )
 
         rows: list[StudentSeedRow] = []
         for row_number, raw_row in enumerate(reader, start=2):
@@ -70,7 +81,9 @@ def load_rows(csv_path: Path) -> list[StudentSeedRow]:
             if not cpf:
                 raise ValueError(f"Row {row_number}: cpf is required.")
             if not is_valid_cpf(cpf):
-                raise ValueError(f"Row {row_number}: invalid CPF {raw_row.get('cpf')!r}.")
+                raise ValueError(
+                    f"Row {row_number}: invalid CPF {raw_row.get('cpf')!r}."
+                )
             if not name:
                 raise ValueError(f"Row {row_number}: name is required.")
 
@@ -83,7 +96,9 @@ def to_mongo_birth_date(value: date) -> datetime:
     return datetime.combine(value, time.min, tzinfo=UTC)
 
 
-def seed_students(*, rows: list[StudentSeedRow], mongo_uri: str, db_name: str, collection_name: str) -> tuple[int, int]:
+def seed_students(
+    *, rows: list[StudentSeedRow], mongo_uri: str, db_name: str, collection_name: str
+) -> tuple[int, int]:
     inserted = 0
     updated = 0
     backfilled = 0
@@ -112,9 +127,12 @@ def seed_students(*, rows: list[StudentSeedRow], mongo_uri: str, db_name: str, c
             elif result.matched_count:
                 updated += 1
 
-        # Backfill student_id for any existing documents that were inserted before this field existed
+        # Backfill student_id for existing documents inserted before this
+        # field existed.
         for doc in collection.find({"student_id": {"$exists": False}}):
-            collection.update_one({"_id": doc["_id"]}, {"$set": {"student_id": str(ULID())}})
+            collection.update_one(
+                {"_id": doc["_id"]}, {"$set": {"student_id": str(ULID())}}
+            )
             backfilled += 1
 
     return inserted, updated, backfilled
@@ -138,7 +156,8 @@ def main() -> int:
     )
     print(
         f"Seed completed for collection '{args.collection}': "
-        f"{len(rows)} row(s), {inserted} inserted, {updated} updated, {backfilled} backfilled with student_id."
+        f"{len(rows)} row(s), {inserted} inserted, {updated} updated, "
+        f"{backfilled} backfilled with student_id."
     )
     return 0
 

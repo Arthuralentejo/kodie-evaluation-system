@@ -1,45 +1,64 @@
-import { useState } from "react";
-import { INTRO_FEATURES } from "../../content/stageContent";
-import { Badge, InfoCard, ScreenTopBar } from "../ui";
+import { useState } from 'react';
+import { INTRO_FEATURES } from '../../content/stageContent';
+import { Badge, InfoCard, ScreenTopBar } from '../ui';
 
 const LEVELS = [
-  { value: "iniciante", label: "Iniciante" },
-  { value: "junior", label: "Júnior" },
-  { value: "pleno", label: "Pleno" },
-  { value: "senior", label: "Sênior" },
-  { value: "geral", label: "Geral" },
+  { value: 'iniciante', label: 'Iniciante' },
+  { value: 'junior', label: 'Júnior' },
+  { value: 'pleno', label: 'Pleno' },
+  { value: 'senior', label: 'Sênior' },
+  { value: 'geral', label: 'Geral' },
 ];
 
 const LEVEL_LABELS = {
-  iniciante: "Iniciante",
-  junior: "Júnior",
-  pleno: "Pleno",
-  senior: "Sênior",
-  geral: "Geral",
+  iniciante: 'Iniciante',
+  junior: 'Júnior',
+  pleno: 'Pleno',
+  senior: 'Sênior',
+  geral: 'Geral',
 };
 
 function formatDatePtBR(dateStr) {
-  if (!dateStr) return "";
+  if (!dateStr) return '';
   const date = new Date(dateStr);
-  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return date.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
 }
 
 function OverrideConfirmModal({ level, onConfirm, onCancel }) {
   return (
-    <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div
+      className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
       <div className="modal">
         <h2 id="modal-title">Iniciar nova avaliação?</h2>
         <p>
-          Você já possui uma avaliação concluída. Ao iniciar uma nova avaliação no nível{" "}
-          <strong>{LEVEL_LABELS[level] || level}</strong>, a avaliação anterior será arquivada e
-          apenas esta passará a ser a válida.
+          Você já possui uma avaliação concluída. Ao iniciar uma nova avaliação
+          no nível <strong>{LEVEL_LABELS[level] || level}</strong>, a avaliação
+          anterior será arquivada e apenas esta passará a ser a válida.
         </p>
-        <p className="modal__note">Seu histórico de avaliações anteriores será preservado.</p>
+        <p className="modal__note">
+          Seu histórico de avaliações anteriores será preservado.
+        </p>
         <div className="modal__actions">
-          <button className="button button--primary" onClick={onConfirm} type="button">
+          <button
+            className="button button--primary"
+            onClick={onConfirm}
+            type="button"
+          >
             Confirmar
           </button>
-          <button className="button button--secondary" onClick={onCancel} type="button">
+          <button
+            className="button button--secondary"
+            onClick={onCancel}
+            type="button"
+          >
             Cancelar
           </button>
         </div>
@@ -49,16 +68,18 @@ function OverrideConfirmModal({ level, onConfirm, onCancel }) {
 }
 
 function LevelPicker({ selectedLevel, onLevelChange, completedAssessments }) {
-  const completedLevels = new Set((completedAssessments || []).map((a) => a.level));
+  const completedLevels = new Set(
+    (completedAssessments || []).map((a) => a.level)
+  );
 
   return (
     <div className="level-picker">
       {LEVELS.map(({ value, label }) => {
         const isCompleted = completedLevels.has(value);
         const isSelected = selectedLevel === value;
-        let className = "level-card";
-        if (isSelected) className += " level-card--selected";
-        if (isCompleted) className += " level-card--completed";
+        let className = 'level-card';
+        if (isSelected) className += ' level-card--selected';
+        if (isCompleted) className += ' level-card--completed';
 
         return (
           <button
@@ -69,7 +90,9 @@ function LevelPicker({ selectedLevel, onLevelChange, completedAssessments }) {
             disabled={isCompleted}
           >
             <span className="level-card__label">{label}</span>
-            {isCompleted && <span className="level-card__badge">Concluído</span>}
+            {isCompleted && (
+              <span className="level-card__badge">Concluído</span>
+            )}
           </button>
         );
       })}
@@ -85,7 +108,10 @@ function CompletedAssessmentsList({ completedAssessments }) {
       <h3>Avaliações concluídas</h3>
       <ul>
         {completedAssessments.map((assessment) => (
-          <li key={assessment.assessment_id} className="completed-assessment-item">
+          <li
+            key={assessment.assessment_id}
+            className="completed-assessment-item"
+          >
             <span className="completed-assessment-item__level">
               {LEVEL_LABELS[assessment.level] || assessment.level}
             </span>
@@ -99,10 +125,18 @@ function CompletedAssessmentsList({ completedAssessments }) {
   );
 }
 
-function IntroPanel({ onStart, onBack, isBusy, assessmentStatus, selectedLevel, onLevelChange, completedAssessments }) {
+function IntroPanel({
+  onStart,
+  onBack,
+  isBusy,
+  assessmentStatus,
+  selectedLevel,
+  onLevelChange,
+  completedAssessments,
+}) {
   const [showConfirm, setShowConfirm] = useState(false);
-  const canPickLevel = assessmentStatus !== "DRAFT";
-  const hasActiveAssessment = assessmentStatus === "COMPLETED";
+  const canPickLevel = assessmentStatus !== 'DRAFT';
+  const hasActiveAssessment = assessmentStatus === 'COMPLETED';
   const startDisabled = isBusy || !selectedLevel;
 
   function handleStartClick() {
@@ -122,13 +156,21 @@ function IntroPanel({ onStart, onBack, isBusy, assessmentStatus, selectedLevel, 
     <div className="panel panel--side">
       <div className="panel__content panel__content--side">
         <h2>Recomendações rápidas</h2>
-        <p>Organize seu ambiente antes de iniciar para manter o foco durante toda a etapa.</p>
+        <p>
+          Organize seu ambiente antes de iniciar para manter o foco durante toda
+          a etapa.
+        </p>
 
         <div className="highlight-box">
-          <div className="highlight-box__icon" aria-hidden="true">*</div>
+          <div className="highlight-box__icon" aria-hidden="true">
+            *
+          </div>
           <div>
             <h3>Dica prática</h3>
-            <p>Procure um local silencioso, mantenha uma leitura contínua e avance no seu ritmo.</p>
+            <p>
+              Procure um local silencioso, mantenha uma leitura contínua e
+              avance no seu ritmo.
+            </p>
           </div>
         </div>
 
@@ -150,10 +192,19 @@ function IntroPanel({ onStart, onBack, isBusy, assessmentStatus, selectedLevel, 
         <CompletedAssessmentsList completedAssessments={completedAssessments} />
 
         <div className="action-row">
-          <button className="button button--primary" onClick={handleStartClick} disabled={startDisabled} type="button">
+          <button
+            className="button button--primary"
+            onClick={handleStartClick}
+            disabled={startDisabled}
+            type="button"
+          >
             Iniciar avaliação
           </button>
-          <button className="button button--secondary" onClick={onBack} type="button">
+          <button
+            className="button button--secondary"
+            onClick={onBack}
+            type="button"
+          >
             Voltar
           </button>
         </div>
@@ -190,14 +241,21 @@ export function IntroScreen({
             <p className="eyebrow">Antes da primeira questão</p>
             <h1>Veja como a avaliação vai funcionar</h1>
             <p className="lead">
-              Esta etapa prepara você para responder com tranquilidade. Leia as orientações abaixo e inicie quando estiver pronto.
+              Esta etapa prepara você para responder com tranquilidade. Leia as
+              orientações abaixo e inicie quando estiver pronto.
             </p>
 
-            {screenError ? <p className="feedback feedback--error">{screenError}</p> : null}
+            {screenError ? (
+              <p className="feedback feedback--error">{screenError}</p>
+            ) : null}
 
             <div className="info-stack">
               {INTRO_FEATURES.map((feature) => (
-                <InfoCard icon={feature.icon} key={feature.title} title={feature.title}>
+                <InfoCard
+                  icon={feature.icon}
+                  key={feature.title}
+                  title={feature.title}
+                >
                   {feature.description}
                 </InfoCard>
               ))}

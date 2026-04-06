@@ -1,6 +1,5 @@
 import re
 
-
 CPF_RE = re.compile(r"^\d{11}$")
 
 

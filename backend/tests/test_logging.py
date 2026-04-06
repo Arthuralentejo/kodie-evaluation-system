@@ -3,8 +3,8 @@ import logging
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import Settings
 from app.core import logger as logger_module
+from app.core.config import Settings
 
 
 def test_settings_normalizes_log_level() -> None:

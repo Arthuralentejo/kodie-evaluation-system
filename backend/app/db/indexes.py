@@ -14,11 +14,17 @@ logger = get_logger("kodie.db.indexes")
 
 async def ensure_indexes() -> None:
     db = get_db()
-    logger.info(build_log_message("mongo_indexes_ensure_started", mongo_db_name=db.name))
+    logger.info(
+        build_log_message("mongo_indexes_ensure_started", mongo_db_name=db.name)
+    )
 
-    await students_collection(db).create_index([("cpf", ASCENDING)], unique=True, name="uq_students_cpf")
+    await students_collection(db).create_index(
+        [("cpf", ASCENDING)], unique=True, name="uq_students_cpf"
+    )
 
-    await students_collection(db).create_index([("student_id", ASCENDING)], unique=True, name="uq_students_student_id")
+    await students_collection(db).create_index(
+        [("student_id", ASCENDING)], unique=True, name="uq_students_student_id"
+    )
 
     await assessments_collection(db).create_index(
         [("student_id", ASCENDING)],
@@ -29,7 +35,11 @@ async def ensure_indexes() -> None:
 
     # Completed history lookups
     await assessments_collection(db).create_index(
-        [("student_id", ASCENDING), ("status", ASCENDING), ("completed_at", DESCENDING)],
+        [
+            ("student_id", ASCENDING),
+            ("status", ASCENDING),
+            ("completed_at", DESCENDING),
+        ],
         name="idx_assessment_student_status_completed_at",
     )
 
@@ -65,4 +75,6 @@ async def ensure_indexes() -> None:
         [("evaluation_result.score_percent", DESCENDING), ("status", ASCENDING)],
         name="idx_evaluation_score_percent_status",
     )
-    logger.info(build_log_message("mongo_indexes_ensure_completed", mongo_db_name=db.name))
+    logger.info(
+        build_log_message("mongo_indexes_ensure_completed", mongo_db_name=db.name)
+    )
