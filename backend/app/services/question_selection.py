@@ -1,7 +1,8 @@
 from bson import ObjectId
 
 from app.core.config import settings
-from app.models.domain import AssessmentLevel, Category
+from app.core.errors import AppError
+from app.models.domain import AssessmentType, Category
 
 
 CATEGORY_ORDER = (
@@ -73,7 +74,7 @@ def select_questions_by_difficulty(question_docs: list[dict], quantity: int | No
 
 def build_assigned_question_ids(
     question_docs: list[dict],
-    level: AssessmentLevel = AssessmentLevel.INICIANTE,
+    level: AssessmentType = AssessmentType.INICIANTE,
 ) -> list[ObjectId]:
     # question_docs already pre-filtered by category=level at DB level
     selected_questions = select_questions_by_difficulty(question_docs, settings.assessment_question_count)
@@ -81,10 +82,9 @@ def build_assigned_question_ids(
 
 
 def build_geral_question_ids(question_docs: list[dict]) -> list[ObjectId]:
-    """Equal distribution across all four categories for the 'geral' level."""
-    n = settings.assessment_question_count
-    per_category = n // 4
-    remainder = n % 4
+    """Selects exactly 5 questions per canonical level (20 total).
+    Raises NO_QUESTIONS_FOR_LEVEL if any level has fewer than 5 questions."""
+    PER_LEVEL = 5
 
     buckets: dict[Category, list[dict]] = {cat: [] for cat in CATEGORY_ORDER}
     for q in question_docs:
@@ -92,13 +92,17 @@ def build_geral_question_ids(question_docs: list[dict]) -> list[ObjectId]:
         if cat in buckets:
             buckets[cat].append(q)
 
-    counts = {cat: per_category for cat in CATEGORY_ORDER}
-    for i in range(remainder):
-        counts[CATEGORY_ORDER[i]] += 1
+    for cat in CATEGORY_ORDER:
+        if len(buckets[cat]) < PER_LEVEL:
+            raise AppError(
+                status_code=409,
+                code="NO_QUESTIONS_FOR_LEVEL",
+                message=f"Não há questões suficientes para o nível {cat.value}.",
+            )
 
     selected: list[dict] = []
     for cat in CATEGORY_ORDER:
         bucket = sorted(buckets[cat], key=lambda q: q.get("number", 0))
-        selected.extend(bucket[: counts[cat]])
+        selected.extend(bucket[:PER_LEVEL])
 
     return [q["_id"] for q in selected]

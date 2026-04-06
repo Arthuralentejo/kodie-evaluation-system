@@ -40,7 +40,7 @@ class _AssessmentServiceStub:
         self.questions_response = []
         self.submit_response = {"status": "COMPLETED", "completed_at": datetime.now(UTC).isoformat()}
         self.current_response = {"status": "NONE", "assessment_id": None, "completed_at": None}
-        self.create_response = {"status": "DRAFT", "assessment_id": str(ObjectId()), "level": "iniciante"}
+        self.create_response = {"status": "DRAFT", "assessment_id": str(ObjectId()), "assessment_type": "iniciante"}
         self.last_get_current_call = None
         self.last_create_call = None
         self.last_get_questions_call = None
@@ -51,8 +51,8 @@ class _AssessmentServiceStub:
         self.last_get_current_call = {"student_id": student_id}
         return self.current_response
 
-    async def create_assessment(self, *, student_id, level="iniciante"):
-        self.last_create_call = {"student_id": student_id, "level": level}
+    async def create_assessment(self, *, student_id, assessment_type="iniciante"):
+        self.last_create_call = {"student_id": student_id, "assessment_type": assessment_type}
         return self.create_response
 
     async def get_questions_for_assessment(self, *, assessment_id, quantity=None, request_id=None):
@@ -195,7 +195,7 @@ async def test_create_assessment_http_success(http_app, client):
 
     assert response.status_code == 200
     assert response.json()["status"] == "DRAFT"
-    assert http_app.state.assessment_service.last_create_call == {"student_id": str(student_id), "level": "iniciante"}
+    assert http_app.state.assessment_service.last_create_call == {"student_id": str(student_id), "assessment_type": "iniciante"}
 
 
 @pytest.mark.asyncio
@@ -310,3 +310,139 @@ async def test_ready_returns_503_when_mongodb_is_unavailable(client, monkeypatch
     assert body["checks"]["mongodb"]["status"] == "error"
     assert isinstance(body["checks"]["mongodb"]["time_ms"], float)
     assert body["checks"]["mongodb"]["time_ms"] >= 0
+
+
+# ── Admin API tests ──────────────────────────────────────────────────────────
+
+from app.api.routes.admin import router as admin_router
+from app.core.config import settings
+from app.models.api import AnalyticsResult, RankingPage
+
+
+class _RankingServiceStub:
+    async def rank_by_type(self, *, assessment_type, page=1, page_size=20):
+        return RankingPage(entries=[], total=0, page=page, page_size=page_size)
+
+    async def rank_global(self, *, page=1, page_size=20):
+        return RankingPage(entries=[], total=0, page=page, page_size=page_size)
+
+
+class _AnalyticsServiceStub:
+    async def get_analytics(self, *, assessment_type=None):
+        return AnalyticsResult(
+            score_distribution_raw=[],
+            score_distribution_normalized=[],
+            classification_distribution={},
+            level_accuracy=[],
+            assessment_type_filter=assessment_type,
+        )
+
+
+class _RepoStub:
+    def __init__(self, docs=None):
+        self._docs = docs or []
+
+    async def list_completed_assessments(self, *, assessment_type=None, classification_value=None, page=1, page_size=20):
+        return self._docs, len(self._docs)
+
+    async def find_assessment_by_id(self, *, assessment_id):
+        return None
+
+
+class _AssessmentServiceWithRepo:
+    """Wraps a stub repo so admin router can access request.state.assessment_service.repository."""
+    def __init__(self, repo):
+        self.repository = repo
+
+
+@pytest.fixture
+def admin_http_app(monkeypatch) -> FastAPI:
+    monkeypatch.setattr(settings, "admin_token", "test-admin-token")
+
+    test_app = FastAPI()
+    test_app.state.auth_service = _AuthServiceStub()
+    repo = _RepoStub()
+    test_app.state.assessment_service = _AssessmentServiceWithRepo(repo)
+    test_app.state.ranking_service = _RankingServiceStub()
+    test_app.state.analytics_service = _AnalyticsServiceStub()
+
+    @test_app.middleware("http")
+    async def state_middleware(request: Request, call_next):
+        request.state.request_id = "test-request-id"
+        request.state.auth_service = test_app.state.auth_service
+        request.state.assessment_service = test_app.state.assessment_service
+        request.state.assessment_repository = repo
+        request.state.ranking_service = test_app.state.ranking_service
+        request.state.analytics_service = test_app.state.analytics_service
+        return await call_next(request)
+
+    @test_app.exception_handler(AppError)
+    async def app_error_handler(request: Request, exc: AppError):
+        details = dict(exc.details)
+        details.pop("retry_after", None)
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"code": exc.code, "message": exc.message, "request_id": "test-request-id", "details": details or {}},
+        )
+
+    test_app.include_router(admin_router)
+    return test_app
+
+
+@pytest.fixture
+async def admin_client(admin_http_app: FastAPI):
+    transport = ASGITransport(app=admin_http_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as c:
+        yield c
+
+
+@pytest.mark.asyncio
+async def test_admin_results_returns_401_without_token(admin_client):
+    response = await admin_client.get("/admin/results")
+    assert response.status_code == 401
+    assert response.json()["code"] == "UNAUTHORIZED"
+
+
+@pytest.mark.asyncio
+async def test_admin_results_returns_403_with_wrong_token(admin_client):
+    response = await admin_client.get("/admin/results", headers={"Authorization": "Bearer wrong-token"})
+    assert response.status_code == 403
+    assert response.json()["code"] == "FORBIDDEN"
+
+
+@pytest.mark.asyncio
+async def test_admin_results_returns_200_with_correct_token(admin_client):
+    response = await admin_client.get("/admin/results", headers={"Authorization": "Bearer test-admin-token"})
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_admin_result_detail_returns_404_for_unknown_assessment(admin_client):
+    unknown_id = str(ObjectId())
+    response = await admin_client.get(
+        f"/admin/results/{unknown_id}",
+        headers={"Authorization": "Bearer test-admin-token"},
+    )
+    assert response.status_code == 404
+    assert response.json()["code"] == "ASSESSMENT_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+async def test_admin_ranking_by_type_requires_assessment_type(admin_client):
+    response = await admin_client.get(
+        "/admin/ranking/by-type",
+        headers={"Authorization": "Bearer test-admin-token"},
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_admin_ranking_by_type_returns_200_with_param(admin_client):
+    response = await admin_client.get(
+        "/admin/ranking/by-type?assessment_type=iniciante",
+        headers={"Authorization": "Bearer test-admin-token"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert "entries" in body
+    assert body["total"] == 0

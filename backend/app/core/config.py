@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Annotated
 
 from pydantic import field_validator
@@ -10,6 +11,7 @@ class Settings(BaseSettings):
 
     app_name: str = "kodie-evaluation-backend"
     env: str = "dev"
+    log_level: str = "INFO"
 
     mongo_uri: str = "mongodb://localhost:27017"
     mongo_db_name: str = "kodie"
@@ -26,6 +28,8 @@ class Settings(BaseSettings):
     ip_attempt_limit: int = 20
     rate_limit_window_minutes: int = 15
     cpf_lock_minutes: int = 30
+
+    admin_token: str = ""
 
     cors_allowed_origins: Annotated[list[str], NoDecode] = [
         "http://localhost:5173",
@@ -59,6 +63,14 @@ class Settings(BaseSettings):
             return [str(item).strip() for item in parsed if str(item).strip()]
 
         return [item.strip() for item in raw_value.split(",") if item.strip()]
+
+    @field_validator("log_level", mode="before")
+    @classmethod
+    def normalize_log_level(cls, value: str) -> str:
+        level = str(value).strip().upper()
+        if level not in logging.getLevelNamesMapping():
+            raise ValueError("log_level must be a valid Python logging level")
+        return level
 
 
 settings = Settings()

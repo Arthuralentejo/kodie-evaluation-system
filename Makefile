@@ -21,7 +21,6 @@ help:
 	@echo "  test              Run backend + frontend tests"
 	@echo "  test-backend      Run backend pytest suite"
 	@echo "  test-frontend     Run frontend tests if package script exists"
-	@echo "  etl               Run extraction script (scripts/extract.py)"
 	@echo "  seed              Seed questions + students (uses defaults)"
 	@echo "  seed-questions    Seed questions from assets/exam.json"
 	@echo "  seed-students     Seed students from CSV (STUDENTS_CSV=path/to/file.csv)"
@@ -66,8 +65,6 @@ test-backend:
 test-frontend:
 	cd $(FRONTEND_DIR) && if npm run | grep -q " test"; then npm test; else echo "No frontend test script found, skipping."; fi
 
-etl:
-	cd $(BACKEND_DIR) && poetry run python ../scripts/extract.py
 
 seed: seed-questions seed-students
 

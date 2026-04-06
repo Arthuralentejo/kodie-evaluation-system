@@ -11,7 +11,7 @@ class AssessmentStatus(str, Enum):
     COMPLETED = "COMPLETED"
 
 
-class AssessmentLevel(str, Enum):
+class AssessmentType(str, Enum):
     INICIANTE = "iniciante"
     JUNIOR = "junior"
     PLENO = "pleno"
@@ -75,15 +75,47 @@ class AssessmentAnswer(BaseModel):
     answered_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
+class LevelPerformance(BaseModel):
+    correct: int
+    total: int
+    accuracy: float | None  # null when total == 0
+
+
+class QuestionResult(BaseModel):
+    question_id: str
+    category: str
+    selected_option: str
+    correct_option: str
+    is_correct: bool
+    points_earned: int
+
+
+class EvaluationResult(BaseModel):
+    assessment_type: str
+    score_total: int
+    score_max: int
+    score_percent: float
+    performance_by_level: dict[str, LevelPerformance]
+    classification_kind: str  # "level_fit" | "consistency_level"
+    classification_value: str
+    duration_seconds: int
+    correct_count: int
+    incorrect_count: int
+    dont_know_count: int
+    evaluated_at: datetime
+    question_results: list[QuestionResult] | None = None
+
+
 class Assessment(BaseModel):
     student_id: str
     assigned_question_ids: list[str] = Field(default_factory=list)
     answers: list[AssessmentAnswer] = Field(default_factory=list)
     status: AssessmentStatus
-    level: AssessmentLevel = AssessmentLevel.INICIANTE
+    assessment_type: AssessmentType = AssessmentType.INICIANTE
     archived: bool = False
     started_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     completed_at: datetime | None = None
+    evaluation_result: EvaluationResult | None = None
 
 
 class Answer(BaseModel):

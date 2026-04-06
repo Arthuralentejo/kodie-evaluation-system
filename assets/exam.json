@@ -606,7 +606,7 @@
   },
   {
     "numero": 35,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "observabilidade",
       "monitoramento",
@@ -624,7 +624,7 @@
   },
   {
     "numero": 36,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "seguranca",
       "boas-praticas"
@@ -641,7 +641,7 @@
   },
   {
     "numero": 37,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "seguranca",
       "lgpd",
@@ -659,7 +659,7 @@
   },
   {
     "numero": 38,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "arquitetura",
       "microsservicos",
@@ -678,7 +678,7 @@
   },
   {
     "numero": 39,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "git",
       "controle-de-versao",
@@ -696,7 +696,7 @@
   },
   {
     "numero": 40,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "kubernetes",
       "containers",
@@ -714,7 +714,7 @@
   },
   {
     "numero": 41,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "sre",
       "observabilidade",
@@ -732,7 +732,7 @@
   },
   {
     "numero": 42,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "seguranca",
       "sast",
@@ -750,7 +750,7 @@
   },
   {
     "numero": 43,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "api",
       "rest",
@@ -769,7 +769,7 @@
   },
   {
     "numero": 44,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "lideranca-tecnica",
       "code-review",
@@ -787,7 +787,7 @@
   },
   {
     "numero": 45,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "seguranca",
       "autenticacao",
@@ -806,7 +806,7 @@
   },
   {
     "numero": 46,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "arquitetura",
       "documentacao",
@@ -1094,7 +1094,7 @@
   },
   {
     "numero": 62,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "python",
       "asyncio",
@@ -1113,7 +1113,7 @@
   },
   {
     "numero": 63,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "banco-de-dados",
       "mongodb",
@@ -1132,7 +1132,7 @@
   },
   {
     "numero": 64,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "ci-cd",
       "deploy",
@@ -1151,7 +1151,7 @@
   },
   {
     "numero": 65,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "arquitetura",
       "microsservicos",
@@ -1300,7 +1300,7 @@
   },
   {
     "numero": 73,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "system-design",
       "idempotencia",
@@ -1319,7 +1319,7 @@
   },
   {
     "numero": 74,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "system-design",
       "busca",
@@ -1338,7 +1338,7 @@
   },
   {
     "numero": 75,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "system-design",
       "rate-limiting",
@@ -1357,7 +1357,7 @@
   },
   {
     "numero": 76,
-    "categoria": "sênior",
+    "categoria": "senior",
     "tags": [
       "system-design",
       "banco-de-dados",

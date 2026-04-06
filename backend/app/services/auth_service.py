@@ -1,15 +1,16 @@
 from datetime import UTC, date, datetime, time, timedelta
 from typing import Any
-import logging
 from bson import ObjectId
 from pymongo.errors import PyMongoError
 
 from app.core.config import settings
 from app.core.errors import AppError
+from app.core.logger import build_log_message, get_logger, hash_identifier
 from app.core.security import create_access_token, decode_access_token
 from app.core.utils import mask_cpf
 from app.repositories.auth_repository import AuthRepository
-logger = logging.getLogger("kodie.auth")
+
+logger = get_logger("kodie.auth")
 
 
 def _coerce_utc(value: datetime | None) -> datetime | None:
@@ -103,6 +104,14 @@ class AuthService:
             retry_candidates.append(_seconds_until(window_end, now))
 
         if retry_candidates:
+            logger.warning(
+                build_log_message(
+                    "auth_rate_limited",
+                    cpf=mask_cpf(cpf),
+                    ip_ref=hash_identifier(ip),
+                    retry_after=max(retry_candidates),
+                )
+            )
             raise AppError(
                 status_code=429,
                 code="AUTH_RATE_LIMITED",
@@ -111,6 +120,14 @@ class AuthService:
             )
 
     async def authenticate_and_issue_token(self, *, cpf: str, birth_date: date, ip: str, request_id: str):
+        logger.info(
+            build_log_message(
+                "auth_attempt_started",
+                request_id=request_id,
+                cpf=mask_cpf(cpf),
+                ip_ref=hash_identifier(ip),
+            )
+        )
         await self.check_rate_limit(cpf=cpf, ip=ip)
 
         student = await self.repository.find_student_by_cpf_and_birth_date(
@@ -120,9 +137,14 @@ class AuthService:
         if not student:
             await self._increment_attempt("cpf", cpf, now=datetime.now(UTC))
             await self._increment_attempt("ip", ip, now=datetime.now(UTC))
-            logger.info(
-                "auth_failed",
-                extra={"request_id": request_id, "cpf": mask_cpf(cpf), "ip": ip, "reason": "invalid_credentials"},
+            logger.warning(
+                build_log_message(
+                    "auth_attempt_failed",
+                    request_id=request_id,
+                    cpf=mask_cpf(cpf),
+                    ip_ref=hash_identifier(ip),
+                    reason="invalid_credentials",
+                )
             )
             raise AppError(status_code=401, code="INVALID_CREDENTIALS", message="CPF or birth date is invalid")
 
@@ -130,6 +152,17 @@ class AuthService:
         await self._reset_attempts("ip", ip)
 
         token, claims = create_access_token(student_id=str(student.get("student_id") or "") or str(student["_id"]))
+        logger.info(
+            build_log_message(
+                "auth_attempt_succeeded",
+                request_id=request_id,
+                cpf=mask_cpf(cpf),
+                ip_ref=hash_identifier(ip),
+                student_ref=hash_identifier(student.get("student_id") or student["_id"]),
+                jti_ref=hash_identifier(claims["jti"]),
+                expires_at=datetime.fromtimestamp(claims["exp"], tz=UTC),
+            )
+        )
 
         return {"token": token, "claims": claims}
 
@@ -140,25 +173,79 @@ class AuthService:
             expires_at=expires_at,
             revoked_at=datetime.now(UTC),
         )
+        logger.info(
+            build_log_message(
+                "auth_token_revoked",
+                jti_ref=hash_identifier(jti),
+                expires_at=expires_at,
+            )
+        )
 
     async def validate_access(self, *, token: str, assessment_id: str | None = None) -> dict[str, Any]:
         payload = decode_access_token(token)
+        logger.info(
+            build_log_message(
+                "auth_token_decoded",
+                assessment_id=assessment_id,
+                student_ref=hash_identifier(payload["sub"]),
+                jti_ref=hash_identifier(payload["jti"]),
+            )
+        )
 
         try:
             revoked = await self.repository.find_revoked_token(jti=payload["jti"])
         except PyMongoError as exc:
+            logger.exception(
+                build_log_message(
+                    "auth_revocation_store_unavailable",
+                    assessment_id=assessment_id,
+                    jti_ref=hash_identifier(payload["jti"]),
+                )
+            )
             raise AppError(status_code=503, code="REVOCATION_STORE_UNAVAILABLE", message="Revocation store unavailable") from exc
 
         if revoked:
+            logger.warning(
+                build_log_message(
+                    "auth_token_revoked_access_denied",
+                    assessment_id=assessment_id,
+                    student_ref=hash_identifier(payload["sub"]),
+                    jti_ref=hash_identifier(payload["jti"]),
+                )
+            )
             raise AppError(status_code=401, code="TOKEN_REVOKED", message="Token has been revoked")
 
         if assessment_id:
             if not ObjectId.is_valid(assessment_id):
+                logger.warning(build_log_message("auth_access_invalid_assessment_id", assessment_id=assessment_id))
                 raise AppError(status_code=422, code="INVALID_ID", message="Invalid object ID")
             record = await self.repository.find_assessment_by_id(assessment_id=ObjectId(assessment_id))
             if not record:
+                logger.warning(
+                    build_log_message(
+                        "auth_access_assessment_not_found",
+                        assessment_id=assessment_id,
+                        student_ref=hash_identifier(payload["sub"]),
+                    )
+                )
                 raise AppError(status_code=404, code="ASSESSMENT_NOT_FOUND", message="Assessment not found")
             if str(record["student_id"]) != payload["sub"]:
+                logger.warning(
+                    build_log_message(
+                        "auth_access_forbidden",
+                        assessment_id=assessment_id,
+                        student_ref=hash_identifier(payload["sub"]),
+                        owner_ref=hash_identifier(record["student_id"]),
+                    )
+                )
                 raise AppError(status_code=403, code="FORBIDDEN", message="Assessment access denied")
 
+        logger.info(
+            build_log_message(
+                "auth_access_granted",
+                assessment_id=assessment_id,
+                student_ref=hash_identifier(payload["sub"]),
+                jti_ref=hash_identifier(payload["jti"]),
+            )
+        )
         return payload

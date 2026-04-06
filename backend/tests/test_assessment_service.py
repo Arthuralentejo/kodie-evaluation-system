@@ -65,7 +65,7 @@ class _AssessmentRepositoryStub:
     async def list_questions_for_level(self, *, level):
         return self.questions_by_level.get(level, [])
 
-    async def create_assessment(self, *, student_id, assigned_question_ids, level, now):
+    async def create_assessment(self, *, student_id, assigned_question_ids, assessment_type, now):
         assessment_id = ObjectId()
         assessment = {
             "_id": assessment_id,
@@ -73,7 +73,7 @@ class _AssessmentRepositoryStub:
             "assigned_question_ids": assigned_question_ids,
             "answers": [],
             "status": "DRAFT",
-            "level": level,
+            "assessment_type": assessment_type,
             "archived": False,
             "started_at": now,
             "completed_at": None,
@@ -87,12 +87,14 @@ class _AssessmentRepositoryStub:
         assessment = self.assessments[assessment_id]
         assessment["answers"] = answers
 
-    async def complete_assessment(self, *, assessment_id, completed_at):
+    async def complete_assessment(self, *, assessment_id, completed_at, evaluation_result=None):
         assessment = self.assessments.get(assessment_id)
         if not assessment or assessment["status"] != "DRAFT":
             return None
         assessment["status"] = "COMPLETED"
         assessment["completed_at"] = completed_at
+        if evaluation_result is not None:
+            assessment["evaluation_result"] = evaluation_result
         self.complete_calls += 1
         return assessment
 
@@ -134,7 +136,7 @@ async def test_get_current_assessment_prefers_active_draft_over_completed():
         "_id": draft_id,
         "student_id": student_id,
         "status": "DRAFT",
-        "level": "junior",
+        "assessment_type": "junior",
         "archived": False,
         "assigned_question_ids": [],
         "answers": [],
@@ -144,7 +146,7 @@ async def test_get_current_assessment_prefers_active_draft_over_completed():
         "_id": completed_id,
         "student_id": student_id,
         "status": "COMPLETED",
-        "level": "iniciante",
+        "assessment_type": "iniciante",
         "archived": False,
         "assigned_question_ids": [],
         "answers": [],
@@ -157,7 +159,7 @@ async def test_get_current_assessment_prefers_active_draft_over_completed():
 
     assert result["status"] == "DRAFT"
     assert result["assessment_id"] == str(draft_id)
-    assert result["level"] == "junior"
+    assert result["assessment_type"] == "junior"
     assert len(result["assessments"]) == 1
     assert result["assessments"][0]["assessment_id"] == str(completed_id)
 
@@ -170,10 +172,10 @@ async def test_create_assessment_creates_new_draft_when_none_exists():
 
     service = AssessmentService(repository=repository)
 
-    result = await service.create_assessment(student_id=student_id, level="iniciante")
+    result = await service.create_assessment(student_id=student_id, assessment_type="iniciante")
 
     assert result["status"] == "DRAFT"
-    assert result["level"] == "iniciante"
+    assert result["assessment_type"] == "iniciante"
     assert repository.created_assessment is not None
     assert repository.created_assessment["student_id"] == student_id
     assert repository.created_assessment["archived"] is False
@@ -188,7 +190,7 @@ async def test_create_assessment_blocks_when_completed_exists():
         "_id": completed_id,
         "student_id": student_id,
         "status": "COMPLETED",
-        "level": "iniciante",
+        "assessment_type": "iniciante",
         "archived": False,
         "assigned_question_ids": [],
         "answers": [],
@@ -198,7 +200,7 @@ async def test_create_assessment_blocks_when_completed_exists():
     service = AssessmentService(repository=repository)
 
     with pytest.raises(AppError) as exc:
-        await service.create_assessment(student_id=student_id, level="iniciante")
+        await service.create_assessment(student_id=student_id, assessment_type="iniciante")
 
     assert exc.value.status_code == 409
     assert exc.value.code == "LEVEL_ALREADY_COMPLETED"
@@ -368,11 +370,11 @@ async def test_create_assessment_creates_draft_at_given_level():
 
     service = AssessmentService(repository=repository)
 
-    result = await service.create_assessment(student_id=student_id, level="junior")
+    result = await service.create_assessment(student_id=student_id, assessment_type="junior")
 
     assert result["status"] == "DRAFT"
-    assert result["level"] == "junior"
-    assert repository.created_assessment["level"] == "junior"
+    assert result["assessment_type"] == "junior"
+    assert repository.created_assessment["assessment_type"] == "junior"
 
 
 @pytest.mark.asyncio
@@ -384,7 +386,7 @@ async def test_create_assessment_returns_existing_draft_for_same_student_and_lev
         "_id": existing_draft_id,
         "student_id": student_id,
         "status": "DRAFT",
-        "level": "pleno",
+        "assessment_type": "pleno",
         "archived": False,
         "assigned_question_ids": [],
         "answers": [],
@@ -393,11 +395,11 @@ async def test_create_assessment_returns_existing_draft_for_same_student_and_lev
 
     service = AssessmentService(repository=repository)
 
-    result = await service.create_assessment(student_id=student_id, level="pleno")
+    result = await service.create_assessment(student_id=student_id, assessment_type="pleno")
 
     assert result["assessment_id"] == str(existing_draft_id)
     assert result["status"] == "DRAFT"
-    assert result["level"] == "pleno"
+    assert result["assessment_type"] == "pleno"
     # No new assessment was created
     assert repository.created_assessment is None
 
@@ -411,7 +413,7 @@ async def test_create_assessment_raises_level_already_completed():
         "_id": completed_id,
         "student_id": student_id,
         "status": "COMPLETED",
-        "level": "junior",
+        "assessment_type": "junior",
         "archived": False,
         "assigned_question_ids": [],
         "answers": [],
@@ -421,7 +423,7 @@ async def test_create_assessment_raises_level_already_completed():
     service = AssessmentService(repository=repository)
 
     with pytest.raises(AppError) as exc:
-        await service.create_assessment(student_id=student_id, level="junior")
+        await service.create_assessment(student_id=student_id, assessment_type="junior")
 
     assert exc.value.status_code == 409
     assert exc.value.code == "LEVEL_ALREADY_COMPLETED"
@@ -438,7 +440,7 @@ async def test_get_current_assessment_returns_assessments_list():
         "_id": completed_id_1,
         "student_id": student_id,
         "status": "COMPLETED",
-        "level": "iniciante",
+        "assessment_type": "iniciante",
         "archived": False,
         "assigned_question_ids": [],
         "answers": [],
@@ -448,7 +450,7 @@ async def test_get_current_assessment_returns_assessments_list():
         "_id": completed_id_2,
         "student_id": student_id,
         "status": "COMPLETED",
-        "level": "junior",
+        "assessment_type": "junior",
         "archived": False,
         "assigned_question_ids": [],
         "answers": [],
@@ -465,7 +467,7 @@ async def test_get_current_assessment_returns_assessments_list():
     assert str(completed_id_1) in assessment_ids
     assert str(completed_id_2) in assessment_ids
     for entry in result["assessments"]:
-        assert "level" in entry
+        assert "assessment_type" in entry
         assert "completed_at" in entry
 
 
@@ -480,7 +482,7 @@ async def test_get_current_assessment_returns_none_when_no_assessments():
 
     assert result["status"] == "NONE"
     assert result["assessment_id"] is None
-    assert result["level"] is None
+    assert result["assessment_type"] is None
     assert result["assessments"] == []
 
 
@@ -495,7 +497,7 @@ async def test_create_assessment_archives_active_and_creates_new_draft_at_differ
         "_id": active_id,
         "student_id": student_id,
         "status": "DRAFT",
-        "level": "iniciante",
+        "assessment_type": "iniciante",
         "archived": False,
         "assigned_question_ids": [],
         "answers": [],
@@ -505,16 +507,16 @@ async def test_create_assessment_archives_active_and_creates_new_draft_at_differ
 
     service = AssessmentService(repository=repository)
 
-    result = await service.create_assessment(student_id=student_id, level="junior")
+    result = await service.create_assessment(student_id=student_id, assessment_type="junior")
 
     assert result["status"] == "DRAFT"
-    assert result["level"] == "junior"
+    assert result["assessment_type"] == "junior"
     # Old assessment was archived
     assert active_id in repository.archived_ids
     assert repository.assessments[active_id]["archived"] is True
     # New assessment was created
     assert repository.created_assessment is not None
-    assert repository.created_assessment["level"] == "junior"
+    assert repository.created_assessment["assessment_type"] == "junior"
 
 
 @pytest.mark.asyncio
@@ -528,7 +530,7 @@ async def test_create_assessment_archives_completed_active_and_creates_new_draft
         "_id": completed_active_id,
         "student_id": student_id,
         "status": "COMPLETED",
-        "level": "iniciante",
+        "assessment_type": "iniciante",
         "archived": False,
         "assigned_question_ids": [],
         "answers": [],
@@ -539,10 +541,10 @@ async def test_create_assessment_archives_completed_active_and_creates_new_draft
     service = AssessmentService(repository=repository)
 
     # "iniciante" is in completed history, so requesting "junior" should work
-    result = await service.create_assessment(student_id=student_id, level="junior")
+    result = await service.create_assessment(student_id=student_id, assessment_type="junior")
 
     assert result["status"] == "DRAFT"
-    assert result["level"] == "junior"
+    assert result["assessment_type"] == "junior"
     assert completed_active_id in repository.archived_ids
 
 
@@ -556,7 +558,7 @@ async def test_create_assessment_blocks_when_level_in_completed_history_includin
         "_id": archived_completed_id,
         "student_id": student_id,
         "status": "COMPLETED",
-        "level": "junior",
+        "assessment_type": "junior",
         "archived": True,  # archived but still in completed history
         "assigned_question_ids": [],
         "answers": [],
@@ -566,7 +568,7 @@ async def test_create_assessment_blocks_when_level_in_completed_history_includin
     service = AssessmentService(repository=repository)
 
     with pytest.raises(AppError) as exc:
-        await service.create_assessment(student_id=student_id, level="junior")
+        await service.create_assessment(student_id=student_id, assessment_type="junior")
 
     assert exc.value.status_code == 409
     assert exc.value.code == "LEVEL_ALREADY_COMPLETED"
@@ -583,7 +585,7 @@ async def test_get_current_assessment_returns_none_status_with_completed_history
         "_id": completed_id,
         "student_id": student_id,
         "status": "COMPLETED",
-        "level": "iniciante",
+        "assessment_type": "iniciante",
         "archived": True,
         "assigned_question_ids": [],
         "answers": [],
@@ -612,7 +614,7 @@ async def test_get_current_assessment_includes_archived_completed_in_history():
         "_id": archived_id,
         "student_id": student_id,
         "status": "COMPLETED",
-        "level": "iniciante",
+        "assessment_type": "iniciante",
         "archived": True,
         "assigned_question_ids": [],
         "answers": [],
@@ -622,7 +624,7 @@ async def test_get_current_assessment_includes_archived_completed_in_history():
         "_id": active_id,
         "student_id": student_id,
         "status": "DRAFT",
-        "level": "junior",
+        "assessment_type": "junior",
         "archived": False,
         "assigned_question_ids": [],
         "answers": [],

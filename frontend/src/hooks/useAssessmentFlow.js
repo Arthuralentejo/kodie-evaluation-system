@@ -203,7 +203,7 @@ export function useAssessmentFlow() {
       setAssessmentStatus(data.status);
       setCompletedAt(data.completed_at || "");
       setCompletedAssessments(data.assessments || []);
-      setAssessmentLevel(data.level || null);
+      setAssessmentLevel(data.assessment_type || null);
 
       if (data.status === ASSESSMENT_STATUS.DRAFT && data.assessment_id) {
         setAssessmentId(data.assessment_id);
@@ -226,7 +226,7 @@ export function useAssessmentFlow() {
       const response = await fetch(`${API_BASE}/assessments`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeader },
-        body: JSON.stringify({ level }),
+        body: JSON.stringify({ assessment_type: level }),
       });
 
       if (!response.ok) {
@@ -240,8 +240,8 @@ export function useAssessmentFlow() {
       }
 
       const data = await response.json();
-      logFlow("assessment_create_succeeded", { assessmentId: data.assessment_id, level: data.level });
-      setAssessmentLevel(data.level);
+      logFlow("assessment_create_succeeded", { assessmentId: data.assessment_id, assessment_type: data.assessment_type });
+      setAssessmentLevel(data.assessment_type);
       setAssessmentId(data.assessment_id);
       setStage(STAGES.QUESTIONS);
     } catch (error) {
