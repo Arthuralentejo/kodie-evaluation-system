@@ -69,7 +69,7 @@ function OverrideConfirmModal({ level, onConfirm, onCancel }) {
 
 function LevelPicker({ selectedLevel, onLevelChange, completedAssessments }) {
   const completedLevels = new Set(
-    (completedAssessments || []).map((a) => a.level)
+    (completedAssessments || []).map((a) => a.assessment_type)
   );
 
   return (
@@ -107,19 +107,33 @@ function CompletedAssessmentsList({ completedAssessments }) {
     <div className="completed-assessments">
       <h3>Avaliações concluídas</h3>
       <ul>
-        {completedAssessments.map((assessment) => (
-          <li
-            key={assessment.assessment_id}
-            className="completed-assessment-item"
-          >
-            <span className="completed-assessment-item__level">
-              {LEVEL_LABELS[assessment.level] || assessment.level}
-            </span>
-            <span className="completed-assessment-item__date">
-              {formatDatePtBR(assessment.completed_at)}
-            </span>
-          </li>
-        ))}
+        {completedAssessments.map((assessment) => {
+          const archived = assessment.is_archived;
+          return (
+            <li
+              key={assessment.assessment_id}
+              className={
+                'completed-assessment-item' +
+                (archived ? ' completed-assessment-item--archived' : '')
+              }
+            >
+              <span className="completed-assessment-item__level">
+                {LEVEL_LABELS[assessment.assessment_type] || assessment.assessment_type}
+              </span>
+              <span
+                className={
+                  'completed-assessment-item__status' +
+                  (archived ? ' completed-assessment-item__status--archived' : '')
+                }
+              >
+                {archived ? 'Arquivada' : 'Válida'}
+              </span>
+              <span className="completed-assessment-item__date">
+                {formatDatePtBR(assessment.completed_at)}
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

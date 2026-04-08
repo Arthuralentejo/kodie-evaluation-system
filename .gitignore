@@ -11,3 +11,4 @@ output/
 docs
 .vscode
 *.csv
+*/.hypothesis

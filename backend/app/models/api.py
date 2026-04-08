@@ -31,6 +31,7 @@ class CompletedAssessmentSummary(BaseModel):
     assessment_id: str
     assessment_type: str
     completed_at: str
+    is_archived: bool
 
 
 class AssessmentSummaryResponse(BaseModel):

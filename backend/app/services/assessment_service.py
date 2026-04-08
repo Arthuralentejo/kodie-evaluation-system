@@ -68,6 +68,7 @@ class AssessmentService:
                 "assessment_id": str(a["_id"]),
                 "assessment_type": a.get("assessment_type", "iniciante"),
                 "completed_at": a["completed_at"].isoformat(),
+                "is_archived": a.get("archived", False),
             }
             for a in completed_history
         ]

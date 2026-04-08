@@ -16,6 +16,7 @@
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
+    "@fast-check/vitest": "^0.3.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@vitejs/plugin-react": "^5.0.0",

@@ -2,6 +2,8 @@ from datetime import UTC, datetime
 
 import pytest
 from bson import ObjectId
+from hypothesis import given, settings
+from hypothesis.strategies import booleans, lists
 
 from app.core.errors import AppError
 from app.services.assessment_service import AssessmentService
@@ -756,3 +758,54 @@ async def test_get_current_assessment_includes_archived_completed_in_history():
     # History includes the archived completed one
     assert len(result["assessments"]) == 1
     assert result["assessments"][0]["assessment_id"] == str(archived_id)
+
+
+# Feature: assessment-archived-status, Property 1: archived field is faithfully mapped
+@given(lists(booleans(), min_size=1))
+@settings(max_examples=100)
+def test_archived_field_is_faithfully_mapped(archived_flags):
+    """Property 1: every CompletedAssessmentSummary.is_archived equals the
+    corresponding document's archived field.
+
+    Validates: Requirements 1.2, 1.3, 2.2
+    """
+    import asyncio
+
+    student_id = STUDENT_ID
+    repository = _AssessmentRepositoryStub()
+
+    now = datetime.now(UTC)
+    doc_ids = []
+    for archived in archived_flags:
+        doc_id = ObjectId()
+        doc_ids.append(doc_id)
+        repository.assessments[doc_id] = {
+            "_id": doc_id,
+            "student_id": student_id,
+            "status": "COMPLETED",
+            "assessment_type": "iniciante",
+            "archived": archived,
+            "assigned_question_ids": [],
+            "answers": [],
+            "completed_at": now,
+        }
+
+    service = AssessmentService(repository=repository)
+
+    result = asyncio.get_event_loop().run_until_complete(
+        service.get_current_assessment(student_id=student_id)
+    )
+
+    summaries = result["assessments"]
+    assert len(summaries) == len(archived_flags)
+
+    # Build a lookup from assessment_id → archived flag from the source docs
+    archived_by_id = {
+        str(doc_id): archived_flags[i] for i, doc_id in enumerate(doc_ids)
+    }
+    for summary in summaries:
+        expected = archived_by_id[summary["assessment_id"]]
+        assert summary["is_archived"] == expected, (
+            f"assessment {summary['assessment_id']}: "
+            f"expected is_archived={expected}, got {summary['is_archived']}"
+        )
