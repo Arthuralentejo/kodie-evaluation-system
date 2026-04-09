@@ -1,4 +1,5 @@
 import { BrandMark } from '../ui';
+import MarkdownRenderer from '../MarkdownRenderer';
 
 function QuestionsHeader({
   currentIndex,
@@ -103,7 +104,7 @@ export function QuestionsScreen({
               {currentQuestion && (
                 <>
                   <div className="question-heading-card">
-                    <h1>{currentQuestion.statement}</h1>
+                    <MarkdownRenderer content={currentQuestion.statement} />
                   </div>
                   <p className="question-caption">
                     Selecione a alternativa que melhor representa sua percepcao

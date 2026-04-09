@@ -1212,7 +1212,7 @@
       "jwt",
       "autenticacao"
     ],
-    "pergunta": "Um serviço de autenticação retorna o seguinte token após login:\n\n```\neyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTcwMDAwMDAwMH0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\n```\n\nSobre JWTs, qual afirmação é correta?",
+    "pergunta": "Um serviço de autenticação retorna o seguinte token após login:\n\n```bash\neyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTcwMDAwMDAwMH0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\n```\n\nSobre JWTs, qual afirmação é correta?",
     "alternativas": {
       "a": "O payload do token é criptografado e não pode ser lido sem a chave secreta",
       "b": "O payload é apenas codificado em Base64 e pode ser lido por qualquer pessoa; a assinatura garante integridade, não confidencialidade",
@@ -1269,7 +1269,7 @@
       "escalabilidade",
       "infraestrutura"
     ],
-    "pergunta": "Analise o diagrama de uma API que recebe uploads de imagens:\n\n```\nCliente → POST /imagens → API → salva no disco local → retorna URL\n```\n\nQuais são os dois principais problemas dessa arquitetura em produção com múltiplas instâncias?",
+    "pergunta": "Analise o diagrama de uma API que recebe uploads de imagens:\n\n```bash\nCliente → POST /imagens → API → salva no disco local → retorna URL\n```\n\nQuais são os dois principais problemas dessa arquitetura em produção com múltiplas instâncias?",
     "alternativas": {
       "a": "O método `POST` não é adequado para uploads; deveria usar `PUT`. E o disco local é mais lento que a memória RAM",
       "b": "Arquivos salvos no disco de uma instância não são acessíveis pelas outras instâncias; e se a instância reiniciar ou for substituída, os arquivos são perdidos",

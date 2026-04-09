@@ -1020,3 +1020,175 @@ h2 {
     flex-direction: column;
   }
 }
+
+/* ─── Markdown body ─────────────────────────────────────────────────────────── */
+
+.markdown-body {
+  font-size: clamp(15px, 1vw, 17px);
+  line-height: 1.6;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.markdown-body p {
+  margin: 0 0 0.75em;
+}
+
+.markdown-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Inline code — distinct from prose, light tint */
+.markdown-body code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.875em;
+  background: rgba(34, 106, 143, 0.08);
+  color: var(--color-primary-strong);
+  border: 1px solid rgba(34, 106, 143, 0.18);
+  border-radius: 5px;
+  padding: 0.15em 0.4em;
+}
+
+/* Code blocks — visually distinct from question-heading-card (rgba(255,255,255,0.68)) */
+.markdown-body pre {
+  margin: 0.75em 0;
+  padding: 0;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.markdown-body pre code {
+  display: block;
+  padding: 1em 1.1em;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: clamp(13px, 0.9vw, 14px);
+  line-height: 1.6;
+  white-space: pre;
+  background: transparent;
+  color: #e6edf3;
+  border: none;
+  border-radius: 0;
+  overflow-x: visible;
+}
+
+/* ─── github-dark highlight.js token styles ──────────────────────────────────
+   Inlined from highlight.js github-dark theme to avoid node_modules @import.
+   Source: https://github.com/highlightjs/highlight.js (BSD-3-Clause)
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.markdown-body pre code.hljs {
+  color: #e6edf3;
+  background: transparent;
+}
+
+.markdown-body .hljs-doctag,
+.markdown-body .hljs-keyword,
+.markdown-body .hljs-meta .hljs-keyword,
+.markdown-body .hljs-template-tag,
+.markdown-body .hljs-template-variable,
+.markdown-body .hljs-type,
+.markdown-body .hljs-variable.language_ {
+  color: #ff7b72;
+}
+
+.markdown-body .hljs-title,
+.markdown-body .hljs-title.class_,
+.markdown-body .hljs-title.class_.inherited__,
+.markdown-body .hljs-title.function_ {
+  color: #d2a8ff;
+}
+
+.markdown-body .hljs-attr,
+.markdown-body .hljs-attribute,
+.markdown-body .hljs-literal,
+.markdown-body .hljs-meta,
+.markdown-body .hljs-number,
+.markdown-body .hljs-operator,
+.markdown-body .hljs-selector-attr,
+.markdown-body .hljs-selector-class,
+.markdown-body .hljs-selector-id,
+.markdown-body .hljs-variable {
+  color: #79c0ff;
+}
+
+.markdown-body .hljs-meta .hljs-string,
+.markdown-body .hljs-regexp,
+.markdown-body .hljs-string {
+  color: #a5d6ff;
+}
+
+.markdown-body .hljs-built_in,
+.markdown-body .hljs-symbol {
+  color: #ffa657;
+}
+
+.markdown-body .hljs-code,
+.markdown-body .hljs-comment,
+.markdown-body .hljs-formula {
+  color: #8b949e;
+}
+
+.markdown-body .hljs-name,
+.markdown-body .hljs-quote,
+.markdown-body .hljs-selector-pseudo,
+.markdown-body .hljs-selector-tag {
+  color: #7ee787;
+}
+
+.markdown-body .hljs-subst {
+  color: #e6edf3;
+}
+
+.markdown-body .hljs-section {
+  color: #1f6feb;
+  font-weight: bold;
+}
+
+.markdown-body .hljs-bullet {
+  color: #f2cc60;
+}
+
+.markdown-body .hljs-emphasis {
+  color: #e6edf3;
+  font-style: italic;
+}
+
+.markdown-body .hljs-strong {
+  color: #e6edf3;
+  font-weight: bold;
+}
+
+.markdown-body .hljs-addition {
+  color: #aff5b4;
+  background-color: #033a16;
+}
+
+.markdown-body .hljs-deletion {
+  color: #ffdcd7;
+  background-color: #67060c;
+}
+
+/* ─── Markdown body — mobile (< 768px) ──────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .markdown-body {
+    font-size: 15px;
+  }
+
+  .markdown-body pre {
+    border-radius: 6px;
+    margin: 0.6em 0;
+  }
+
+  .markdown-body pre code {
+    font-size: 13px;
+    padding: 0.85em 0.9em;
+  }
+
+  .markdown-body code {
+    font-size: 0.85em;
+  }
+}

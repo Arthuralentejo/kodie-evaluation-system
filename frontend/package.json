@@ -12,8 +12,12 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "highlight.js": "^11.11.1",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-markdown": "^10.1.0",
+    "rehype-highlight": "^7.0.2",
+    "rehype-sanitize": "^6.0.0"
   },
   "devDependencies": {
     "@fast-check/vitest": "^0.3.0",
