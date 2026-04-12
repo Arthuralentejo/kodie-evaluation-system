@@ -1,16 +1,20 @@
+import { useRef } from 'react';
 import { CompletionScreen } from './components/screens/CompletionScreen';
 import { AuthScreen } from './components/screens/AuthScreen';
 import { IntroScreen } from './components/screens/IntroScreen';
 import { QuestionsScreen } from './components/screens/QuestionsScreen';
 import { STAGES } from './config';
 import { useAssessmentFlow } from './hooks/useAssessmentFlow';
+import { useTextSelectionGuard } from './hooks/useTextSelectionGuard';
 
 export function App() {
   const flow = useAssessmentFlow();
+  const containerRef = useRef(null);
+  useTextSelectionGuard(flow.stage, containerRef);
 
   if (flow.stage === STAGES.AUTH) {
     return (
-      <main className="app-shell">
+      <main className="app-shell" ref={containerRef}>
         <AuthScreen
           cpf={flow.cpf}
           birthDate={flow.birthDate}
@@ -26,7 +30,7 @@ export function App() {
 
   if (flow.stage === STAGES.INTRO) {
     return (
-      <main className="app-shell">
+      <main className="app-shell" ref={containerRef}>
         <IntroScreen
           isBusy={flow.isBusy}
           assessmentStatus={flow.assessmentStatus}
@@ -44,7 +48,7 @@ export function App() {
 
   if (flow.stage === STAGES.QUESTIONS) {
     return (
-      <main className="app-shell">
+      <main className="app-shell" ref={containerRef}>
         <QuestionsScreen
           answeredCount={flow.answeredCount}
           currentIndex={flow.currentIndex}
@@ -73,7 +77,7 @@ export function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main className="app-shell" ref={containerRef}>
       <CompletionScreen
         answeredCount={flow.answeredCount}
         completionDate={flow.completionDate}

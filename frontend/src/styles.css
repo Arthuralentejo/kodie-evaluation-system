@@ -1192,3 +1192,16 @@ h2 {
     font-size: 0.85em;
   }
 }
+
+/* ─── Text selection guard ──────────────────────────────────────────────────── */
+
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.no-select input,
+.no-select button {
+  -webkit-user-select: auto;
+  user-select: auto;
+}
